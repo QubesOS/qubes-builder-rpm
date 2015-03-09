@@ -1,13 +1,16 @@
 #!/bin/sh
 # vim: set ts=4 sw=4 sts=4 et :
 
+PLUGIN_DIR="`dirname $0`"
+
 DIR=$1
 DISTRO=$2
 if [ -n "$3" ]; then
     PKGLISTFILE="$3"
 else
-    PKGLISTFILE="build-pkgs-base.list"
+    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base.list"
 fi
+
 
 set -e
 if [ "$VERBOSE" -ge 2 -o "$DEBUG" == "1" ]; then
@@ -24,15 +27,15 @@ if ! [ -d $DIR/home/user ]; then
 
     echo "-> Initializing RPM database..."
     rpm --initdb --root=$DIR
-    rpm --import --root=$DIR keys_$DISTRO/*
+    rpm --import --root=$DIR ${PLUGIN_DIR}/keys_$DISTRO/*
 
     if [ "$DISTRO" == "fc21" ]; then
         echo "-> Retreiving core RPM packages..."
         INITIAL_PACKAGES="filesystem setup fedora-release"
 
-        yum --disablerepo=\* --enablerepo=fedora -y --installroot="${DIR}" --releasever=${DISTRO/fc/} install --downloadonly --downloaddir="base_rpms_${DISTRO}" ${INITIAL_PACKAGES}
+        yum --disablerepo=\* --enablerepo=fedora -y --installroot="${DIR}" --releasever=${DISTRO/fc/} install --downloadonly --downloaddir="${PLUGIN_DIR}/base_rpms_${DISTRO}" ${INITIAL_PACKAGES}
 
-        for file in base_rpms_${DISTRO}/*; do
+        for file in ${PLUGIN_DIR}/base_rpms_${DISTRO}/*; do
             result=$(rpm --root=$DIR --checksig "${file}") || {
                 echo "Filename: ${file} failed verification.  Exiting!"
                 exit 1
@@ -50,10 +53,10 @@ if ! [ -d $DIR/home/user ]; then
     fi
 
     echo "-> Installing core RPM packages..."
-    rpm -i --root=$DIR base_rpms_$DISTRO/*.rpm
+    rpm -i --root=$DIR ${PLUGIN_DIR}/base_rpms_$DISTRO/*.rpm
 
     # Always install at least base pkgs
-    yum install -c $PWD/yum.conf -y $YUM_OPTS --installroot=$DIR `cat build-pkgs-base.list`
+    yum install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`
 
     [ -n "$SUDO_UID" ] && USER_OPTS="-u $SUDO_UID"
     [ -n "$USER_UID" ] && USER_OPTS="-u $USER_UID"
@@ -74,8 +77,8 @@ else
     chroot $DIR groupadd -rf uucp 2>/dev/null || :
     chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
 fi
-./update-local-repo.sh $DISTRO
-cp repos_$DISTRO/*.repo $DIR/etc/yum.repos.d/
+${PLUGIN_DIR}/update-local-repo.sh $DISTRO
+cp ${PLUGIN_DIR}/repos_$DISTRO/*.repo $DIR/etc/yum.repos.d/
 sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
 
 if ! [ -r $DIR/proc/cpuinfo ]; then

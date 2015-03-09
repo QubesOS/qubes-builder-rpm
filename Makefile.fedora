@@ -39,11 +39,11 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 		mkdir -p $(CHROOT_DIR)/tmp/qubes-rpms-mirror-repo;\
 		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-rpms-mirror-repo;\
 	fi
-	@sudo cp yum.conf $(CHROOT_DIR)/etc/yum.conf
+	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
-$(CHROOT_DIR)/home/user/.prepared_base: ./prepare-chroot-fedora build-pkgs-base.list
+$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-fedora $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
 	@echo "-> Preparing $(DIST) build environment"
-	@sudo -E ./prepare-chroot-fedora $(CHROOT_DIR) $(DIST) || exit 1
+	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-fedora $(CHROOT_DIR) $(DIST) || exit 1
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
 	
 dist-prep:
@@ -53,7 +53,7 @@ dist-build-dep:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
-	./update-local-repo.sh $(DIST)
+	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) yum --disablerepo=* --enablerepo=qubes-builder-pkgs clean all
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum -y update'
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum-builddep -y $(PACKAGE)'
