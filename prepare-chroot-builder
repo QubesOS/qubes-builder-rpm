@@ -25,37 +25,7 @@ if ! [ -d $DIR/home/user ]; then
     INITIAL=1
     mkdir -p $DIR
 
-    echo "-> Initializing RPM database..."
-    rpm --initdb --root=$DIR
-    rpm --import --root=$DIR ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DISTRO/fc/}-primary
-
-    echo "-> Retreiving core RPM packages..."
-    INITIAL_PACKAGES="filesystem setup fedora-release"
-
-    mkdir -p "${DIR}/base_rpms"
-    yum --disablerepo=\* --enablerepo=fedora -y --installroot="${DIR}" \
-        --releasever=${DISTRO/fc/} install \
-        --downloadonly --downloaddir="${DIR}/base_rpms" ${INITIAL_PACKAGES}
-
-    for file in ${DIR}/base_rpms/*; do
-        result=$(rpm --root=$DIR --checksig "${file}") || {
-            echo "Filename: ${file} failed verification.  Exiting!"
-            exit 1
-        }
-        result_status="${result##*:}"
-        echo "${result_status}" | grep -q 'PGP' && {
-            echo "Filename: ${file} contains an invalid PGP signature.  Exiting!"
-            exit 1
-        }
-        echo "${result_status}" | grep -q 'pgp' || {
-            echo "Filename: ${file} is not signed.  Exiting!"
-            exit 1
-        }
-    done
-
-    echo "-> Installing core RPM packages..."
-    rpm -i --root=$DIR ${DIR}/base_rpms/*.rpm
-    rm -rf ${DIR}/base_rpms
+    ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DISTRO"
 
     # Always install at least base pkgs
     yum install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`

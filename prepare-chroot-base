@@ -1,0 +1,50 @@
+#!/bin/sh
+# vim: set ts=4 sw=4 sts=4 et :
+
+PLUGIN_DIR="`dirname $0`"
+
+INSTALLDIR=$1
+DIST=$2
+
+set -e
+if [ "$VERBOSE" -ge 2 -o "$DEBUG" == "1" ]; then
+    set -x
+else
+    YUM_OPTS="$YUM_OPTS -q"
+fi
+
+if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
+    echo "-> Initializing RPM database..."
+    rpm --initdb --root=$INSTALLDIR
+    rpm --import --root=$INSTALLDIR ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST/fc/}-primary
+
+    echo "-> Retreiving core RPM packages..."
+    INITIAL_PACKAGES="filesystem setup fedora-release"
+
+    mkdir -p "${CACHEDIR}/base_rpms"
+    yum --disablerepo=\* --enablerepo=fedora -y --installroot="${INSTALLDIR}" \
+        --releasever=${DIST/fc/} install \
+        --downloadonly --downloaddir="${CACHEDIR}/base_rpms" ${INITIAL_PACKAGES}
+
+    for file in ${CACHEDIR}/base_rpms/*; do
+        result=$(rpm --root=$DIR --checksig "${file}") || {
+            echo "Filename: ${file} failed verification.  Exiting!"
+            exit 1
+        }
+        result_status="${result##*:}"
+        echo "${result_status}" | grep -q 'PGP' && {
+            echo "Filename: ${file} contains an invalid PGP signature.  Exiting!"
+            exit 1
+        }
+        echo "${result_status}" | grep -q 'pgp' || {
+            echo "Filename: ${file} is not signed.  Exiting!"
+            exit 1
+        }
+    done
+
+    echo "-> Installing core RPM packages..."
+    rpm -i --root="${INSTALLDIR}" "${CACHEDIR}/base_rpms/"*.rpm || exit 1
+    chroot $INSTALLDIR rpm --rebuilddb 2> /dev/null
+
+    touch "${INSTALLDIR}/tmp/.prepared_base"
+fi

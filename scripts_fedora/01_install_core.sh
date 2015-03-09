@@ -3,25 +3,7 @@
 
 source "${SCRIPTSDIR}/distribution.sh"
 
-if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
-    echo "-> Initializing RPM database..."
-    rpm --initdb --root="${INSTALLDIR}"
-    rpm --import --root="${INSTALLDIR}" "${SCRIPTSDIR}/keys/"*
-
-    if [ "$DIST" == "fc21" ]; then
-        echo "-> Retreiving core RPM packages..."
-        INITIAL_PACKAGES="filesystem setup fedora-release"
-
-        yum --disablerepo=\* --enablerepo=fedora -y --installroot="${INSTALLDIR}" --releasever=${DIST/fc/} install --downloadonly --downloaddir="${SCRIPTSDIR}/base_rpms_${DIST}" ${INITIAL_PACKAGES}
-
-        verifyPackages "${SCRIPTSDIR}/base_rpms_${DIST}"/* || exit 1
-    fi
-
-    echo "-> Installing core RPM packages..."
-    rpm -i --root="${INSTALLDIR}" "${SCRIPTSDIR}/base_rpms/"*.rpm || exit 1
-
-    touch "${INSTALLDIR}/tmp/.prepared_base"
-fi
+${SCRIPTSDIR}/../prepare-chroot-base "${INSTALLDIR}" "${DIST}"
 
 cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc"
 cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig"

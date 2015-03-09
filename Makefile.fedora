@@ -41,9 +41,9 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	fi
 	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
-$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-fedora $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
+$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
 	@echo "-> Preparing $(DIST) build environment"
-	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-fedora $(CHROOT_DIR) $(DIST) || exit 1
+	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
 	
 dist-prep:
@@ -91,6 +91,7 @@ endif
 ifeq (,$(RPM_SPEC_FILES))
 	@true
 else
+	@mkdir -p $(UPDATE_REPO)/rpm
 	@cd $(ORIG_SRC) && ln -f $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))) $(UPDATE_REPO)/rpm/
 endif
 ifdef SNAPSHOT_FILE

@@ -40,7 +40,7 @@ function yumInstall() {
     if [ -e "${INSTALLDIR}/usr/bin/yum" ]; then
         chroot yum install ${YUM_OPTS} -y ${files[@]} || exit 1
     else
-        yum install -c ${PWD}/yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
+        yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
     fi
     umount ${INSTALLDIR}/etc/resolv.conf
 }
