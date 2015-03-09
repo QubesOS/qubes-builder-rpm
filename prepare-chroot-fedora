@@ -27,33 +27,35 @@ if ! [ -d $DIR/home/user ]; then
 
     echo "-> Initializing RPM database..."
     rpm --initdb --root=$DIR
-    rpm --import --root=$DIR ${PLUGIN_DIR}/keys_$DISTRO/*
+    rpm --import --root=$DIR ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DISTRO/fc/}-primary
 
-    if [ "$DISTRO" == "fc21" ]; then
-        echo "-> Retreiving core RPM packages..."
-        INITIAL_PACKAGES="filesystem setup fedora-release"
+    echo "-> Retreiving core RPM packages..."
+    INITIAL_PACKAGES="filesystem setup fedora-release"
 
-        yum --disablerepo=\* --enablerepo=fedora -y --installroot="${DIR}" --releasever=${DISTRO/fc/} install --downloadonly --downloaddir="${PLUGIN_DIR}/base_rpms_${DISTRO}" ${INITIAL_PACKAGES}
+    mkdir -p "${DIR}/base_rpms"
+    yum --disablerepo=\* --enablerepo=fedora -y --installroot="${DIR}" \
+        --releasever=${DISTRO/fc/} install \
+        --downloadonly --downloaddir="${DIR}/base_rpms" ${INITIAL_PACKAGES}
 
-        for file in ${PLUGIN_DIR}/base_rpms_${DISTRO}/*; do
-            result=$(rpm --root=$DIR --checksig "${file}") || {
-                echo "Filename: ${file} failed verification.  Exiting!"
-                exit 1
-            }
-            result_status="${result##*:}"
-            echo "${result_status}" | grep -q 'PGP' && {
-                echo "Filename: ${file} contains an invalid PGP signature.  Exiting!"
-                exit 1
-            }
-            echo "${result_status}" | grep -q 'pgp' || {
-                echo "Filename: ${file} is not signed.  Exiting!"
-                exit 1
-            }
-        done
-    fi
+    for file in ${DIR}/base_rpms/*; do
+        result=$(rpm --root=$DIR --checksig "${file}") || {
+            echo "Filename: ${file} failed verification.  Exiting!"
+            exit 1
+        }
+        result_status="${result##*:}"
+        echo "${result_status}" | grep -q 'PGP' && {
+            echo "Filename: ${file} contains an invalid PGP signature.  Exiting!"
+            exit 1
+        }
+        echo "${result_status}" | grep -q 'pgp' || {
+            echo "Filename: ${file} is not signed.  Exiting!"
+            exit 1
+        }
+    done
 
     echo "-> Installing core RPM packages..."
-    rpm -i --root=$DIR ${PLUGIN_DIR}/base_rpms_$DISTRO/*.rpm
+    rpm -i --root=$DIR ${DIR}/base_rpms/*.rpm
+    rm -rf ${DIR}/base_rpms
 
     # Always install at least base pkgs
     yum install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`
@@ -78,7 +80,7 @@ else
     chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
 fi
 ${PLUGIN_DIR}/update-local-repo.sh $DISTRO
-cp ${PLUGIN_DIR}/repos_$DISTRO/*.repo $DIR/etc/yum.repos.d/
+cp ${PLUGIN_DIR}/repos/*.repo $DIR/etc/yum.repos.d/
 sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
 
 if ! [ -r $DIR/proc/cpuinfo ]; then
