@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE comps PUBLIC "-//Red Hat, Inc.//DTD Comps info//EN" "comps.dtd">
+<comps>
+  <group>
+    <id>qubes-vm</id>
+    <name>Qubes Environment</name>
+    <default>true</default>
+    <packagelist>
+      <packagereq type="mandatory">qubes-core-vm-systemd</packagereq>
+      <packagereq type="mandatory">qubes-core-vm</packagereq>
+      <packagereq type="mandatory">qubes-gui-vm</packagereq>
+      <packagereq type="mandatory">xen-libs</packagereq>
+      <packagereq type="mandatory">xen-qubes-vm-essentials</packagereq>
+      <packagereq type="default">qubes-doc-vm</packagereq>
+      <packagereq type="optional">thunderbird-qubes</packagereq>
+      <packagereq type="optional">qubes-pdf-converter</packagereq>
+      <packagereq type="optional">qubes-gpg-split</packagereq>
+    </packagelist>
+  </group>
+</comps>
