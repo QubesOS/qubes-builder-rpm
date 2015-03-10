@@ -43,8 +43,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
 
     echo "-> Installing core RPM packages..."
-    rpm -i --root="${INSTALLDIR}" "${CACHEDIR}/base_rpms/"*.rpm || exit 1
-    chroot $INSTALLDIR rpm --rebuilddb 2> /dev/null
+    rpm -U --replacepkgs --root="${INSTALLDIR}" "${CACHEDIR}/base_rpms/"*.rpm || exit 1
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
 fi
