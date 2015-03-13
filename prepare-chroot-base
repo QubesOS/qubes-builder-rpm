@@ -15,8 +15,8 @@ fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
-    rpm --initdb --root=$INSTALLDIR
-    rpm --import --root=$INSTALLDIR ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST/fc/}-primary
+    rpm --initdb --root=${INSTALLDIR}
+    rpm --import --root=${INSTALLDIR} ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST/fc/}-primary
 
     echo "-> Retreiving core RPM packages..."
     INITIAL_PACKAGES="filesystem setup fedora-release"
@@ -27,7 +27,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         --downloadonly --downloaddir="${CACHEDIR}/base_rpms" ${INITIAL_PACKAGES}
 
     for file in ${CACHEDIR}/base_rpms/*; do
-        result=$(rpm --root=$DIR --checksig "${file}") || {
+        result=$(rpm --root=${INSTALLDIR} --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
