@@ -57,9 +57,9 @@ if ! [ -r $DIR/proc/cpuinfo ]; then
     mount -t proc proc $DIR/proc
 fi
 
-if ! [ -d $DIR/tmp/qubes-rpms-mirror-repo/rpm ]; then
-    mkdir -p $DIR/tmp/qubes-rpms-mirror-repo
-    mount --bind $BUILDER_REPO_DIR $DIR/tmp/qubes-rpms-mirror-repo
+if ! [ -d $DIR/tmp/qubes-packages-mirror-repo/rpm ]; then
+    mkdir -p $DIR/tmp/qubes-packages-mirror-repo
+    mount --bind $BUILDER_REPO_DIR $DIR/tmp/qubes-packages-mirror-repo
 fi
 cp /etc/resolv.conf $DIR/etc/
 # some packages assumes existence of this file

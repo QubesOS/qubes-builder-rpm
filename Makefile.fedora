@@ -35,9 +35,9 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
-	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-rpms-mirror-repo/rpm ]; then\
-		mkdir -p $(CHROOT_DIR)/tmp/qubes-rpms-mirror-repo;\
-		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-rpms-mirror-repo;\
+	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo/rpm ]; then\
+		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
+		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
 	fi
 	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
