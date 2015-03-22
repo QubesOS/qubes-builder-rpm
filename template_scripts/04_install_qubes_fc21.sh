@@ -4,6 +4,7 @@
 INSTALLDIR=${PWD}/mnt
 
 echo "-->  Creating Xwrapper.config override..."
+mkdir -p ${INSTALLDIR}/etc/X11
 cat > "${INSTALLDIR}/etc/X11/Xwrapper.config" <<EOF
 allowed_users = anybody
 needs_root_rights = yes
