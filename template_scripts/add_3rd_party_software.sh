@@ -79,7 +79,7 @@ else
 fi
 
 if [ ${VERSION} -ge 20 ]; then
-    if [ -d "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm" ]; then
+    if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm" ]; then
         #### '----------------------------------------------------------------------
         info ' Installing rpmfusion-free repos'
         #### '----------------------------------------------------------------------
@@ -100,7 +100,7 @@ if [ ${VERSION} -ge 20 ]; then
         chroot yum-config-manager --disable rpmfusion-free-rawhide-source > /dev/null
     fi
 
-    if [ -d "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
+    if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
         #### '----------------------------------------------------------------------
         info ' Installing rpmfusion-nonfree repos'
         #### '----------------------------------------------------------------------
