@@ -12,10 +12,12 @@ DIST_BUILD_DIR = /home/user
 
 ### Local variables
 RUN_AS_USER = user
-RPMS_DIR = rpm/
+ifndef OUTPUT_DIR
+OUTPUT_DIR= rpm
+endif
 
 # Use += to allow Makefile.builder define some initial value
-RPM_BUILD_DEFINES += --define "_rpmdir $(RPMS_DIR)"
+RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
 RPM_BUILD_DEFINES += --define "qubes_builder 1"
 RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 
@@ -25,7 +27,7 @@ RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
 RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
 RPM_QUERY_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
-RPM_QUERY_FORMAT = "rpm/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
+RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
 
 ifneq (,$(SIGN_KEY))
 RPMSIGN_OPTS=--key-id=$(SIGN_KEY)
@@ -66,14 +68,14 @@ dist-package:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
-	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/rpm/*
+	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' $(RUN_AS_USER)
 
 dist-copy-out:
 	@echo "--> Done:" >&3
 	@set -e;\
-	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/rpm/*; do\
-		arch_rpm_dir=$(ORIG_SRC)/rpm/`basename $$arch_chroot_dir`;\
+	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*; do\
+		arch_rpm_dir=$(ORIG_SRC)/$(OUTPUT_DIR)/`basename $$arch_chroot_dir`;\
 		mkdir -p $$arch_rpm_dir;\
 		for pkg in $$arch_chroot_dir/*; do\
 			echo "      $$arch_rpm_dir/`basename $$pkg`" >&3 ;\
