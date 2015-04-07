@@ -27,6 +27,10 @@ RPM_QUERY_DEFINES += --define "qubes_builder 1"
 RPM_QUERY_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 RPM_QUERY_FORMAT = "rpm/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
 
+ifneq (,$(SIGN_KEY))
+RPMSIGN_OPTS=--key-id=$(SIGN_KEY)
+endif
+
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1))
 
@@ -96,4 +100,15 @@ else
 endif
 ifdef SNAPSHOT_FILE
 	@cd $(ORIG_SRC) && echo $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))) > $(SNAPSHOT_FILE)
+endif
+
+sign:
+ifeq (,$(RPM_SPEC_FILES))
+	@true
+else
+	@cd $(ORIG_SRC) && for pkg in $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))); do \
+		if ! rpm -K $$pkg | grep -qi pgp; then \
+			setsid -w rpmsign $(RPMSIGN_OPTS) --addsign $$pkg </dev/null || exit 1; \
+		fi; \
+	done
 endif
