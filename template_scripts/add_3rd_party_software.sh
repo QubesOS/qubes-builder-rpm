@@ -61,6 +61,7 @@ enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/google-linux_signing_key.pub
 EOF
+chmod 644 "${INSTALLDIR}/etc/yum.repos.d/google-chrome.repo"
  
 #### '----------------------------------------------------------------------
 info ' Installing adobe repo'
