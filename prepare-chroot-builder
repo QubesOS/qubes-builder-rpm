@@ -64,6 +64,7 @@ fi
 cp /etc/resolv.conf $DIR/etc/
 # some packages assumes existence of this file
 touch $DIR/etc/fstab
+chmod 644 $DIR/etc/fstab
 
 PKGGROUPS="$(cat $PKGLISTFILE)"
 echo "-> Installing package groups..."

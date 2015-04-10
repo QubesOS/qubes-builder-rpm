@@ -5,6 +5,8 @@ source "${SCRIPTSDIR}/distribution.sh"
 
 ${SCRIPTSDIR}/../prepare-chroot-base "${INSTALLDIR}" "${DIST}"
 
-cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc"
-cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig"
+cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc/"
+chmod 644 "${INSTALLDIR}/etc/resolv.conf"
+cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig/"
+chmod 644 "${INSTALLDIR}/etc/sysconfig/network"
 cp -a /dev/null /dev/zero /dev/random /dev/urandom "${INSTALLDIR}/dev/"
