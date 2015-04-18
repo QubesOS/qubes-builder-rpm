@@ -114,3 +114,13 @@ else
 		fi; \
 	done
 endif
+
+check-repo:
+ifndef UPDATE_REPO
+	$(error "You need to specify destination repo in UPDATE_REPO variable")
+endif
+ifeq (,$(RPM_SPEC_FILES))
+	@true
+else
+	cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))))) >/dev/null 2>&1
+endif
