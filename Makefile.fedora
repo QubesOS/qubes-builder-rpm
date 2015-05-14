@@ -33,6 +33,11 @@ ifneq (,$(SIGN_KEY))
 RPMSIGN_OPTS=--key-id=$(SIGN_KEY)
 endif
 
+ifdef REPO_PROXY
+    YUM_OPTS += "--setopt=proxy=$(REPO_PROXY)"
+endif
+
+
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1))
 
@@ -60,9 +65,9 @@ ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
 	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) yum --disablerepo=* --enablerepo=qubes-builder-pkgs clean all
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum -y update'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum-builddep -y $(PACKAGE)'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) yum --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum $(YUM_OPTS) -y update'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum-builddep $(YUM_OPTS) -y $(PACKAGE)'
 
 dist-package:
 ifndef PACKAGE

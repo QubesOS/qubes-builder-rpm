@@ -7,6 +7,10 @@ source ./umount_kill.sh >/dev/null
 setVerboseMode
 output "${bold}${under}INFO: ${SCRIPTSDIR}/distribution.sh imported by: ${0}${reset}"
 
+if [ -n "${REPO_PROXY}" ]; then
+    YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
+fi
+
 # ==============================================================================
 # Cleanup function
 # ==============================================================================
