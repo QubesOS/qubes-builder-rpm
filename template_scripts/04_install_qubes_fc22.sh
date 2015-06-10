@@ -1,1 +1,0 @@
-04_install_qubes_fc21.sh
