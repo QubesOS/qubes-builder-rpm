@@ -7,7 +7,7 @@
 
 ### Variables required Makefile.generic
 # Use spec files list as PACKAGE_LIST
-PACKAGE_LIST = $(RPM_SPEC_FILES)
+PACKAGE_LIST = $(strip $(RPM_SPEC_FILES) $(RPM_SRC_PACKAGES))
 DIST_BUILD_DIR = /home/user
 
 ### Local variables
@@ -39,7 +39,8 @@ endif
 
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
-spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1))
+spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1) 2>/dev/null)
+srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile /dev/stdin 2>/dev/null)
 
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
@@ -74,7 +75,11 @@ ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
+ifeq ($(suffix $(PACKAGE)),.rpm)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' $(RUN_AS_USER)
+else
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' $(RUN_AS_USER)
+endif
 
 dist-copy-out:
 	@echo "--> Done:" >&3
@@ -95,37 +100,43 @@ dist-copy-out:
 # Copies requested packages (based on PACKAGE_SET, COMPONENT, DIST) to
 # requested repository (UPDATE_REPO)
 # Optionally saves list of copied packages in $(SNAPSHOT_FILE)
+update-repo: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
+update-repo: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 update-repo:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
-ifeq (,$(RPM_SPEC_FILES))
+ifeq (,$(PACKAGE_LIST))
 	@true
 else
 	@mkdir -p $(UPDATE_REPO)/rpm
-	@cd $(ORIG_SRC) && ln -f $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))) $(UPDATE_REPO)/rpm/
+	@cd $(ORIG_SRC) && ln -f $(packages) $(UPDATE_REPO)/rpm/
 endif
 ifdef SNAPSHOT_FILE
-	@cd $(ORIG_SRC) && echo $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))) > $(SNAPSHOT_FILE)
+	@cd $(ORIG_SRC) && echo $(packages) > $(SNAPSHOT_FILE)
 endif
 
+sign: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
+sign: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 sign:
-ifeq (,$(RPM_SPEC_FILES))
+ifeq (,$(PACKAGE_LIST))
 	@true
 else
-	@cd $(ORIG_SRC) && for pkg in $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))); do \
+	@cd $(ORIG_SRC) && for pkg in $(packages); do \
 		if ! rpm -K $$pkg | grep -qi pgp; then \
 			setsid -w rpmsign $(RPMSIGN_OPTS) --addsign $$pkg </dev/null || exit 1; \
 		fi; \
 	done
 endif
 
+check-repo: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
+check-repo: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 check-repo:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
-ifeq (,$(RPM_SPEC_FILES))
+ifeq (,$(packages))
 	@true
 else
-	cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))))) >/dev/null 2>&1
+	cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(packages))) >/dev/null 2>&1
 endif
