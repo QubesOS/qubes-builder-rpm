@@ -11,6 +11,11 @@ else
     PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base.list"
 fi
 
+YUM=yum
+
+if [ "${DISTRO#fc}" -ge 22 ]; then
+    YUM=dnf
+fi
 
 set -e
 if [ "$VERBOSE" -ge 2 -o "$DEBUG" == "1" ]; then
@@ -32,7 +37,7 @@ if ! [ -d $DIR/home/user ]; then
     ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DISTRO"
 
     # Always install at least base pkgs
-    yum install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`
+    $YUM install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`
 
     [ -n "$SUDO_UID" ] && USER_OPTS="-u $SUDO_UID"
     [ -n "$USER_UID" ] && USER_OPTS="-u $USER_UID"
@@ -72,4 +77,4 @@ chmod 644 $DIR/etc/fstab
 
 PKGGROUPS="$(cat $PKGLISTFILE)"
 echo "-> Installing package groups..."
-chroot $DIR yum install -y $YUM_OPTS $PKGGROUPS
+chroot $DIR $YUM install -y $YUM_OPTS $PKGGROUPS

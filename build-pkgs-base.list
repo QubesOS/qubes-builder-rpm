@@ -3,6 +3,8 @@ python
 MAKEDEV
 yum
 yum-utils
+dnf
+dnf-plugins-core
 tar
 rpm-build
 redhat-rpm-config

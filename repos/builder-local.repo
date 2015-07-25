@@ -4,3 +4,4 @@ baseurl = file:///tmp/qubes-packages-mirror-repo
 exclude = qubes-release
 gpgcheck = 0
 cost=10
+metadata_expire=1
