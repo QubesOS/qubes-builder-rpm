@@ -149,6 +149,8 @@ check-repo:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
-	if [ -n "$(packages)" ]; then
-		cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(packages))) >/dev/null 2>&1;
+	@if [ -n "$(packages)" ]; then \
+		cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(packages))) >/dev/null 2>&1 || exit 1; \
+	else \
+		true; \
 	fi
