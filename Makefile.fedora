@@ -39,8 +39,19 @@ endif
 
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
-spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1) 2>/dev/null)
-srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile /dev/stdin 2>/dev/null)
+spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
+	if [ -f $(OUTPUT_DIR)/$(notdir $(1)).list ]; then \
+		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
+	else \
+		rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1) 2>/dev/null; \
+	fi)
+srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
+    if [ -f $(OUTPUT_DIR)/$(notdir $(1)).list ]; then \
+		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
+	else \
+		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
+		rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile /dev/stdin 2>/dev/null; \
+	fi)
 
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
@@ -81,14 +92,17 @@ else
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' $(RUN_AS_USER)
 endif
 
+dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
 dist-copy-out:
 	@echo "--> Done:" >&3
 	@set -e;\
+	rm -f $(pkg_list_path);\
 	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*; do\
 		arch_rpm_dir=$(ORIG_SRC)/$(OUTPUT_DIR)/`basename $$arch_chroot_dir`;\
 		mkdir -p $$arch_rpm_dir;\
 		for pkg in $$arch_chroot_dir/*; do\
 			echo "      $$arch_rpm_dir/`basename $$pkg`" >&3 ;\
+			echo "$(OUTPUT_DIR)/`basename $$arch_chroot_dir`/`basename $$pkg`" >> $(pkg_list_path);\
 		done;\
 		mkdir -p $(BUILDER_REPO_DIR)/rpm;\
 		ln -f -t $(BUILDER_REPO_DIR)/rpm $$arch_chroot_dir/*;\
