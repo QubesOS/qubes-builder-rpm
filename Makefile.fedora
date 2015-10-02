@@ -40,13 +40,15 @@ endif
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
-	if [ -f $(OUTPUT_DIR)/$(notdir $(1)).list ]; then \
+	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
+			0`git log -1 --pretty=format:%ct` ]; then \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
 		rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1) 2>/dev/null; \
 	fi)
 srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
-    if [ -f $(OUTPUT_DIR)/$(notdir $(1)).list ]; then \
+	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
+			0`git log -1 --pretty=format:%ct` ]; then \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
 		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
