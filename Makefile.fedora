@@ -29,8 +29,10 @@ RPM_QUERY_DEFINES += --define "qubes_builder 1"
 RPM_QUERY_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
 
+RPMSIGN_OPTS ?=
+RPMSIGN_OPTS += --digest-algo=sha256
 ifneq (,$(SIGN_KEY))
-RPMSIGN_OPTS=--key-id=$(SIGN_KEY)
+RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
 ifdef REPO_PROXY
