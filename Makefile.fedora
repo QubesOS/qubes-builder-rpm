@@ -134,6 +134,15 @@ ifdef SNAPSHOT_FILE
 	@cd $(ORIG_SRC) && echo $(packages) > $(SNAPSHOT_FILE)
 endif
 
+update-repo-from-snapshot: packages = $(shell cat $(SNAPSHOT_FILE) 2>/dev/null)
+update-repo-from-snapshot:
+ifndef UPDATE_REPO
+	$(error "You need to specify destination repo in UPDATE_REPO variable")
+endif
+	for f in $(packages); do \
+		ln -f $(subst /$(TARGET_REPO)/,/$(SNAPSHOT_REPO)/,$(UPDATE_REPO))/rpm/`basename $$f` $(UPDATE_REPO)/rpm/ || exit 1; \
+	done
+
 sign: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
 sign: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 sign:
