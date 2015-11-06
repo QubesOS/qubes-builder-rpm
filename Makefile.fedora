@@ -39,6 +39,14 @@ ifdef REPO_PROXY
     YUM_OPTS += "--setopt=proxy=$(REPO_PROXY)"
 endif
 
+ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
+	YUM := dnf
+	YUM_BUILDDEP := dnf builddep
+else
+	YUM := yum
+	YUM_BUILDDEP := yum-builddep
+endif
+
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
@@ -81,9 +89,10 @@ ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
 	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) yum --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum $(YUM_OPTS) -y update'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); yum-builddep $(YUM_OPTS) -y $(PACKAGE)'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
 dist-package:
 ifndef PACKAGE
