@@ -13,6 +13,13 @@ else
     YUM_OPTS="$YUM_OPTS -q"
 fi
 
+YUM=yum
+if type yum-deprecated >/dev/null 2>/dev/null; then
+    # DNF does not support --downloaddir option (RHBZ#1279001), so fallback to
+    # yum-deprecated for now
+    yum=yum-deprecated
+fi
+
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
     rpm --initdb --root=${INSTALLDIR}
