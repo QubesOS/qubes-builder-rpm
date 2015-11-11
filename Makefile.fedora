@@ -94,11 +94,21 @@ endif
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
+ifdef INCREMENT_DEVEL_VERSIONS
+dist-package: devel_ver_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).devel
+dist-package: devel_ver_prev = $(shell cat $(devel_ver_path) 2>/dev/null)
+dist-package: devel_ver := $(shell expr $(devel_ver_prev) + 1)
+dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
+endif
+
 dist-package:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
+ifdef INCREMENT_DEVEL_VERSIONS
+	echo $(devel_ver) > $(devel_ver_path)
+endif
 ifeq ($(suffix $(PACKAGE)),.rpm)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' $(RUN_AS_USER)
 else
