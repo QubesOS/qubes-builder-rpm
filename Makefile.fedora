@@ -107,6 +107,7 @@ ifndef PACKAGE
 endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 ifdef INCREMENT_DEVEL_VERSIONS
+	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
 	echo $(devel_ver) > $(devel_ver_path)
 endif
 ifeq ($(suffix $(PACKAGE)),.rpm)
