@@ -1,0 +1,8 @@
+xterm
+tar
+haveged
+--exclude=kdegames
+--exclude=firstboot
+--exclude=xorg-x11-drv-nouveau
+--exclude=firewall-config,firewalld
+--exclude=gnome-boxes
