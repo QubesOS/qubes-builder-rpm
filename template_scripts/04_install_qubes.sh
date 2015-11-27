@@ -1,9 +1,8 @@
 #!/bin/sh
 
-echo "--> Preparing environment..."
-mount -t proc proc $PWD/mnt/proc
+source "${SCRIPTSDIR}/distribution.sh"
 
-trap "umount $PWD/mnt/proc" EXIT
+prepareChroot
 
 export YUM0=$PWD/pkgs-for-template
 if [ "$TEMPLATE_FLAVOR" == "minimal" ]; then
@@ -15,7 +14,7 @@ else
 fi
 
 echo "--> Installing RPMs..."
-yum install -c $SCRIPTSDIR/../template-yum.conf $YUM_OPTS -y --installroot=$(pwd)/mnt @qubes-vm || RETCODE=1
+yumInstall @qubes-vm || RETCODE=1
 
 rpm --root=$PWD/mnt --import $PWD/mnt/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*
 

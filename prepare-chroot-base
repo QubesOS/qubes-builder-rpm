@@ -17,7 +17,7 @@ YUM=yum
 if type yum-deprecated >/dev/null 2>/dev/null; then
     # DNF does not support --downloaddir option (RHBZ#1279001), so fallback to
     # yum-deprecated for now
-    yum=yum-deprecated
+    YUM=yum-deprecated
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
@@ -29,7 +29,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     INITIAL_PACKAGES="filesystem setup fedora-release"
 
     mkdir -p "${CACHEDIR}/base_rpms"
-    yum --disablerepo=\* --enablerepo=fedora -y --installroot="${INSTALLDIR}" \
+    $YUM --disablerepo=\* --enablerepo=fedora -y --installroot="${INSTALLDIR}" \
         --releasever=${DIST/fc/} install \
         --downloadonly --downloaddir="${CACHEDIR}/base_rpms" ${INITIAL_PACKAGES}
 
