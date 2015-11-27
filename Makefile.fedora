@@ -120,7 +120,8 @@ dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).li
 dist-copy-out:
 	@echo "--> Done:" >&3
 	@set -e;\
-	rm -f $(pkg_list_path);\
+	shopt -s nullglob;\
+	echo -n > $(pkg_list_path);\
 	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*; do\
 		arch_rpm_dir=$(ORIG_SRC)/$(OUTPUT_DIR)/`basename $$arch_chroot_dir`;\
 		mkdir -p $$arch_rpm_dir;\
