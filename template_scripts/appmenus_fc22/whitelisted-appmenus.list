@@ -1,5 +1,4 @@
-gnome-terminal.desktop
-gpk-application.desktop
-gpk-prefs.desktop
-system-config-date.desktop
-system-config-printer.desktop
+org.gnome.Terminal.desktop
+org.gnome.Software.desktop
+gpk-update-viewer.desktop
+gnome-control-center.desktop
