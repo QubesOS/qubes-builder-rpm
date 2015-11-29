@@ -60,6 +60,36 @@ function yumInstall() {
 }
 
 # ==============================================================================
+# Yum install group(s)
+# ==============================================================================
+function yumGroupInstall() {
+    local optional=
+    if [ "$1" = "with-optional" ]; then
+        optional=with-optional
+        shift
+    fi
+    files="$@"
+    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    if [ "$YUM" = "dnf" ]; then
+        mkdir -p ${INSTALLDIR}/var/lib/dnf
+    else
+        optional=--setopt=group_package_types=mandatory,default,optional
+    fi
+    mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
+    mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
+    if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
+        cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
+        chroot $YUM clean expire-cache
+        chroot $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
+        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
+    else
+        yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
+    fi
+    umount ${INSTALLDIR}/etc/resolv.conf
+    umount ${INSTALLDIR}/tmp/template-builder-repo
+}
+
+# ==============================================================================
 # Verify RPM packages
 # ==============================================================================
 function verifyPackages() {

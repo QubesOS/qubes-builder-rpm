@@ -5,16 +5,17 @@ source "${SCRIPTSDIR}/distribution.sh"
 prepareChroot
 
 export YUM0=$PWD/pkgs-for-template
+with_optional=
 if [ "$TEMPLATE_FLAVOR" == "minimal" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=group_package_types=mandatory"
     rpmbuild -bb --target noarch --define "_rpmdir $CACHEDIR" $SCRIPTSDIR/qubes-template-minimal-stub.spec || exit 1
     yum install -c $SCRIPTSDIR/../template-yum.conf $YUM_OPTS -y --installroot=$(pwd)/mnt $CACHEDIR/noarch/qubes-template-minimal-stub*rpm || exit 1
 else
-    YUM_OPTS="$YUM_OPTS --setopt=group_package_types=mandatory,default,optional"
+    with_optional=with-optional
 fi
 
 echo "--> Installing RPMs..."
-yumInstall @qubes-vm || RETCODE=1
+yumGroupInstall $with_optional qubes-vm || RETCODE=1
 
 rpm --root=$PWD/mnt --import $PWD/mnt/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*
 
