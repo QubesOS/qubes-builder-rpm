@@ -15,6 +15,7 @@
       <packagereq type="optional">thunderbird-qubes</packagereq>
       <packagereq type="optional">qubes-pdf-converter</packagereq>
       <packagereq type="optional">qubes-gpg-split</packagereq>
+      <packagereq type="optional">qubes-input-proxy-sender</packagereq>
     </packagelist>
   </group>
 </comps>
