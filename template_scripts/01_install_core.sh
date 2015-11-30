@@ -10,3 +10,6 @@ chmod 644 "${INSTALLDIR}/etc/resolv.conf"
 cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig/"
 chmod 644 "${INSTALLDIR}/etc/sysconfig/network"
 cp -a /dev/null /dev/zero /dev/random /dev/urandom "${INSTALLDIR}/dev/"
+
+export YUM0=${PWD}/pkgs-for-template
+yumInstall $YUM
