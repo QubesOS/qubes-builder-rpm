@@ -1,5 +1,4 @@
 @workstation-product-environment
-emacs
 vim-enhanced
 gnupg
 xterm
