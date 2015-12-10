@@ -7,40 +7,46 @@ INSTALLDIR=$1
 DIST=$2
 
 set -e
-if [ "$VERBOSE" -ge 2 -o "$DEBUG" == "1" ]; then
+if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
 fi
 
-YUM=yum
-if type yum-deprecated >/dev/null 2>/dev/null; then
+DOWNLOADDIR="${CACHEDIR}/base_rpms"
+
+YUM="yum --downloaddir=${DOWNLOADDIR} install"
+if type yumdownloader >/dev/null 2>/dev/null; then
+    # debian does not have --downloadonly plugin
+    YUM="yumdownloader --destdir=${DOWNLOADDIR}"
+elif type yum-deprecated >/dev/null 2>/dev/null; then
     # DNF does not support --downloaddir option (RHBZ#1279001), so fallback to
     # yum-deprecated for now
-    YUM=yum-deprecated
+    YUM="yum-deprecated --downloaddir=${DOWNLOADDIR} install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
     rpm --initdb --root=${INSTALLDIR}
-    rpm --import --root=${INSTALLDIR} ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST/fc/}-primary
+    rpm --import --root=${INSTALLDIR} \
+        ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
 
     echo "-> Retreiving core RPM packages..."
     INITIAL_PACKAGES="filesystem setup fedora-release"
 
-    mkdir -p "${CACHEDIR}/base_rpms"
-    $YUM --disablerepo=\* --enablerepo=fedora -y --installroot="${INSTALLDIR}" \
-        --releasever=${DIST/fc/} install \
-        --downloadonly --downloaddir="${CACHEDIR}/base_rpms" ${INITIAL_PACKAGES}
+    mkdir -p "${DOWNLOADDIR}"
+    $YUM --config "${PLUGIN_DIR}"/yum-bootstrap.conf --assumeyes \
+        --installroot="${INSTALLDIR}" --releasever=${DIST#fc} \
+        ${INITIAL_PACKAGES}
 
-    for file in ${CACHEDIR}/base_rpms/*; do
+    for file in "${DOWNLOADDIR}"/*; do
         result=$(rpm --root=${INSTALLDIR} --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
         result_status="${result##*:}"
         echo "${result_status}" | grep -q 'PGP' && {
-            echo "Filename: ${file} contains an invalid PGP signature.  Exiting!"
+            echo "Filename: ${file} contains an invalid PGP signature. Exiting!"
             exit 1
         }
         echo "${result_status}" | grep -q 'pgp' || {
@@ -50,7 +56,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
 
     echo "-> Installing core RPM packages..."
-    rpm -U --replacepkgs --root="${INSTALLDIR}" "${CACHEDIR}/base_rpms/"*.rpm || exit 1
+    rpm -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
 fi
