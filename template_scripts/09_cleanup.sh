@@ -7,3 +7,7 @@ yum -c $SCRIPTSDIR/../template-yum.conf $YUM_OPTS clean packages --installroot=$
 # Make sure that rpm database has right format (for rpm version in template, not host)
 echo "--> Rebuilding rpm database..."
 chroot `pwd`/mnt /bin/rpm --rebuilddb 2> /dev/null
+
+if [ -x mnt/usr/bin/dnf ]; then
+    chroot mnt dnf clean packages
+fi
