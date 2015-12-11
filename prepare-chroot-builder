@@ -18,7 +18,7 @@ if [ "${DISTRO#fc}" -ge 22 ]; then
 fi
 
 set -e
-if [ "$VERBOSE" -ge 2 -o "$DEBUG" == "1" ]; then
+if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq "1" ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
