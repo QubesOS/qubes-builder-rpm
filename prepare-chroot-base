@@ -15,14 +15,14 @@ fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
-YUM="yum --downloaddir=${DOWNLOADDIR} install"
+YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
 if type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
 elif type yum-deprecated >/dev/null 2>/dev/null; then
     # DNF does not support --downloaddir option (RHBZ#1279001), so fallback to
     # yum-deprecated for now
-    YUM="yum-deprecated --downloaddir=${DOWNLOADDIR} install"
+    YUM="yum-deprecated --downloaddir=${DOWNLOADDIR} --downloadonly install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
