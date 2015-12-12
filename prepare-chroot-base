@@ -18,7 +18,7 @@ DOWNLOADDIR="${CACHEDIR}/base_rpms"
 YUM="yum --downloaddir=${DOWNLOADDIR} install"
 if type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
-    YUM="yumdownloader --destdir=${DOWNLOADDIR}"
+    YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
 elif type yum-deprecated >/dev/null 2>/dev/null; then
     # DNF does not support --downloaddir option (RHBZ#1279001), so fallback to
     # yum-deprecated for now
