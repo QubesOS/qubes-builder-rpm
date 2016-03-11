@@ -36,7 +36,7 @@ RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
 ifdef REPO_PROXY
-    YUM_OPTS += "--setopt=proxy=$(REPO_PROXY)"
+    YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
 
 ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)

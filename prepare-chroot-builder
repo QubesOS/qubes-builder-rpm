@@ -24,10 +24,6 @@ else
     YUM_OPTS="$YUM_OPTS -q"
 fi
 
-if [ -n "${REPO_PROXY}" ]; then
-    YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
-fi
-
 INITIAL=
 
 if ! [ -d $DIR/home/user ]; then
