@@ -42,6 +42,8 @@ endif
 ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
 	YUM := dnf
 	YUM_BUILDDEP := dnf builddep
+	YUM_BUILDDEP_FLAGS := --define "version $$(cat ./version 2>/dev/null || echo none)"
+	YUM_BUILDDEP_FLAGS += --define "epoch $$(cat ./epoch 2>/dev/null || echo none)"
 else
 	YUM := yum
 	YUM_BUILDDEP := yum-builddep
@@ -92,7 +94,7 @@ endif
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_BUILDDEP_FLAGS) $(YUM_OPTS) -y $(PACKAGE)'
 
 ifdef INCREMENT_DEVEL_VERSIONS
 dist-package: devel_ver_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).devel
