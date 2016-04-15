@@ -67,6 +67,9 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
+    for f in null urandom zero random console; do
+        cp -a /dev/$f $INSTALLDIR/dev/
+    done
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
 fi
