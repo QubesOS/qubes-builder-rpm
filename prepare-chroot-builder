@@ -66,8 +66,19 @@ else
     chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
 fi
 ${PLUGIN_DIR}/update-local-repo.sh $DISTRO
-cp ${PLUGIN_DIR}/repos/*.repo $DIR/etc/yum.repos.d/
+cp ${PLUGIN_DIR}/repos/builder-local.repo $DIR/etc/yum.repos.d/
 sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
+if [ -n "$USE_QUBES_REPO_VERSION" ]; then
+    cp ${PLUGIN_DIR}/repos/qubes-repo-vm.repo $DIR/etc/yum.repos.d/
+    if [ "$DISTRO" = "$DIST_DOM0" ]; then
+        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0.repo $DIR/etc/yum.repos.d/
+    fi
+    sed -i -e "s#%DIST%#$DISTRO#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
+    sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
+    if [ -r qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc ]; then
+        chroot $DIR rpm --import /dev/stdin < qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc
+    fi
+fi
 
 if ! [ -r $DIR/proc/cpuinfo ]; then
     mount -t proc proc $DIR/proc
