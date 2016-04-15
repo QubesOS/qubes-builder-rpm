@@ -32,8 +32,14 @@ if ! [ -d $DIR/home/user ]; then
 
     ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DISTRO"
 
+    if ! [ -r $DIR/proc/cpuinfo ]; then
+        mount -t proc proc $DIR/proc
+    fi
+    cp /etc/resolv.conf $DIR/etc/
+
     # Always install at least base pkgs
-    $YUM install -c ${PLUGIN_DIR}/yum.conf -y $YUM_OPTS --installroot=$DIR `cat ${PLUGIN_DIR}/build-pkgs-base.list`
+    cp  ${PLUGIN_DIR}/yum.conf  $DIR/tmp/
+    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS `cat ${PLUGIN_DIR}/build-pkgs-base.list`
 
     [ -n "$SUDO_UID" ] && USER_OPTS="-u $SUDO_UID"
     [ -n "$USER_UID" ] && USER_OPTS="-u $USER_UID"
