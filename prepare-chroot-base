@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # vim: set ts=4 sw=4 sts=4 et :
 
 PLUGIN_DIR="`dirname $0`"
@@ -27,8 +27,13 @@ fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
-    rpm --initdb --root=${INSTALLDIR}
-    rpm --import --root=${INSTALLDIR} \
+    RPM_OPTS=()
+    if [ -e /etc/debian_version ]; then
+	    # Debian by default keep rpmdb in ~/.rpmdb
+	    RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
+    fi
+    rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
+    rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
         ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
 
     echo "-> Retreiving core RPM packages..."
@@ -45,7 +50,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         ${INITIAL_PACKAGES}
 
     for file in "${DOWNLOADDIR}"/*; do
-        result=$(rpm --root=${INSTALLDIR} --checksig "${file}") || {
+        result=$(rpm "${RPM_OPTS[@]}" --root=${INSTALLDIR} --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
@@ -61,7 +66,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
 
     echo "-> Installing core RPM packages..."
-    rpm -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
+    rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
 fi

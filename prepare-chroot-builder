@@ -23,6 +23,11 @@ if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq "1" ]; then
 else
     YUM_OPTS="$YUM_OPTS -q"
 fi
+if [ -f /etc/debian_version ]; then
+    # On Debian system-release version isn't properly detected (because of
+    # relocated rpmdb)
+    YUM_OPTS="$YUM_OPTS --releasever=${DISTRO#fc}"
+fi
 
 INITIAL=
 
@@ -52,7 +57,7 @@ if ! [ -d $DIR/home/user ]; then
     fi
     # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
     chroot $DIR groupadd -rf uucp
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;useradd -g user $USER_OPTS -m user;su -c 'mkdir qubes-src' - user"
+    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;useradd -g user $USER_OPTS -m user;chown -R user /home/user;su -c 'mkdir qubes-src' - user"
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot $DIR rpm --rebuilddb 2> /dev/null
 else
