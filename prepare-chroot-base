@@ -45,7 +45,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     mkdir -p "${DOWNLOADDIR}"
-    $YUM -c "${PLUGIN_DIR}"/yum-bootstrap.conf --assumeyes \
+    $YUM -c "${PLUGIN_DIR}"/yum-bootstrap.conf -y \
         --installroot="${INSTALLDIR}" --releasever=${DIST#fc} \
         ${INITIAL_PACKAGES}
 
