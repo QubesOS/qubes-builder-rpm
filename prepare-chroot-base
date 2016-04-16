@@ -45,9 +45,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     mkdir -p "${DOWNLOADDIR}"
-    $YUM -c "${PLUGIN_DIR}"/yum-bootstrap.conf -y \
-        --installroot="${INSTALLDIR}" --releasever=${DIST#fc} \
+    yumconf=$(mktemp)
+    sed -e "s/\\\$releasever/${DIST#fc}/g" \
+        < "${PLUGIN_DIR}"/yum-bootstrap.conf \
+        > "$yumconf"
+    $YUM -c "$yumconf" -y \
+        --installroot="${INSTALLDIR}" \
         ${INITIAL_PACKAGES}
+    rm -f "$yumconf"
 
     for file in "${DOWNLOADDIR}"/*; do
         result=$(rpm "${RPM_OPTS[@]}" --root=${INSTALLDIR} --checksig "${file}") || {
