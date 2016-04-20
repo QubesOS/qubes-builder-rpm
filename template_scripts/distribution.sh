@@ -50,7 +50,7 @@ function yumInstall() {
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
-        chroot $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
+        chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
     else
         yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
@@ -79,8 +79,8 @@ function yumGroupInstall() {
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
-        chroot $YUM clean expire-cache
-        chroot $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
+        chroot_cmd $YUM clean expire-cache
+        chroot_cmd $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
     else
         yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
