@@ -16,9 +16,9 @@ trap cleanup EXIT
 info " Installing extra packages in script_${DIST}/packages.list file"
 #### '----------------------------------------------------------------------
 export YUM0=${PWD}/pkgs-for-template
-yum clean all -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR}
+chroot_cmd ${YUM} clean all
 installPackages
-yum update -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} || exit 1
+yumUpdate
 
 #### '----------------------------------------------------------------------
 info ' Cleanup'

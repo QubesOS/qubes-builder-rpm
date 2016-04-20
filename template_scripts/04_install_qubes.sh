@@ -9,7 +9,7 @@ with_optional=
 if [ "$TEMPLATE_FLAVOR" == "minimal" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=group_package_types=mandatory"
     rpmbuild -bb --target noarch --define "_rpmdir $CACHEDIR" $SCRIPTSDIR/qubes-template-minimal-stub.spec || exit 1
-    yum install -c $SCRIPTSDIR/../template-yum.conf $YUM_OPTS -y --installroot=$(pwd)/mnt $CACHEDIR/noarch/qubes-template-minimal-stub*rpm || exit 1
+    chroot_cmd ${YUM} install $YUM_OPTS -y /dev/stdin < $CACHEDIR/noarch/qubes-template-minimal-stub*rpm || exit 1
 else
     with_optional=with-optional
 fi
@@ -17,7 +17,7 @@ fi
 echo "--> Installing RPMs..."
 yumGroupInstall $with_optional qubes-vm || RETCODE=1
 
-rpm --root=$PWD/mnt --import $PWD/mnt/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*
+chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
 if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
     echo "--> Installing 3rd party apps"
