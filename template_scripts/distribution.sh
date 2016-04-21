@@ -79,9 +79,21 @@ function yumGroupInstall() {
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
+        if [ -n "$USE_QUBES_REPO_VERSION" ]; then
+            sed -e "s/%QUBESVER%/$USE_QUBES_REPO_VERSION/g" \
+                < ${SCRIPTSDIR}/../repos/qubes-repo-vm.repo \
+                > ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
+            keypath="${BUILDER_DIR}/qubes-release-${USE_QUBES_REPO_VERSION}-signing-key.asc"
+            if [ -r "$keypath" ]; then
+                # use stdin to not copy the file into chroot. /dev/stdin
+                # symlink doesn't exists there yet
+                chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
+            fi
+        fi
         chroot_cmd $YUM clean expire-cache
         chroot_cmd $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
+        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
     else
         yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
     fi
