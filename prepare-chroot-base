@@ -54,6 +54,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         ${INITIAL_PACKAGES}
     rm -f "$yumconf"
 
+    echo "-> Verifying signatures..."
+    set +x
     for file in "${DOWNLOADDIR}"/*; do
         result=$(rpm "${RPM_OPTS[@]}" --root=${INSTALLDIR} --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
@@ -69,6 +71,9 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             exit 1
         }
     done
+    if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+        set -x
+    fi
 
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
