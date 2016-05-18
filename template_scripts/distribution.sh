@@ -90,10 +90,10 @@ function yumGroupInstall() {
                 chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
             fi
             if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
-                if [ -x $DIR/usr/bin/dnf ]; then
-                    chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
+                if [ -x ${INSTALLDIR}/usr/bin/dnf ]; then
+                    chroot_cmd dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
                 else
-                    chroot $DIR yum-config-manager --enable 'qubes-builder-*-current-testing'
+                    chroot_cmd yum-config-manager --enable 'qubes-builder-*-current-testing'
                 fi
             fi
         fi
