@@ -89,6 +89,13 @@ function yumGroupInstall() {
                 # symlink doesn't exists there yet
                 chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
             fi
+            if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
+                if [ -x $DIR/usr/bin/dnf ]; then
+                    chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
+                else
+                    chroot $DIR yum-config-manager --enable 'qubes-builder-*-current-testing'
+                fi
+            fi
         fi
         chroot_cmd $YUM clean expire-cache
         chroot_cmd $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1

@@ -85,6 +85,13 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     if [ -r qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc ]; then
         chroot $DIR rpm --import /dev/stdin < qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc
     fi
+    if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
+        if [ -x $DIR/usr/bin/dnf ]; then
+            chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
+        else
+            chroot $DIR yum-config-manager --enable 'qubes-builder-*-current-testing'
+        fi
+    fi
 fi
 
 if ! [ -r $DIR/proc/cpuinfo ]; then
