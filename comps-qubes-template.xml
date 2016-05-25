@@ -16,6 +16,8 @@
       <packagereq type="optional">qubes-pdf-converter</packagereq>
       <packagereq type="optional">qubes-gpg-split</packagereq>
       <packagereq type="optional">qubes-input-proxy-sender</packagereq>
+      <packagereq type="optional">qubes-usb-proxy</packagereq>
+      <packagereq type="optional">qubes-mgmt-salt-vm-connector</packagereq>
     </packagelist>
   </group>
 </comps>
