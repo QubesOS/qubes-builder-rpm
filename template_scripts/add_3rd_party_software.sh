@@ -75,8 +75,8 @@ if [ "$TEMPLATE_FLAVOR" == "fullyloaded" ]; then
     yumInstall google-chrome-stable
     yumInstall flash-plugin
 else
-    chroot_cmd yum-config-manager --disable google-chrome > /dev/null
-    chroot_cmd yum-config-manager --disable adobe-linux-x86_64 > /dev/null
+    yumConfigRepository disable google-chrome > /dev/null
+    yumConfigRepository disable adobe-linux-x86_64 > /dev/null
 fi
 
 if [ ${VERSION} -ge 20 ]; then
@@ -87,18 +87,18 @@ if [ ${VERSION} -ge 20 ]; then
         yumInstall /tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm
 
         # Disable rpmfusion-free repos
-        chroot_cmd yum-config-manager --disable rpmfusion-free > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates-testing > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates-testing-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-updates-testing-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-rawhide > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-rawhide-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-free-rawhide-source > /dev/null
+        yumConfigRepository disable rpmfusion-free > /dev/null
+        yumConfigRepository disable rpmfusion-free-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-source > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-source > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
+        yumConfigRepository disable rpmfusion-free-rawhide > /dev/null
+        yumConfigRepository disable rpmfusion-free-rawhide-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-rawhide-source > /dev/null
     fi
 
     if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
@@ -108,18 +108,18 @@ if [ ${VERSION} -ge 20 ]; then
         yumInstall /tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm
 
         # Disable rpmfusion-nonfree repos
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates-testing > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-updates-testing-source > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-rawhide > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-rawhide-debuginfo > /dev/null
-        chroot_cmd yum-config-manager --disable rpmfusion-nonfree-rawhide-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-rawhide > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-rawhide-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-rawhide-source > /dev/null
     fi
 fi
 

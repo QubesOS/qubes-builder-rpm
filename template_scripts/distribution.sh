@@ -37,6 +37,18 @@ function prepareChroot() {
     mount -t proc proc "${INSTALLDIR}/proc"
 }
 
+# Enable / disable repository
+function yumConfigRepository() {
+    local op=$1
+    local repo=$2
+
+    if [ "$YUM" = "dnf" ]; then
+        chroot_cmd dnf config-manager --set-${op}d $repo
+    else
+        chroot_cmd yum-config-manager --${op} $repo
+    fi
+}
+
 # ==============================================================================
 # Yum install package(s)
 # ==============================================================================
@@ -90,11 +102,7 @@ function yumGroupInstall() {
                 chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
             fi
             if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
-                if [ -x ${INSTALLDIR}/usr/bin/dnf ]; then
-                    chroot_cmd dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
-                else
-                    chroot_cmd yum-config-manager --enable 'qubes-builder-*-current-testing'
-                fi
+                yumConfigRepository enable 'qubes-builder-*-current-testing'
             fi
         fi
         chroot_cmd $YUM clean expire-cache
