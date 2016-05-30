@@ -10,7 +10,7 @@
       <packagereq type="mandatory">qubes-core-vm</packagereq>
       <packagereq type="mandatory">qubes-gui-vm</packagereq>
       <packagereq type="mandatory">xen-libs</packagereq>
-      <packagereq type="mandatory">xen-qubes-vm-essentials</packagereq>
+      <packagereq type="mandatory">xen-qubes-vm</packagereq>
       <packagereq type="default">qubes-doc-vm</packagereq>
       <packagereq type="optional">thunderbird-qubes</packagereq>
       <packagereq type="optional">qubes-pdf-converter</packagereq>
