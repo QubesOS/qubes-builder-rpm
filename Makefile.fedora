@@ -84,7 +84,8 @@ $(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-buil
 dist-prep:
 	@true
 
-dist-build-dep:
+.PHONY: refresh-update.dnf
+refresh-update.yum:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
@@ -92,6 +93,16 @@ endif
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
+
+.PHONY: refresh-update.dnf
+refresh-update.dnf:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
+	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
+
+dist-build-dep: refresh-update.$(YUM)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
 ifdef INCREMENT_DEVEL_VERSIONS
