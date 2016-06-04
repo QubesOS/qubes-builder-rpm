@@ -83,7 +83,8 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -i -e "s#%DIST%#$DISTRO#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     if [ -r qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc ]; then
-        chroot $DIR rpm --import /dev/stdin < qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc
+        chroot $DIR rpm --import /dev/stdin < \
+            qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc || true
     fi
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
         if [ -x $DIR/usr/bin/dnf ]; then
