@@ -87,7 +87,7 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
             qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc || true
     fi
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
-        if [ -x $DIR/usr/bin/dnf ]; then
+        if [ "$YUM" = "dnf" ]; then
             chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
         else
             chroot $DIR yum-config-manager --enable 'qubes-builder-*-current-testing'
