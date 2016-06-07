@@ -1,4 +1,5 @@
 @development-tools
+make
 python
 MAKEDEV
 yum
