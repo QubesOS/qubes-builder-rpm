@@ -2,6 +2,8 @@ sudo: required
 dist: trusty
 install: git clone https://github.com/marmarek/qubes-builder ~/qubes-builder
 script: ~/qubes-builder/scripts/travis-build linux-template-builder
+after_success:
+ - ls -l ~/qubes-builder/qubes-src/linux-template-builder/rpm/noarch
 language: generic
 env:
  - DISTS_VM=fc23 USE_QUBES_REPO_VERSION=3.1
