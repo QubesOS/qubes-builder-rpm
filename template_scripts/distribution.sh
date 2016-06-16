@@ -10,7 +10,7 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
-if [ "${DIST/fc/}" -ge 21 ]; then
+if [ "${DIST/fc/}" -ge 22 ]; then
     YUM=dnf
 else
     YUM=yum

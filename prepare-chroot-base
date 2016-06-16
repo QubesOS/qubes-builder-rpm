@@ -39,9 +39,9 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Retreiving core RPM packages..."
     INITIAL_PACKAGES="filesystem setup fedora-release"
     if [ "${DIST#fc}" -ge 22 ]; then
-        INITIAL_PACKAGES="$INITIAL_PACKAGES dnf"
+        INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
     else
-        INITIAL_PACKAGES="$INITIAL_PACKAGES yum"
+        INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils"
     fi
 
     mkdir -p "${DOWNLOADDIR}"
