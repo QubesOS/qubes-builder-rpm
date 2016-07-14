@@ -13,6 +13,7 @@
       <packagereq type="mandatory">xen-qubes-vm</packagereq>
       <packagereq type="default">qubes-doc-vm</packagereq>
       <packagereq type="optional">thunderbird-qubes</packagereq>
+      <packagereq type="optional">qubes-img-converter</packagereq>
       <packagereq type="optional">qubes-pdf-converter</packagereq>
       <packagereq type="optional">qubes-gpg-split</packagereq>
       <packagereq type="optional">qubes-input-proxy-sender</packagereq>
