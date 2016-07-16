@@ -12,6 +12,7 @@ network-manager-applet
 --exclude=xorg-x11-drv-nouveau
 --exclude=firewall-config,firewalld*
 --exclude=gnome-boxes
+--exclude=evolution,gdm,microcode_ctl,mlocate,sssd
 --exclude=plymouth,plymouth-system-theme
 --exclude=qemu-img,qemu-common,qemu-system
 --exclude=qemu-*,libvirt*,spice-glib,spice-gtk3,vinagre
