@@ -122,9 +122,9 @@ ifdef INCREMENT_DEVEL_VERSIONS
 	echo $(devel_ver) > $(devel_ver_path)
 endif
 ifeq ($(suffix $(PACKAGE)),.rpm)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' $(RUN_AS_USER)
+	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' - $(RUN_AS_USER)
 else
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' $(RUN_AS_USER)
+	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' - $(RUN_AS_USER)
 endif
 
 dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
