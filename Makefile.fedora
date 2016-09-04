@@ -41,7 +41,7 @@ endif
 
 ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
 	YUM := dnf
-	YUM_BUILDDEP := dnf builddep
+	YUM_BUILDDEP := dnf builddep --allowerasing --best
 else
 	YUM := yum
 	YUM_BUILDDEP := yum-builddep
