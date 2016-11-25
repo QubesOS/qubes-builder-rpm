@@ -1,4 +1,5 @@
 @development-tools
+@c-development
 make
 python
 MAKEDEV
