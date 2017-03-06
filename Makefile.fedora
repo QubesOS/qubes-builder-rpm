@@ -153,7 +153,9 @@ dist-copy-out:
 # Optionally saves list of copied packages in $(SNAPSHOT_FILE)
 update-repo: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
 update-repo: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
-update-repo:
+update-repo: update-repo-do
+
+update-repo-do:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
@@ -168,7 +170,9 @@ ifdef SNAPSHOT_FILE
 endif
 
 update-repo-from-snapshot: packages = $(shell cat $(SNAPSHOT_FILE) 2>/dev/null)
-update-repo-from-snapshot:
+update-repo-from-snapshot: update-repo-from-snapshot-do
+
+update-repo-from-snapshot-do:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
