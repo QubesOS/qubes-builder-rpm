@@ -43,6 +43,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     else
         INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils"
     fi
+    if [ "${DIST#fc}" -ge 25 ]; then
+        # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
+        # enough to try them both
+        INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
+    fi
 
     mkdir -p "${DOWNLOADDIR}"
     yumconf=$(mktemp)
