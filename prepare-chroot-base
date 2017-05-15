@@ -76,6 +76,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             exit 1
         }
     done
+    echo "-> Printing hashes of downloaded packages:"
+    sha256sum "${DOWNLOADDIR}/"*.rpm
     if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
         set -x
     fi

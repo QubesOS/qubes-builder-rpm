@@ -62,10 +62,19 @@ function yumInstall() {
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
-        chroot_cmd $YUM --setopt=strict=false install ${YUM_OPTS} -y ${files[@]} || exit 1
+        chroot_cmd $YUM --setopt=strict=false --downloadonly \
+            install ${YUM_OPTS} -y ${files[@]} || exit 1
+        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+        # set http proxy to invalid one, to prevent any connection in case of
+        # --cacheonly being buggy: better fail the build than install something
+        # else than the logged one
+        chroot_cmd $YUM --setopt=strict=false install ${YUM_OPTS} -y \
+            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
     else
-        yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
+        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        exit 1
     fi
     umount ${INSTALLDIR}/etc/resolv.conf
     umount ${INSTALLDIR}/tmp/template-builder-repo
@@ -106,11 +115,20 @@ function yumGroupInstall() {
             fi
         fi
         chroot_cmd $YUM clean expire-cache
-        chroot_cmd $YUM group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
+        chroot_cmd $YUM --downloadonly \
+            group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
+        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+        # set http proxy to invalid one, to prevent any connection in case of
+        # --cacheonly being buggy: better fail the build than install something
+        # else than the logged one
+        chroot_cmd $YUM group install $optional ${YUM_OPTS} -y \
+            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
     else
-        yum install -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
+        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        exit 1
     fi
     umount ${INSTALLDIR}/etc/resolv.conf
     umount ${INSTALLDIR}/tmp/template-builder-repo
@@ -129,10 +147,19 @@ function yumUpdate() {
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
-        chroot_cmd $YUM update ${YUM_OPTS} -y ${files[@]} || exit 1
+        chroot_cmd $YUM --downloadonly \
+            update ${YUM_OPTS} -y ${files[@]} || exit 1
+        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+        # set http proxy to invalid one, to prevent any connection in case of
+        # --cacheonly being buggy: better fail the build than install something
+        # else than the logged one
+        chroot_cmd $YUM update ${YUM_OPTS} -y \
+            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
     else
-        yum update -c ${SCRIPTSDIR}/../template-yum.conf ${YUM_OPTS} -y --installroot=${INSTALLDIR} ${files[@]} || exit 1
+        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        exit 1
     fi
     umount ${INSTALLDIR}/etc/resolv.conf
     umount ${INSTALLDIR}/tmp/template-builder-repo
@@ -156,6 +183,7 @@ function verifyPackages() {
             exit 1
         }
     done
+    sha256sum "$@"
 
     return 0
 }
