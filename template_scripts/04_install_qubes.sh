@@ -6,15 +6,7 @@ prepareChroot
 
 export YUM0=$PWD/pkgs-for-template
 with_optional=
-if [ "$TEMPLATE_FLAVOR" == "minimal" ]; then
-    YUM_OPTS="$YUM_OPTS --setopt=group_package_types=mandatory"
-    rpmbuild -bb --target noarch --define "_rpmdir $CACHEDIR" $SCRIPTSDIR/qubes-template-minimal-stub.spec || exit 1
-    stub_name=`ls "$CACHEDIR/noarch/"qubes-template-minimal-stub*rpm|tail -1`
-    stub_name=`basename "$stub_name"`
-    cp "$CACHEDIR/noarch/$stub_name" ${INSTALLDIR}/tmp/ || exit 1
-    chroot_cmd ${YUM} install $YUM_OPTS -y "/tmp/$stub_name" || exit 1
-    rm -f "${INSTALLDIR}/tmp/$stub_name"
-else
+if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
     with_optional=with-optional
 fi
 
