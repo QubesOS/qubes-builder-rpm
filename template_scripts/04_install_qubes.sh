@@ -5,13 +5,13 @@ source "${SCRIPTSDIR}/distribution.sh"
 prepareChroot
 
 export YUM0=$PWD/pkgs-for-template
-with_optional=
-if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
-    with_optional=with-optional
-fi
 
 echo "--> Installing RPMs..."
-yumGroupInstall $with_optional qubes-vm || RETCODE=1
+if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
+    installPackages packages_qubes.list || RETCODE=1
+else
+    installPackages packages_qubes_minimal.list || RETCODE=1
+fi
 
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
