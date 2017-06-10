@@ -1,3 +1,4 @@
+--setopt=strict=false
 @workstation-product-environment
 vim-enhanced
 gnupg
