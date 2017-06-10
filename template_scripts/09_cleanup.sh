@@ -10,4 +10,8 @@ chroot `pwd`/mnt /bin/rpm --rebuilddb 2> /dev/null
 
 if [ -x mnt/usr/bin/dnf ]; then
     chroot mnt dnf clean packages
+    # if dnf is used, remove yum cache completely
+    rm -rf mnt/var/cache/yum/* || :
 fi
+
+exit 0
