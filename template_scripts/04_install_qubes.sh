@@ -50,6 +50,28 @@ else
     fi
 fi
 
+if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
+    # if root.img have partitions, install kernel and grub there
+    yumInstall kernel || RETCODE=1
+    for kver in $(ls ${INSTALLDIR}/lib/modules); do
+        yumInstall kernel-devel-${kver} || RETCODE=1
+    done
+    yumInstall make grub2 qubes-kernel-vm-support || RETCODE=1
+    chroot_cmd mount -t sysfs sys /sys
+    chroot_cmd mount -t devtmpfs none /dev
+    # find the right loop device, _not_ its partition
+    dev=$(df --output=source $INSTALLDIR | tail -n 1)
+    dev=${dev%p?}
+    for kver in $(ls ${INSTALLDIR}/lib/modules); do
+        chroot_cmd dkms autoinstall -k "$kver" || RETCODE=1
+        chroot_cmd dracut -f -a "qubes-vm qubes-vm-modules" \
+            /boot/initramfs-${kver}.img ${kver} || RETCODE=1
+    done
+    chroot_cmd grub2-install "$dev" || RETCODE=1
+    chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || RETCODE=1
+    chroot_cmd umount /sys /dev
+fi
+
 # Distribution specific steps
 source ./functions.sh
 buildStep "${0}" "${DIST}"
