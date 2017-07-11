@@ -37,17 +37,8 @@ if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
 fi
 
 
-if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
-    # this is mostly legacy stuff as newer fedora don't have this file
-    if [ -e mnt/etc/sysconfig/i18n ]; then
-        echo "--> Setting up default locale..."
-        echo LC_CTYPE=en_US.UTF-8 > mnt/etc/sysconfig/i18n
-    fi
-else
-    # for minimal template reset LANG to "C", but only if was set previously
-    if grep -q LANG= ${INSTALLDIR}/etc/locale.conf 2>/dev/null; then
-        sed -e 's/^LANG=.*/LANG=C/' -i ${INSTALLDIR}/etc/locale.conf
-    fi
+if ! grep -q LANG= ${INSTALLDIR}/etc/locale.conf 2>/dev/null; then
+    echo "LANG=C.UTF-8" >> ${INSTALLDIR}/etc/locale.conf
 fi
 
 if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
