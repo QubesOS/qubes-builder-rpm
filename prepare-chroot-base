@@ -48,6 +48,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         # enough to try them both
         INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
     fi
+    
+    if [ "${DIST#fc}" -ge 26 ]; then
+        # coreutils conflicts with coreutils-single
+        INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
+    fi
 
     mkdir -p "${DOWNLOADDIR}"
     yumconf=$(mktemp)
