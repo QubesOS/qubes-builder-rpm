@@ -96,9 +96,6 @@ if [ ${VERSION} -ge 20 ]; then
         yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
         yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
         yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
-        yumConfigRepository disable rpmfusion-free-rawhide > /dev/null
-        yumConfigRepository disable rpmfusion-free-rawhide-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-free-rawhide-source > /dev/null
     fi
 
     if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
@@ -117,9 +114,6 @@ if [ ${VERSION} -ge 20 ]; then
         yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
         yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
         yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-rawhide > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-rawhide-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-rawhide-source > /dev/null
     fi
 fi
 
