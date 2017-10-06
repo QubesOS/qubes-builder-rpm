@@ -63,6 +63,16 @@ if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
     chroot_cmd umount /sys /dev
 fi
 
+# xinitrc script
+if [ "${DIST/fc/}" -ge 25 ]; then
+    case "$TEMPLATE_FLAVOR" in
+      "xfce")
+          echo "--> Setting up XFCE xinitrc script..."
+          cp ${SCRIPTSDIR}/extras/50-xfce-desktop.sh ${INSTALLDIR}/etc/X11/xinit/xinitrc.d
+          ;;
+    esac
+fi
+
 # Distribution specific steps
 source ./functions.sh
 buildStep "${0}" "${DIST}"
