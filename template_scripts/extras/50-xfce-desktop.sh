@@ -19,4 +19,7 @@ if which xdg-user-dirs-update >/dev/null 2>&1; then
     xdg-user-dirs-update
 fi
 
+QT_QPA_PLATFORMTHEME="qt5ct"
+export QT_QPA_PLATFORMTHEME
+
 xfsettingsd &

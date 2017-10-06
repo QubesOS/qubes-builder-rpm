@@ -35,3 +35,5 @@ wget
 --exclude==PackageKit*
 --exclude==aspell-*
 --exclude==xfce4-sensors-plugin
+qt5-qtstyleplugins
+qt5ct
