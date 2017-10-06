@@ -23,11 +23,12 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
 fi
 
 echo "--> Installing RPMs..."
-if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
-    installPackages packages_qubes.list || RETCODE=1
+if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
+    installPackages packages_qubes_${TEMPLATE_FLAVOR}.list || RETCODE=1
 else
-    installPackages packages_qubes_minimal.list || RETCODE=1
+    installPackages packages_qubes.list || RETCODE=1
 fi
+
 
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
