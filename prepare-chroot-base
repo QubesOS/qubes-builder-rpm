@@ -1,13 +1,13 @@
 #!/bin/bash
 # vim: set ts=4 sw=4 sts=4 et :
 
-PLUGIN_DIR="`dirname $0`"
+PLUGIN_DIR=$(dirname "$0")
 
 INSTALLDIR=$1
 DIST=$2
 
 set -e
-if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
@@ -32,9 +32,9 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 	    # Debian by default keep rpmdb in ~/.rpmdb
 	    RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
     fi
-    rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
-    rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-        ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
+    rpm "${RPM_OPTS[@]}" --initdb --root="${INSTALLDIR}"
+    rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" \
+        "${PLUGIN_DIR}"/keys/RPM-GPG-KEY-fedora-"${DIST#fc}"-primary
 
     echo "-> Retreiving core RPM packages..."
     INITIAL_PACKAGES="filesystem setup fedora-release"
@@ -59,15 +59,15 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     sed -e "s/\\\$releasever/${DIST#fc}/g" \
         < "${PLUGIN_DIR}"/yum-bootstrap.conf \
         > "$yumconf"
+    # shellcheck disable=SC2086
     $YUM -c "$yumconf" -y \
-        --installroot="${INSTALLDIR}" \
-        ${INITIAL_PACKAGES}
+        --installroot="${INSTALLDIR}" ${INITIAL_PACKAGES}
     rm -f "$yumconf"
 
     echo "-> Verifying signatures..."
     set +x
     for file in "${DOWNLOADDIR}"/*; do
-        result=$(rpm "${RPM_OPTS[@]}" --root=${INSTALLDIR} --checksig "${file}") || {
+        result=$(rpm "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
@@ -83,14 +83,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
     echo "-> Printing hashes of downloaded packages:"
     sha256sum "${DOWNLOADDIR}/"*.rpm
-    if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+    if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
         set -x
     fi
 
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
     for f in null urandom zero random console; do
-        cp -a /dev/$f $INSTALLDIR/dev/
+        cp -a /dev/$f "$INSTALLDIR/dev/"
     done
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
