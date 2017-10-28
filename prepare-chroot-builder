@@ -1,7 +1,7 @@
 #!/bin/sh
 # vim: set ts=4 sw=4 sts=4 et :
 
-PLUGIN_DIR="`dirname $0`"
+PLUGIN_DIR=$(dirname "$0")
 
 DIR=$1
 DISTRO=$2
@@ -22,7 +22,7 @@ if [ "${DISTRO#fc}" -ge 22 ]; then
 fi
 
 set -e
-if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq "1" ]; then
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq "1" ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
@@ -35,83 +35,86 @@ fi
 
 INITIAL=
 
-if ! [ -d $DIR/home/user ] && [ -r "$CHROOT_CACHE_FILE" ]; then
-    mkdir -p $DIR
-    tar xf "$CHROOT_CACHE_FILE" $DIR
-elif ! [ -d $DIR/home/user ]; then
+if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
+    mkdir -p "$DIR"
+    tar xf "$CHROOT_CACHE_FILE" "$DIR"
+elif ! [ -d "$DIR/home/user" ]; then
     INITIAL=1
-    mkdir -p $DIR
+    mkdir -p "$DIR"
 
-    ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DISTRO"
+    "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DISTRO"
 
-    if ! [ -r $DIR/proc/cpuinfo ]; then
-        mount -t proc proc $DIR/proc
+    if ! [ -r "$DIR/proc/cpuinfo" ]; then
+        mount -t proc proc "$DIR/proc"
     fi
-    cp /etc/resolv.conf $DIR/etc/
+    cp /etc/resolv.conf "$DIR/etc/"
 
     # Always install at least base pkgs
-    cp  ${PLUGIN_DIR}/yum.conf  $DIR/tmp/
-    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS `cat ${PLUGIN_DIR}/build-pkgs-base.list`
+    cp  "${PLUGIN_DIR}/yum.conf"  "$DIR/tmp/"
+    # shellcheck disable=SC2086,SC2046
+    chroot "$DIR" "$YUM" install -c /tmp/yum.conf -y $YUM_OPTS \
+        $(cat "$PLUGIN_DIR/build-pkgs-base.list")
 
     [ -n "$SUDO_UID" ] && USER_OPTS="-u $SUDO_UID"
     [ -n "$USER_UID" ] && USER_OPTS="-u $USER_UID"
     if [ -n "$USER_GID" ]; then
-        chroot $DIR groupadd -g $USER_GID user
+        chroot "$DIR" groupadd -g "$USER_GID" user
     elif [ -n "$SUDO_GID" ]; then
-        chroot $DIR groupadd -g $SUDO_GID user
+        chroot "$DIR" groupadd -g "$SUDO_GID" user
     else
-        chroot $DIR groupadd user
+        chroot "$DIR" groupadd user
     fi
     # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
-    chroot $DIR groupadd -rf uucp
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;useradd -g user $USER_OPTS -m user;chown -R user /home/user;su -c 'mkdir qubes-src' - user"
+    chroot "$DIR" groupadd -rf uucp
+    chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop;useradd -g user $USER_OPTS -m user;chown -R user /home/user;su -c 'mkdir qubes-src' - user"
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
-    chroot $DIR rpm --rebuilddb 2> /dev/null
+    chroot "$DIR" rpm --rebuilddb 2> /dev/null
 else
     # update chroot
-    chroot $DIR groupadd -rf uucp 2>/dev/null || :
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
+    chroot "$DIR" groupadd -rf uucp 2>/dev/null || :
+    chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop"
 fi
-${PLUGIN_DIR}/update-local-repo.sh $DISTRO
-cp ${PLUGIN_DIR}/repos/builder-local.repo $DIR/etc/yum.repos.d/
-sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
+"$PLUGIN_DIR/update-local-repo.sh" "$DISTRO"
+cp "$PLUGIN_DIR/repos/builder-local.repo" "$DIR/etc/yum.repos.d/"
+sed -i -e "s#ROOT#$PWD#" "$DIR"/etc/yum.repos.d/*-local.repo
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
-    cp ${PLUGIN_DIR}/repos/qubes-repo-vm.repo $DIR/etc/yum.repos.d/
+    cp "$PLUGIN_DIR/repos/qubes-repo-vm.repo" "$DIR/etc/yum.repos.d/"
     if [ "$DISTRO" = "$DIST_DOM0" ]; then
-        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0.repo $DIR/etc/yum.repos.d/
+        cp "$PLUGIN_DIR/repos/qubes-repo-dom0.repo" "$DIR/etc/yum.repos.d/"
     fi
-    sed -i -e "s#%DIST%#$DISTRO#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
-    sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
-    if [ -r qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc ]; then
-        chroot $DIR rpm --import /dev/stdin < \
-            qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc || true
+    sed -i -e "s#%DIST%#$DISTRO#" "$DIR"/etc/yum.repos.d/qubes-repo-*.repo
+    sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" "$DIR"/etc/yum.repos.d/qubes-repo-*.repo
+    if [ -r "qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc" ]; then
+        chroot "$DIR" rpm --import /dev/stdin < \
+            "qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc" || true
     fi
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
         if [ "$YUM" = "dnf" ]; then
-            chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
+            chroot "$DIR" dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
         else
-            chroot $DIR yum-config-manager --enable 'qubes-builder-*-current-testing'
+            chroot "$DIR" yum-config-manager --enable 'qubes-builder-*-current-testing'
         fi
     fi
 fi
 
-if ! [ -r $DIR/proc/cpuinfo ]; then
-    mount -t proc proc $DIR/proc
+if ! [ -r "$DIR/proc/cpuinfo" ]; then
+    mount -t proc proc "$DIR/proc"
 fi
 
-if ! [ -d $DIR/tmp/qubes-packages-mirror-repo/rpm ]; then
-    mkdir -p $DIR/tmp/qubes-packages-mirror-repo
-    mount --bind $BUILDER_REPO_DIR $DIR/tmp/qubes-packages-mirror-repo
+if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
+    mkdir -p "$DIR"/tmp/qubes-packages-mirror-repo
+    mount --bind "$BUILDER_REPO_DIR" "$DIR/tmp/qubes-packages-mirror-repo"
 fi
-cp /etc/resolv.conf $DIR/etc/
+cp /etc/resolv.conf "$DIR/etc/"
 # some packages assumes existence of this file
-touch $DIR/etc/fstab
-chmod 644 $DIR/etc/fstab
+touch "$DIR"/etc/fstab
+chmod 644 "$DIR"/etc/fstab
 
-PKGGROUPS="$(cat $PKGLISTFILE)"
-echo "-> Installing package groups..."
-chroot $DIR $YUM install -y $YUM_OPTS $PKGGROUPS
+PKGGROUPS=$(cat "$PKGLISTFILE")
+echo "\-> Installing package groups..."
+# shellcheck disable=SC2086,SC2046
+chroot "$DIR" "$YUM" install -y $YUM_OPTS $PKGGROUPS
 
 if [ -n "$CHROOT_CACHE_FILE" ]; then
-    tar cf "$CHROOT_CACHE_FILE" --one-file-system $DIR
+    tar cf "$CHROOT_CACHE_FILE" --one-file-system "$DIR"
 fi
