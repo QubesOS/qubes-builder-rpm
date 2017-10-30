@@ -39,6 +39,11 @@ ifdef REPO_PROXY
     YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
 
+ifdef REPO_BASEURL_PREFIX
+    YUM_OPTS += --setopt=fedora.baseurl=$(REPO_BASEURL_PREFIX)/fedora/linux/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
+    YUM_OPTS += --setopt=updates.baseurl=$(REPO_BASEURL_PREFIX)/fedora/linux/updates/$(subst fc,,$(DIST))/x86_64/
+endif
+
 ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
 	YUM := dnf
 	YUM_BUILDDEP := dnf builddep --allowerasing --best

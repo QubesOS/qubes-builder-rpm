@@ -10,6 +10,11 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
+if [ -n "${REPO_BASEURL_PREFIX}" ]; then
+    YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${REPO_BASEURL_PREFIX}/fedora/linux/releases/${DIST/fc/}/Everything/x86_64/os/"
+    YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${REPO_BASEURL_PREFIX}/fedora/linux/updates/${DIST/fc/}/x86_64/"
+fi
+
 if [ "${DIST/fc/}" -ge 22 ]; then
     YUM=dnf
 else

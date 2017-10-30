@@ -56,9 +56,20 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     mkdir -p "${DOWNLOADDIR}"
     yumconf=$(mktemp)
-    sed -e "s/\\\$releasever/${DIST#fc}/g" \
-        < "${PLUGIN_DIR}"/yum-bootstrap.conf \
-        > "$yumconf"
+
+    # For defined mirroris in builder.conf we need to delete the metalink option
+    # in the repo file because baseurl seems to not override the metalink
+    if [ "x${REPO_BASEURL_PREFIX}" != "x" ]; then
+        sed -e "s/\\\$releasever/${DIST#fc}/g" \
+            -e "/metalink/d" \
+            < "${PLUGIN_DIR}"/yum-bootstrap.conf \
+            > "$yumconf"
+    else
+        sed -e "s/\\\$releasever/${DIST#fc}/g" \
+            < "${PLUGIN_DIR}"/yum-bootstrap.conf \
+            > "$yumconf"
+    fi
+
     $YUM -c "$yumconf" -y \
         --installroot="${INSTALLDIR}" \
         ${INITIAL_PACKAGES}
@@ -92,6 +103,12 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     for f in null urandom zero random console; do
         cp -a /dev/$f $INSTALLDIR/dev/
     done
+
+    # TODO: check if there is a way to force baseurl to override metalink
+    if [ "x$REPO_BASEURL_PREFIX" != "x" ]; then
+        sed -i "/metalink/d" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+        sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+    fi
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
 fi
