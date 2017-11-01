@@ -20,7 +20,7 @@ if type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
 elif type dnf >/dev/null 2>/dev/null; then
-    YUM="dnf --releasever "${DIST#fc}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
+    YUM="dnf $YUM_OPTS --releasever "${DIST#fc}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
