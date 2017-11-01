@@ -52,6 +52,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
     fi
 
+    if [ "${DIST#fc}" -ge 27 ]; then
+        # curl-minimal conflicts with curl, same for libcurl
+        INITIAL_PACKAGES="--exclude=curl --exclude=libcurl $INITIAL_PACKAGES"
+    fi
+
     mkdir -p "${DOWNLOADDIR}"
     yumconf=$(mktemp)
 
