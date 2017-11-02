@@ -3,6 +3,7 @@
 
 source "${SCRIPTSDIR}/distribution.sh"
 
+export YUM_OPTS
 ${SCRIPTSDIR}/../prepare-chroot-base "${INSTALLDIR}" "${DIST}"
 
 cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc/"
