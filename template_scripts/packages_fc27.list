@@ -1,5 +1,5 @@
 --setopt=strict=false
-@workstation-product-environment
+@gnome-desktop
 vim-enhanced
 gnupg
 xterm
@@ -19,6 +19,12 @@ network-manager-applet
 --exclude=qemu-*,libvirt*,spice-glib,spice-gtk3,vinagre
 --exclude=libreoffice*,unoconv
 --exclude=rng-tools,avahi,gssproxy,openssh-server
+--exclude=anaconda*
+--exclude=initial-setup*
+--exclude=gnome-initial-setup
+--exclude=gnome-shell*
+--exclude=gnome-classic-session
+--exclude=gnome-documents
 createrepo
 linux-firmware
 haveged
@@ -26,4 +32,4 @@ mate-notification-daemon
 sudo
 xorg-x11-fonts-100dpi
 xorg-x11-fonts-Type1
-yum-utils
+dnf-utils
