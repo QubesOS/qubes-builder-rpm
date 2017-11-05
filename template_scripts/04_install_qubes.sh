@@ -23,11 +23,12 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
 fi
 
 echo "--> Installing RPMs..."
-if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
-    installPackages packages_qubes.list || RETCODE=1
+if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
+	installPackages packages_qubes_${TEMPLATE_FLAVOR}.list || RETCODE=1
 else
-    installPackages packages_qubes_minimal.list || RETCODE=1
+	installPackages packages_qubes.list || RETCODE=1
 fi
+
 
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
@@ -61,16 +62,6 @@ if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
     chroot_cmd grub2-install "$dev" || RETCODE=1
     chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || RETCODE=1
     chroot_cmd umount /sys /dev
-fi
-
-# xinitrc script
-if [ "${DIST/fc/}" -ge 25 ]; then
-    case "$TEMPLATE_FLAVOR" in
-      "xfce")
-          echo "--> Setting up XFCE xinitrc script..."
-          cp ${SCRIPTSDIR}/extras/50-xfce-desktop.sh ${INSTALLDIR}/etc/X11/xinit/xinitrc.d
-          ;;
-    esac
 fi
 
 # Distribution specific steps
