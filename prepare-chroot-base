@@ -61,7 +61,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     # in the repo file because baseurl seems to not override the metalink
     if [ "x${FEDORA_MIRRORS}" != "x" ]; then
         sed -e "s/\\\$releasever/${DIST#fc}/g" \
-            -e "/metalink/d" \
+            -e "s/^metalink/#metalink/g" \
             < "${PLUGIN_DIR}"/yum-bootstrap.conf \
             > "$yumconf"
     else
@@ -106,7 +106,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     # TODO: check if there is a way to force baseurl to override metalink
     if [ "x$FEDORA_MIRRORS" != "x" ]; then
-        sed -i "/metalink/d" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+        sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
         sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
     fi
 
