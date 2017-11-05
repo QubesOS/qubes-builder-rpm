@@ -37,3 +37,10 @@ wget
 --exclude==xfce4-sensors-plugin
 qt5-qtstyleplugins
 qt5ct
+--exclude=anaconda*
+--exclude=initial-setup*
+--exclude=gnome-initial-setup
+--exclude=gnome-shell*
+--exclude=gnome-classic-session
+--exclude=gnome-tweak-tool
+--exclude=gnome-documentS
