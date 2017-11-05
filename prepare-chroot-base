@@ -59,7 +59,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     # For defined mirroris in builder.conf we need to delete the metalink option
     # in the repo file because baseurl seems to not override the metalink
-    if [ "x${FEDORA_MIRRORS}" != "x" ]; then
+    if [ "x${FEDORA_MIRROR}" != "x" ]; then
         sed -e "s/\\\$releasever/${DIST#fc}/g" \
             -e "s/^metalink/#metalink/g" \
             < "${PLUGIN_DIR}"/yum-bootstrap.conf \
@@ -105,7 +105,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
 
     # TODO: check if there is a way to force baseurl to override metalink
-    if [ "x$FEDORA_MIRRORS" != "x" ]; then
+    if [ "x$FEDORA_MIRROR" != "x" ]; then
         sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
         sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
     fi

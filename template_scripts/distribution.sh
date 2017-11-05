@@ -10,9 +10,9 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
-if [ -n "${FEDORA_MIRRORS}" ]; then
-    YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRRORS}/fedora/linux/releases/${DIST/fc/}/Everything/x86_64/os/"
-    YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRRORS}/fedora/linux/updates/${DIST/fc/}/x86_64/"
+if [ -n "${FEDORA_MIRROR}" ]; then
+    YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR}/fedora/linux/releases/${DIST/fc/}/Everything/x86_64/os/"
+    YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR}/fedora/linux/updates/${DIST/fc/}/x86_64/"
 fi
 
 if [ "${DIST/fc/}" -ge 22 ]; then
