@@ -38,7 +38,7 @@ INITIAL=
 if ! [ -d $DIR/home/user ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p $DIR
     tar xf "$CHROOT_CACHE_FILE" $DIR
-elif ! [ -d $DIR/home/user ]; then
+elif ! [ -d $DIR/home/user/.prepared_base ]; then
     INITIAL=1
     mkdir -p $DIR
 
@@ -53,18 +53,33 @@ elif ! [ -d $DIR/home/user ]; then
     cp  ${PLUGIN_DIR}/yum.conf  $DIR/tmp/
     chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS `cat ${PLUGIN_DIR}/build-pkgs-base.list`
 
-    [ -n "$SUDO_UID" ] && USER_OPTS="-u $SUDO_UID"
-    [ -n "$USER_UID" ] && USER_OPTS="-u $USER_UID"
-    if [ -n "$USER_GID" ]; then
-        chroot $DIR groupadd -g $USER_GID user
-    elif [ -n "$SUDO_GID" ]; then
-        chroot $DIR groupadd -g $SUDO_GID user
-    else
-        chroot $DIR groupadd user
+    # setup user and group
+    if [ -z "$USER_UID" -a -n "$SUDO_UID" ]; then
+        USER_UID="$SUDO_UID"
+    elif [ -z "$USER_UID" ]; then
+        USER_UID=1000
     fi
+    if [ -z "$USER_GID" -a -n "$SUDO_GID" ]; then
+        USER_GID="$SUDO_GID"
+    elif [ -z "$USER_GID" ]; then
+        USER_GID=1000
+    fi
+    existing_gid=$(chroot $DIR id -g user || :)
+    if [ -z "$existing_gid" ]; then
+        chroot $DIR groupadd -g $USER_GID user
+    elif [ "$existing_gid" != "$USER_GID" ]; then
+        chroot $DIR groupmod -g "$USER_GID" user
+    fi
+    existing_uid=$(chroot $DIR id -u user || :)
+    if [ -z "$existing_uid" ]; then
+        chroot $DIR useradd -g user -u $USER_UID user
+    elif [ "$existing_uid" != "$USER_UID" ]; then
+        chroot $DIR usermod -u "$USER_UID" user
+    fi
+
     # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
     chroot $DIR groupadd -rf uucp
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;useradd -g user $USER_OPTS -m user;chown -R user /home/user;su -c 'mkdir qubes-src' - user"
+    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot $DIR rpm --rebuilddb 2> /dev/null
 else
