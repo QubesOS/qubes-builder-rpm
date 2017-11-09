@@ -70,6 +70,9 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 		$(FEDORA_PLUGIN_DIR)scripts/query-spec /dev/stdin "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
 	fi)
 
+%.spec: %.spec.in $(wildcard $(DIST_SRC)/version) $(wildcard $(DIST_SRC)/rel)
+	$(FEDORA_PLUGIN_DIR)scripts/generate-spec $< $@
+
 dist-prep:
 	@true
 
@@ -80,6 +83,7 @@ dist-package: devel_ver := $(shell expr $(devel_ver_prev) + 1)
 dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
 endif
 
+dist-package: $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
 dist-package: dist-package-build
 
 
