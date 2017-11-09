@@ -1,0 +1,84 @@
+# This file is included from Makefile.fedora if package defines RPM_USE_MOCKBUILD
+
+RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
+RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
+
+RPM_SOURCE_DIR = $(shell rpm --eval '%{_sourcedir}')
+
+RPMSIGN_OPTS ?=
+RPMSIGN_OPTS += --digest-algo=sha256
+ifneq (,$(SIGN_KEY))
+RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
+endif
+
+MOCK_EXTRA_OPTS ?=
+
+ifneq (,$(USE_QUBES_REPO_VERSION))
+MOCK_EXTRA_OPTS += --enablerepo=qubes-current
+ifeq (1,$(USE_QUBES_REPO_TESTING))
+MOCK_EXTRA_OPTS += --enablerepo=qubes-current-testing
+endif
+endif
+
+MOCK_ENV = DIST=$(DIST) \
+		   PACKAGE_SET=$(PACKAGE_SET) \
+		   FEDORA_PLUGIN_DIR=$(FEDORA_PLUGIN_DIR) \
+		   USE_QUBES_REPO_VERSION=$(USE_QUBES_REPO_VERSION) \
+		   CACHEDIR=$(CACHEDIR) \
+		   CHROOT_DIR=$(CHROOT_DIR)
+
+spec_pkg_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
+	rpm -q $(RPM_QUERY_DEFINES) --qf '%{NAME}\n' --specfile $(1) | head -n 1)
+
+### Targets required by Makefile.generic to build packages
+dist-prepare-chroot:
+	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
+
+dist-build-dep :
+	@true
+
+dist-package: $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
+dist-package: dist-package-build
+
+ifeq ($(suffix $(PACKAGE)),.rpm)
+dist-package-build: srcrpm = $(PACKAGE)
+else
+dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE))*src.rpm
+endif
+dist-package-build:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
+	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
+	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
+	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) /usr/libexec/mock/mock \
+		-r $(FEDORA_PLUGIN_DIR)mock.cfg \
+		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
+		$(RPM_BUILD_DEFINES) \
+		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(DIST_SRC)
+ifdef INCREMENT_DEVEL_VERSIONS
+	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
+	echo $(devel_ver) > $(devel_ver_path)
+endif
+	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) /usr/libexec/mock/mock \
+		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
+		-r $(FEDORA_PLUGIN_DIR)/mock.cfg \
+		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
+		$(RPM_BUILD_DEFINES) --rebuild $(srcrpm)
+
+dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
+dist-copy-out:
+	@echo "--> Done:" >&3
+	@set -e;\
+	shopt -s nullglob; shopt -s globstar;\
+	mkdir -p "$(ORIG_SRC)/$(OUTPUT_DIR)";\
+	echo -n > $(pkg_list_path);\
+	for pkg in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm; do\
+		relative_path=`realpath --relative-to=$(CHROOT_DIR)/$(DIST_SRC) $$pkg`;\
+		echo "      $(ORIG_SRC)/$(OUTPUT_DIR)/$$relative_path" >&3 ;\
+		echo "$$relative_path" >> $(pkg_list_path);\
+	done;\
+	mkdir -p $(BUILDER_REPO_DIR)/rpm;\
+	ln -f -t $(BUILDER_REPO_DIR)/rpm $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm;\
+	mv -t $(ORIG_SRC)/$(OUTPUT_DIR) $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm
+

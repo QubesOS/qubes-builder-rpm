@@ -11,6 +11,11 @@
 PACKAGE_LIST = $(strip $(RPM_SPEC_FILES) $(RPM_SRC_PACKAGES))
 DIST_BUILD_DIR = /home/user
 
+# allow Makefile.builder in component to override this value
+GIT_TARBALL_NAME ?= $(shell ORIG_SRC=$(ORIG_SRC) $(FEDORA_PLUGIN_DIR)scripts/query-spec \
+		"$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{NAME}-%{VERSION}.tar.gz\n"\
+		| head -n 1)
+
 ### Local variables
 RUN_AS_USER = user
 ifndef OUTPUT_DIR
