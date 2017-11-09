@@ -1,0 +1,90 @@
+# This file is included from Makefile.fedora if package do not define RPM_USE_MOCKBUILD
+
+RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
+RPM_BUILD_DEFINES += --define "qubes_builder 1"
+RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
+
+ifdef REPO_PROXY
+    YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
+endif
+
+ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
+	YUM := dnf
+	YUM_BUILDDEP := dnf builddep --allowerasing --best
+else
+	YUM := yum
+	YUM_BUILDDEP := yum-builddep
+endif
+
+
+### Targets required by Makefile.generic to build packages
+dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
+	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
+		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
+	fi
+	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo/rpm ]; then\
+		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
+		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
+	fi
+	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
+
+$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
+	@echo "-> Preparing $(DIST) build environment"
+	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
+	@touch $(CHROOT_DIR)/home/user/.prepared_base
+	
+.PHONY: refresh-update.dnf
+refresh-update.yum:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
+	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
+
+.PHONY: refresh-update.dnf
+refresh-update.dnf:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
+	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
+
+dist-build-dep: refresh-update.$(YUM)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
+
+dist-package-build:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
+	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
+ifdef INCREMENT_DEVEL_VERSIONS
+	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
+	echo $(devel_ver) > $(devel_ver_path)
+endif
+ifeq ($(suffix $(PACKAGE)),.rpm)
+	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' - $(RUN_AS_USER)
+else
+	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' - $(RUN_AS_USER)
+endif
+
+dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
+dist-copy-out:
+	@echo "--> Done:" >&3
+	@set -e;\
+	shopt -s nullglob;\
+	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR);\
+	echo -n > $(pkg_list_path);\
+	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*; do\
+		arch_rpm_dir=$(ORIG_SRC)/$(OUTPUT_DIR)/`basename $$arch_chroot_dir`;\
+		mkdir -p $$arch_rpm_dir;\
+		for pkg in $$arch_chroot_dir/*; do\
+			echo "      $$arch_rpm_dir/`basename $$pkg`" >&3 ;\
+			echo "$(OUTPUT_DIR)/`basename $$arch_chroot_dir`/`basename $$pkg`" >> $(pkg_list_path);\
+		done;\
+		mkdir -p $(BUILDER_REPO_DIR)/rpm;\
+		ln -f -t $(BUILDER_REPO_DIR)/rpm $$arch_chroot_dir/*;\
+		mv -t $$arch_rpm_dir $$arch_chroot_dir/*;\
+	done
+

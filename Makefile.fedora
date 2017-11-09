@@ -4,6 +4,7 @@
 #
 # Variables supposed to be in component's Makefile.builder:
 #  RPM_SPEC_FILES - list of spec files to build
+#  RPM_USE_MOCKBUILD - if set to 1, use new "mock" build
 
 ### Variables required Makefile.generic
 # Use spec files list as PACKAGE_LIST
@@ -17,17 +18,16 @@ OUTPUT_DIR= rpm
 endif
 
 # Use += to allow Makefile.builder define some initial value
-RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
-RPM_BUILD_DEFINES += --define "qubes_builder 1"
 RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
+RPM_BUILD_DEFINES += --define "dist .$(DIST)"
+RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 
 ### Private "functions"
 # List packages produced by by given spec file(s)
-RPM_QUERY_DEFINES  = --define "dist .$(DIST)" 
+RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
 RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
 RPM_QUERY_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
-RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
 
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256
@@ -59,7 +59,7 @@ spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 			0`git log -1 --pretty=format:%ct` ]; then \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
-		rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile $(1) 2>/dev/null; \
+		$(FEDORA_PLUGIN_DIR)scripts/query-spec "$(1)" "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
 	fi)
 srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
@@ -67,48 +67,11 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
 		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
-		rpm -q $(RPM_QUERY_DEFINES) --qf $(RPM_QUERY_FORMAT) --specfile /dev/stdin 2>/dev/null; \
+		$(FEDORA_PLUGIN_DIR)scripts/query-spec /dev/stdin "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
 	fi)
 
-### Targets required by Makefile.generic to build packages
-dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
-	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
-		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
-	fi
-	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo/rpm ]; then\
-		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
-		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
-	fi
-	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
-
-$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
-	@echo "-> Preparing $(DIST) build environment"
-	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
-	@touch $(CHROOT_DIR)/home/user/.prepared_base
-	
 dist-prep:
 	@true
-
-.PHONY: refresh-update.dnf
-refresh-update.yum:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
-	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
-
-.PHONY: refresh-update.dnf
-refresh-update.dnf:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
-	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
-
-dist-build-dep: refresh-update.$(YUM)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
 ifdef INCREMENT_DEVEL_VERSIONS
 dist-package: devel_ver_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).devel
@@ -117,39 +80,16 @@ dist-package: devel_ver := $(shell expr $(devel_ver_prev) + 1)
 dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
 endif
 
-dist-package:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
-	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
-ifdef INCREMENT_DEVEL_VERSIONS
-	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
-	echo $(devel_ver) > $(devel_ver_path)
-endif
-ifeq ($(suffix $(PACKAGE)),.rpm)
-	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) --rebuild $(PACKAGE)' - $(RUN_AS_USER)
+dist-package: dist-package-build
+
+
+ifeq (1,$(RPM_USE_MOCKBUILD))
+include $(FEDORA_PLUGIN_DIR)Makefile-mock.fedora
 else
-	sudo chroot $(CHROOT_DIR) su -c 'cd $(DIST_SRC); env $(CHROOT_ENV) rpmbuild $(RPM_BUILD_DEFINES) -bb $(PACKAGE)' - $(RUN_AS_USER)
+include $(FEDORA_PLUGIN_DIR)Makefile-legacy.fedora
 endif
 
-dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
-dist-copy-out:
-	@echo "--> Done:" >&3
-	@set -e;\
-	shopt -s nullglob;\
-	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR);\
-	echo -n > $(pkg_list_path);\
-	for arch_chroot_dir in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*; do\
-		arch_rpm_dir=$(ORIG_SRC)/$(OUTPUT_DIR)/`basename $$arch_chroot_dir`;\
-		mkdir -p $$arch_rpm_dir;\
-		for pkg in $$arch_chroot_dir/*; do\
-			echo "      $$arch_rpm_dir/`basename $$pkg`" >&3 ;\
-			echo "$(OUTPUT_DIR)/`basename $$arch_chroot_dir`/`basename $$pkg`" >> $(pkg_list_path);\
-		done;\
-		mkdir -p $(BUILDER_REPO_DIR)/rpm;\
-		ln -f -t $(BUILDER_REPO_DIR)/rpm $$arch_chroot_dir/*;\
-		mv -t $$arch_rpm_dir $$arch_chroot_dir/*;\
-	done
+# dist-package-build and dist-copy-out defined in Makefile-*.fedora included above
 
 ### Additional targets
 
