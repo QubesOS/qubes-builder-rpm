@@ -11,6 +11,11 @@ ifneq (,$(SIGN_KEY))
 RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
+# different locations of actual mock executable depending on distribution: on
+# Fedora /usr/bin/mock is a (consolehelper) wrapper, which among other things,
+# strips environment variables
+MOCK ?= $(firstword $(wildcard /usr/libexec/mock/mock /usr/sbin/mock))
+
 MOCK_EXTRA_OPTS ?=
 
 ifneq (,$(USE_QUBES_REPO_VERSION))
@@ -51,7 +56,7 @@ ifndef PACKAGE
 endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
-	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) /usr/libexec/mock/mock \
+	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		-r $(FEDORA_PLUGIN_DIR)mock.cfg \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
@@ -60,7 +65,7 @@ ifdef INCREMENT_DEVEL_VERSIONS
 	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
 	echo $(devel_ver) > $(devel_ver_path)
 endif
-	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) /usr/libexec/mock/mock \
+	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		-r $(FEDORA_PLUGIN_DIR)/mock.cfg \
 		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
