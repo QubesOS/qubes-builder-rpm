@@ -191,9 +191,8 @@ function installPackages() {
     else
         # TODO:  Add into template flavor handler the ability to 
         #        detect flavors that will not append recursive values
-        # Only file 'minimal' package lists
-        if [ "$TEMPLATE_FLAVOR" == "minimal" ]; then
-            getFileLocations packages_list "packages.list" "${DIST}_minimal"
+        if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
+            getFileLocations packages_list "packages.list" "${DIST}_${TEMPLATE_FLAVOR}"
         else
             getFileLocations packages_list "packages.list" "${DIST}"
         fi
