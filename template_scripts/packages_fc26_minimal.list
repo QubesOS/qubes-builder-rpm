@@ -2,6 +2,7 @@ xterm
 tar
 haveged
 sudo
+iptables
 --exclude=kdegames
 --exclude=firstboot
 --exclude=xorg-x11-drv-nouveau
