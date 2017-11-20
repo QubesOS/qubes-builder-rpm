@@ -58,8 +58,17 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     # For defined mirroris in builder.conf we need to delete the metalink option
     # in the repo file because baseurl seems to not override the metalink
     if [ "x${FEDORA_MIRROR}" != "x" ]; then
-        sed -e "s/\\\$releasever/${DIST#fc}/g" \
-            -e "s/^metalink/#metalink/g" \
+        awk '
+        BEGIN {
+            mirror=ARGV[1];     delete ARGV[1];
+            releasever=ARGV[2]; delete ARGV[2];
+        }
+        {
+            gsub("^metalink", "#metalink");
+            gsub("^#baseurl=.*/(linux|fedora)/", "baseurl=" mirror "/");
+            gsub("\\$releasever", releasever);
+            print;
+        }' "${FEDORA_MIRROR%/}" "${DIST#fc}" \
             < "${PLUGIN_DIR}"/yum-bootstrap.conf \
             > "$yumconf"
     else

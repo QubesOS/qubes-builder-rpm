@@ -40,8 +40,8 @@ ifdef REPO_PROXY
 endif
 
 ifdef FEDORA_MIRROR
-    YUM_OPTS += --setopt=fedora.baseurl=$(FEDORA_MIRROR)/fedora/linux/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
-    YUM_OPTS += --setopt=updates.baseurl=$(FEDORA_MIRROR)/fedora/linux/updates/$(subst fc,,$(DIST))/x86_64/
+    YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
+    YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(subst fc,,$(DIST))/x86_64/
 endif
 
 ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
