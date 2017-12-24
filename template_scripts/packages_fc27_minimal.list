@@ -7,3 +7,4 @@ sudo
 --exclude=xorg-x11-drv-nouveau
 --exclude=firewall-config,firewalld
 --exclude=gnome-boxes
+--exclude=yum-utils
