@@ -1,5 +1,5 @@
 --setopt=strict=false
-@workstation-product-environment
+@gnome-desktop
 vim-enhanced
 gnupg
 xterm
@@ -26,5 +26,6 @@ mate-notification-daemon
 sudo
 xorg-x11-fonts-100dpi
 xorg-x11-fonts-Type1
+dnf
 dnf-utils
 --exclude=yum-utils
