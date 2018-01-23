@@ -43,7 +43,6 @@ dist-prepare-chroot:
 dist-build-dep :
 	@true
 
-dist-package: $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
 dist-package: dist-package-build
 
 ifeq ($(suffix $(PACKAGE)),.rpm)
