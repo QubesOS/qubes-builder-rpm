@@ -20,7 +20,7 @@ network-manager-applet
 --exclude=libreoffice*,unoconv
 --exclude=rng-tools,avahi,gssproxy,openssh-server
 createrepo
-linux-firmware
+@hardware-support
 haveged
 mate-notification-daemon
 sudo

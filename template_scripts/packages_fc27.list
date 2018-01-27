@@ -26,7 +26,7 @@ network-manager-applet
 --exclude=gnome-classic-session
 --exclude=gnome-documents
 createrepo
-linux-firmware
+@hardware-support
 haveged
 mate-notification-daemon
 sudo
