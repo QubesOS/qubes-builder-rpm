@@ -11,7 +11,11 @@ if [ $# -lt 2 ]; then
 fi
 
 if [ -r "${1}.in" ]; then
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile <(`dirname $0`/generate-spec "${1}.in" /dev/stdout) 2>/dev/null
+    #rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile <(`dirname $0`/generate-spec "${1}.in" /dev/stdout) 2>/dev/null
+    # need to create a file due to a bug in process substitution (e.g. artwork package)
+    $(dirname $0)/generate-spec "${1}.in" "${1}" 2>/dev/null
+    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2>/dev/null
+    rm -rf "${1}"
 else
     rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2>/dev/null
 fi
