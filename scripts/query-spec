@@ -1,5 +1,10 @@
 #!/bin/bash
 
+set -e
+if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+    set -x
+fi
+
 if [ $# -lt 2 ]; then
     echo "Usage: $0 file.spec field" >&2
     exit 1
