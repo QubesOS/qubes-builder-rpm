@@ -26,6 +26,9 @@ mate-notification-daemon
 sudo
 xorg-x11-fonts-100dpi
 xorg-x11-fonts-Type1
+dejavu-sans-fonts
+dejavu-sans-mono-fonts
+dejavu-serif-fonts
 dnf
 dnf-utils
 --exclude=yum-utils
