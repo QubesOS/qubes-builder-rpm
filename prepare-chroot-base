@@ -1,6 +1,13 @@
 #!/bin/bash
 # vim: set ts=4 sw=4 sts=4 et :
 
+set -e
+if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+    set -x
+else
+    YUM_OPTS="$YUM_OPTS -q"
+fi
+
 PLUGIN_DIR="`dirname $0`"
 
 INSTALLDIR=$1
@@ -14,13 +21,6 @@ if [ "$(printf '%s\n' "$RPM_VERSION" "4.14.0" | sort -V | head -n1)" == "4.14.0"
 else
     PGP_INVALID='PGP'
     PGP_NOTSIGNED='pgp'
-fi
-
-set -e
-if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
-    set -x
-else
-    YUM_OPTS="$YUM_OPTS -q"
 fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
