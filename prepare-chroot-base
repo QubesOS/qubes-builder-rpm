@@ -1,16 +1,26 @@
 #!/bin/bash
 # vim: set ts=4 sw=4 sts=4 et :
 
-PLUGIN_DIR="`dirname $0`"
-
-INSTALLDIR=$1
-DIST=$2
-
 set -e
 if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
+fi
+
+PLUGIN_DIR="`dirname $0`"
+
+INSTALLDIR=$1
+DIST=$2
+
+RPM_VERSION="$(rpm --version | awk '{print $3}')"
+
+if [ "$(printf '%s\n' "$RPM_VERSION" "4.14.0" | sort -V | head -n1)" == "4.14.0" ]; then
+    PGP_INVALID='SIGNATURES NOT OK'
+    PGP_NOTSIGNED='signatures OK'
+else
+    PGP_INVALID='PGP'
+    PGP_NOTSIGNED='pgp'
 fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
@@ -95,11 +105,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             exit 1
         }
         result_status="${result##*:}"
-        echo "${result_status}" | grep -q 'PGP' && {
+        echo "${result_status}" | grep -q "$PGP_INVALID" && {
             echo "Filename: ${file} contains an invalid PGP signature. Exiting!"
             exit 1
         }
-        echo "${result_status}" | grep -q 'pgp' || {
+        echo "${result_status}" | grep -q "$PGP_NOTSIGNED" || {
             echo "Filename: ${file} is not signed.  Exiting!"
             exit 1
         }
