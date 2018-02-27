@@ -25,6 +25,7 @@ unzip
 wget
 wireless-tools
 mesa-dri-drivers
+bash-completion
 iw
 attr
 dos2unix
