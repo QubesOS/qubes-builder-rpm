@@ -1,4 +1,4 @@
-[qubes-dom0-current]
+[qubes-builder-dom0-current]
 name = Qubes Dom0 Repository (updates)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/current/dom0/%DIST%
 enabled = 1
@@ -7,7 +7,7 @@ gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 exclude = qubes-release
 
-[qubes-dom0-current-testing]
+[qubes-builder-dom0-current-testing]
 name = Qubes Dom0 Repository (updates-testing)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/current-testing/dom0/%DIST%
 enabled = 0
@@ -16,7 +16,7 @@ gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 exclude = qubes-release
 
-[qubes-dom0-security-testing]
+[qubes-builder-dom0-security-testing]
 name = Qubes Dom0 Repository (security-testing)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/security-testing/dom0/%DIST%
 enabled = 0
@@ -25,7 +25,7 @@ gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 exclude = qubes-release
 
-[qubes-dom0-unstable]
+[qubes-builder-dom0-unstable]
 name = Qubes Dom0 Repository (unstable)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/unstable/dom0/%DIST%
 enabled = 0
