@@ -46,7 +46,7 @@ sed -i \
 if [ -e "${ORIG_SRC}/changelog" ]; then
     sed -i -e "/@CHANGELOG@/{r ${ORIG_SRC}/changelog" -e "d}" "$1.tmp"
 else
-    sed -i 's/@CHANGELOG@/%changelog/g' "$1.tmp"
+    sed -i '/@CHANGELOG@/d' "$1.tmp"
 fi
 
 cat "$1.tmp" > $2
