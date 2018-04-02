@@ -96,7 +96,6 @@ endif
 
 dist-package: dist-package-build
 
-
 ifeq (1,$(RPM_USE_MOCKBUILD))
 include $(FEDORA_PLUGIN_DIR)Makefile-mock.fedora
 else
