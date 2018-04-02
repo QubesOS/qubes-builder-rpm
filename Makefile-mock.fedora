@@ -5,12 +5,6 @@ RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
 
 RPM_SOURCE_DIR = $(shell rpm --eval '%{_sourcedir}')
 
-RPMSIGN_OPTS ?=
-RPMSIGN_OPTS += --digest-algo=sha256
-ifneq (,$(SIGN_KEY))
-RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
-endif
-
 # different locations of actual mock executable depending on distribution: on
 # Fedora /usr/bin/mock is a (consolehelper) wrapper, which among other things,
 # strips environment variables
