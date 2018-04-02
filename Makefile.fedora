@@ -25,7 +25,6 @@ OUTPUT_DIR= rpm
 endif
 
 # Use += to allow Makefile.builder define some initial value
-RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 RPM_BUILD_DEFINES += --define "dist .$(DIST)"
 RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 
@@ -34,7 +33,6 @@ RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
 RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
-RPM_QUERY_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256

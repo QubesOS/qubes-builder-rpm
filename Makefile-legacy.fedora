@@ -3,6 +3,7 @@
 RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
 RPM_BUILD_DEFINES += --define "qubes_builder 1"
 RPM_BUILD_DEFINES += --define "_sourcedir $(DIST_SRC)"
+RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n"
 
 ifdef REPO_PROXY
