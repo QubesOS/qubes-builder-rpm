@@ -42,7 +42,12 @@ sed -i \
     -e "s:@REL@:`cat ${ORIG_SRC}/rel 2>/dev/null || echo 1`:g" \
     -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$1.tmp"
 
+# Handle changelog
+if [ -e "${ORIG_SRC}/changelog" ]; then
+    sed -i '/@CHANGELOG@/ r changelog' "$1.tmp"
+fi
+
 cat "$1.tmp" > $2
 rm -rf "$1.tmp"
 
-# TODO: update changelog, improve the multiple version/release handlers
+# TODO: improve handlers
