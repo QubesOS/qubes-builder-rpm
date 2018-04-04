@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# Default redirection or errors
+ERR_OUTPUT="/dev/null"
+
 set -e
 if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
     set -x
+    ERR_OUTPUT="/dev/stderr"
 fi
 
 if [ $# -lt 2 ]; then
@@ -13,9 +17,9 @@ fi
 if [ -r "${1}.in" ]; then
     #rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile <(`dirname $0`/generate-spec "${1}.in" /dev/stdout) 2>/dev/null
     # need to create a file due to a bug in process substitution (e.g. artwork package)
-    $(dirname $0)/generate-spec "${1}.in" "${1}" 2>/dev/null
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2>/dev/null
+    $(dirname $0)/generate-spec "${1}.in" "${1}" 2> $ERR_OUTPUT
+    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
     rm -rf "${1}"
 else
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2>/dev/null
+    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
 fi
