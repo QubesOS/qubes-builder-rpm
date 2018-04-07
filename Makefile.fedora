@@ -26,13 +26,46 @@ endif
 
 # Use += to allow Makefile.builder define some initial value
 RPM_BUILD_DEFINES += --define "dist .$(DIST)"
-RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 
 ### Private "functions"
 # List packages produced by by given spec file(s)
 RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
-RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
+
+ifeq (fedora,$(DISTRIBUTION))
+	RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
+
+	RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
+
+	BUILD_PKG_LIST = build-pkgs-base-fedora.list
+
+ifdef FEDORA_MIRROR
+	YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(subst fc,,$(DIST))/x86_64/
+endif
+
+endif
+
+ifeq (centos,$(DISTRIBUTION))
+	RPM_BUILD_DEFINES += --define "centos $(subst centos,,$(DIST))"
+	RPM_BUILD_DEFINES += --define "rhel $(subst centos,,$(DIST))"
+
+	RPM_QUERY_DEFINES += --define "centos $(subst centos,,$(DIST))"
+	RPM_QUERY_DEFINES += --define "rhel $(subst centos,,$(DIST))"
+
+	BUILD_PKG_LIST = build-pkgs-base-centos.list
+
+ifdef CENTOS_MIRROR
+	YUM_OPTS += --setopt=base.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/os/x86_64
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/updates/x86_64
+	YUM_OPTS += --setopt=extras.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/extras/x86_64
+endif
+
+ifdef EPEL_MIRROR
+	YUM_OPTS += --setopt=epel.baseurl=$(patsubst %/,%,$(EPEL_MIRROR))/$(subst centos,,$(DIST))/x86_64
+endif
+
+endif
 
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256
@@ -41,22 +74,8 @@ RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
 ifdef REPO_PROXY
-    YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
+	YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
-
-ifdef FEDORA_MIRROR
-    YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
-    YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(subst fc,,$(DIST))/x86_64/
-endif
-
-ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
-	YUM := dnf
-	YUM_BUILDDEP := dnf builddep --allowerasing --best
-else
-	YUM := yum
-	YUM_BUILDDEP := yum-builddep
-endif
-
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \

@@ -5,6 +5,8 @@ RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
 
 RPM_SOURCE_DIR = $(shell rpm --eval '%{_sourcedir}')
 
+MOCK_CFG = mock-$(DISTRIBUTION).cfg
+
 # different locations of actual mock executable depending on distribution: on
 # Fedora /usr/bin/mock is a (consolehelper) wrapper, which among other things,
 # strips environment variables
@@ -46,7 +48,7 @@ endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
-		-r $(FEDORA_PLUGIN_DIR)mock.cfg \
+		-r $(FEDORA_PLUGIN_DIR)/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
 		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(DIST_SRC)
@@ -56,7 +58,7 @@ ifdef INCREMENT_DEVEL_VERSIONS
 endif
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
-		-r $(FEDORA_PLUGIN_DIR)/mock.cfg \
+		-r $(FEDORA_PLUGIN_DIR)/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
 		$(RPM_BUILD_DEFINES) --rebuild $(srcrpm)
 

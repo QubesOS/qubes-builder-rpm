@@ -25,71 +25,136 @@ fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
-YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
+if { grep -q fc <<< "$DIST"; }; then
+    YUM=dnf
+    DIST_NAME="fedora"
+    DIST_VER="${DIST#fc}"
+fi
+
+if { grep -q centos <<< "$DIST"; }; then
+    YUM=yum
+    DIST_NAME="centos"
+    DIST_VER="${DIST#centos}"
+fi
+
+YUM="$YUM $YUM_OPTS --releasever ${DIST_VER} --downloaddir=${DOWNLOADDIR} --downloadonly install"
 if type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
-elif type dnf >/dev/null 2>/dev/null; then
-    YUM="dnf $YUM_OPTS --releasever "${DIST#fc}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
     RPM_OPTS=()
     if [ -e /etc/debian_version ]; then
-	    # Debian by default keep rpmdb in ~/.rpmdb
-	    RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
+        # Debian by default keep rpmdb in ~/.rpmdb
+        RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
     fi
     rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
-    rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-        ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
+
+    if [ "${DIST_NAME}" == "fedora" ]; then
+        rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
+    fi
+
+    if [ "${DIST_NAME}" == "centos" ]; then
+        rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST#centos} \
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST#centos}
+    fi
 
     echo "-> Retreiving core RPM packages..."
-    INITIAL_PACKAGES="filesystem setup fedora-release"
-    if [ "${DIST#fc}" -ge 22 ]; then
-        INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
-    else
-        INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils"
-    fi
-    if [ "${DIST#fc}" -ge 25 ]; then
-        # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
-        # enough to try them both
-        INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
-    fi
-    
-    if [ "${DIST#fc}" -ge 26 ]; then
-        # coreutils conflicts with coreutils-single
-        INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
+
+    if [ "${DIST_NAME}" == "fedora" ]; then
+        INITIAL_PACKAGES="filesystem setup fedora-release"
+        if [ "${DIST#fc}" -ge 22 ]; then
+            INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
+        else
+            INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils"
+        fi
+        if [ "${DIST#fc}" -ge 25 ]; then
+            # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
+            # enough to try them both
+            INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
+        fi
+
+        if [ "${DIST#fc}" -ge 26 ]; then
+            # coreutils conflicts with coreutils-single
+            INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
+        fi
+
+        if [ "${DIST#fc}" -ge 27 ]; then
+            # curl-minimal conflicts with curl, same for libcurl
+            INITIAL_PACKAGES="--exclude=curl --exclude=libcurl $INITIAL_PACKAGES"
+        fi
+
+        mkdir -p "${DOWNLOADDIR}"
+        yumconf=$(mktemp)
+
+        if [ "x${FEDORA_MIRROR}" != "x" ]; then
+            awk '
+            BEGIN {
+                mirror=ARGV[1];     delete ARGV[1];
+                releasever=ARGV[2]; delete ARGV[2];
+            }
+            {
+                gsub("^metalink", "#metalink");
+                gsub("^#baseurl=.*/(linux|fedora)/", "baseurl=" mirror "/");
+                gsub("\\$releasever", releasever);
+                print;
+            }' "${FEDORA_MIRROR%/}" "${DIST#fc}" \
+                < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
+                > "$yumconf"
+        else
+            sed -e "s/\\\$releasever/${DIST#fc}/g" \
+                < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
+                > "$yumconf"
+        fi
     fi
 
-    if [ "${DIST#fc}" -ge 27 ]; then
-        # curl-minimal conflicts with curl, same for libcurl
-        INITIAL_PACKAGES="--exclude=curl --exclude=libcurl $INITIAL_PACKAGES"
-    fi
+    if [ "${DIST_NAME}" == "centos" ]; then
+        INITIAL_PACKAGES="filesystem setup centos-release epel-release yum yum-utils"
 
-    mkdir -p "${DOWNLOADDIR}"
-    yumconf=$(mktemp)
+        # Add groupadd, su etc.
+        INITIAL_PACKAGES="$INITIAL_PACKAGES shadow-utils util-linux"
 
-    # For defined mirroris in builder.conf we need to delete the metalink option
-    # in the repo file because baseurl seems to not override the metalink
-    if [ "x${FEDORA_MIRROR}" != "x" ]; then
-        awk '
-        BEGIN {
-            mirror=ARGV[1];     delete ARGV[1];
-            releasever=ARGV[2]; delete ARGV[2];
-        }
-        {
-            gsub("^metalink", "#metalink");
-            gsub("^#baseurl=.*/(linux|fedora)/", "baseurl=" mirror "/");
-            gsub("\\$releasever", releasever);
-            print;
-        }' "${FEDORA_MIRROR%/}" "${DIST#fc}" \
-            < "${PLUGIN_DIR}"/yum-bootstrap.conf \
+        mkdir -p "${DOWNLOADDIR}"
+        yumconf=$(mktemp)
+        yumconftmp=$(mktemp)
+
+        sed -e "s/\\\$releasever/${DIST#centos}/g" \
+            < "${PLUGIN_DIR}"/yum-bootstrap-centos.conf \
             > "$yumconf"
-    else
-        sed -e "s/\\\$releasever/${DIST#fc}/g" \
-            < "${PLUGIN_DIR}"/yum-bootstrap.conf \
-            > "$yumconf"
+
+        if [ "x${CENTOS_MIRROR}" != "x" ]; then
+            awk '
+            BEGIN {
+                mirror=ARGV[1];     delete ARGV[1];
+            }
+            {
+                gsub("^mirrorlist", "#mirrorlist");
+                gsub("^#baseurl=.*/(centos|CentOS)/", "baseurl=" mirror "/");
+                print;
+            }' "${CENTOS_MIRROR%/}" \
+                < "$yumconf" \
+                > "$yumconftmp"
+            mv $yumconftmp $yumconf
+        fi
+
+        if [ "x${EPEL_MIRROR}" != "x" ]; then
+            awk '
+            BEGIN {
+                mirror=ARGV[1];     delete ARGV[1];
+            }
+            {
+                gsub("^metalink", "#metalink");
+                gsub("^#baseurl=.*/epel/", "baseurl=" mirror "/");
+                print;
+            }' "${EPEL_MIRROR%/}" \
+                < "$yumconf" \
+                > "$yumconftmp"
+            mv $yumconftmp $yumconf
+        fi
     fi
 
     $YUM -c "$yumconf" -y \
@@ -114,6 +179,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             exit 1
         }
     done
+
     echo "-> Printing hashes of downloaded packages:"
     sha256sum "${DOWNLOADDIR}/"*.rpm
     if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
@@ -126,10 +192,16 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         cp -a /dev/$f $INSTALLDIR/dev/
     done
 
-    # TODO: check if there is a way to force baseurl to override metalink
-    if [ "x$FEDORA_MIRROR" != "x" ]; then
-        sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
-        sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+    if [ "${DIST_NAME}" == "fedora" ]; then
+        if [ "x$FEDORA_MIRROR" != "x" ]; then
+            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
+        fi
+    fi
+
+    if [ "${DIST_NAME}" == "centos" ]; then
+        # For compatibility with others packages spec Centos 7 <=> Fedora 20
+        echo "%fedora 20" >> ${INSTALLDIR}/etc/rpm/macros.dist
     fi
 
     touch "${INSTALLDIR}/tmp/.prepared_base"

@@ -1,0 +1,10 @@
+@development
+make
+python
+yum
+yum-utils
+tar
+rpm-build
+redhat-rpm-config
+which
+epel-release

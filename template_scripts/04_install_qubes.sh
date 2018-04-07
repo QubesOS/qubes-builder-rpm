@@ -6,10 +6,10 @@ prepareChroot
 
 export YUM0=$PWD/pkgs-for-template
 
-cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
+cp ${SCRIPTSDIR}/template-builder-repo-$DIST_NAME.repo ${INSTALLDIR}/etc/yum.repos.d/
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -e "s/%QUBESVER%/$USE_QUBES_REPO_VERSION/g" \
-        < ${SCRIPTSDIR}/../repos/qubes-repo-vm.repo \
+        < ${SCRIPTSDIR}/../repos/qubes-repo-vm-$DIST_NAME.repo \
         > ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
     keypath="${BUILDER_DIR}/qubes-release-${USE_QUBES_REPO_VERSION}-signing-key.asc"
     if [ -r "$keypath" ]; then
@@ -29,12 +29,14 @@ else
     installPackages packages_qubes.list || RETCODE=1
 fi
 
-
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
-if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
-    echo "--> Installing 3rd party apps"
-    $SCRIPTSDIR/add_3rd_party_software.sh || RETCODE=1
+# WIP: currently limit to Fedora the add_3rd_party_software.sh
+if [ "$DIST_NAME" == "fedora" ]; then
+    if [ "$TEMPLATE_FLAVOR" != "minimal" ]; then
+        echo "--> Installing 3rd party apps"
+        $SCRIPTSDIR/add_3rd_party_software.sh || RETCODE=1
+    fi
 fi
 
 
@@ -68,7 +70,7 @@ fi
 source ./functions.sh
 buildStep "${0}" "${DIST}"
 
-rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
+rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DIST_NAME.repo
 rm -f ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
 
 exit $RETCODE

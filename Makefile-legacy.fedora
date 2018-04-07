@@ -10,14 +10,15 @@ ifdef REPO_PROXY
     YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
 
-ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
+ifeq (fedora,$(DISTRIBUTION))
 	YUM := dnf
 	YUM_BUILDDEP := dnf builddep --allowerasing --best
-else
+endif
+
+ifeq (centos,$(DISTRIBUTION))
 	YUM := yum
 	YUM_BUILDDEP := yum-builddep
 endif
-
 
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
@@ -30,11 +31,11 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	fi
 	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
-$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/build-pkgs-base.list
+$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/$(BUILD_PKG_LIST)
 	@echo "-> Preparing $(DIST) build environment"
 	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
-	
+
 .PHONY: refresh-update.dnf
 refresh-update.yum:
 ifndef PACKAGE
