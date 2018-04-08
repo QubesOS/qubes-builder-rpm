@@ -14,6 +14,8 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+[[ "x$(basename ${1}.in)" == "x.in" ]] && exit 0
+
 if [ -r "${1}.in" ]; then
     #rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile <(`dirname $0`/generate-spec "${1}.in" /dev/stdout) 2>/dev/null
     # need to create a file due to a bug in process substitution (e.g. artwork package)
