@@ -19,9 +19,10 @@ fi
 if [ -r "${1}.in" ]; then
     #rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile <(`dirname $0`/generate-spec "${1}.in" /dev/stdout) 2>/dev/null
     # need to create a file due to a bug in process substitution (e.g. artwork package)
-    $(dirname $0)/generate-spec "${1}.in" "${1}" 2> $ERR_OUTPUT
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
-    rm -rf "${1}"
+    tmp_spec=$(mktemp --tmpdir tmp.XXXXXX.spec)
+    $(dirname $0)/generate-spec "${1}.in" "${tmp_spec}" 2> $ERR_OUTPUT
+    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "${tmp_spec}" 2> $ERR_OUTPUT
+    rm -f "${tmp_spec}"
 else
     rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
 fi
