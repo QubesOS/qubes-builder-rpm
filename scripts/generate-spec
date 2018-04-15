@@ -10,6 +10,10 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+if [ -z "${ORIG_SRC}" ]; then
+    ORIG_SRC="."
+fi
+
 cp "$1" "$1.tmp"
 
 # Handle sources with multiples package/version/release:
