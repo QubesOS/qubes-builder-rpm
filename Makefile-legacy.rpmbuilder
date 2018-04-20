@@ -29,11 +29,11 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
 		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
 	fi
-	@sudo cp $(FEDORA_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
+	@sudo cp $(RPM_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
-$(CHROOT_DIR)/home/user/.prepared_base: $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(FEDORA_PLUGIN_DIR)/$(BUILD_PKG_LIST)
+$(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(RPM_PLUGIN_DIR)/$(BUILD_PKG_LIST)
 	@echo "-> Preparing $(DIST) build environment"
-	@sudo -E $(FEDORA_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
+	@sudo -E $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
 
 .PHONY: refresh-update.dnf
@@ -41,7 +41,7 @@ refresh-update.yum:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
-	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
@@ -51,7 +51,7 @@ refresh-update.dnf:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
-	$(FEDORA_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
 
 dist-build-dep: refresh-update.$(YUM)

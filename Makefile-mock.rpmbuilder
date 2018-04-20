@@ -23,7 +23,7 @@ endif
 
 MOCK_ENV = DIST=$(DIST) \
 		   PACKAGE_SET=$(PACKAGE_SET) \
-		   FEDORA_PLUGIN_DIR=$(FEDORA_PLUGIN_DIR) \
+		   RPM_PLUGIN_DIR=$(RPM_PLUGIN_DIR) \
 		   USE_QUBES_REPO_VERSION=$(USE_QUBES_REPO_VERSION) \
 		   BUILDER_REPO_DIR=$(BUILDER_REPO_DIR) \
 		   CACHEDIR=$(CACHEDIR) \
@@ -48,7 +48,7 @@ endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
-		-r $(FEDORA_PLUGIN_DIR)/$(MOCK_CFG) \
+		-r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
 		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(DIST_SRC)
@@ -58,7 +58,7 @@ ifdef INCREMENT_DEVEL_VERSIONS
 endif
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
-		-r $(FEDORA_PLUGIN_DIR)/$(MOCK_CFG) \
+		-r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
 		$(RPM_BUILD_DEFINES) --rebuild $(srcrpm)
 
