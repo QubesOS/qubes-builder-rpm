@@ -1,7 +1,7 @@
 [qubes-builder-vm-r%QUBESVER%-current]
 name = Qubes OS Repository for VM (updates)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/current/vm/centos$releasever
-gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-centos
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
@@ -10,7 +10,7 @@ enabled=0
 [qubes-builder-vm-r%QUBESVER%-current-testing]
 name = Qubes OS Repository for VM (updates-testing)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/current-testing/vm/centos$releasever
-gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-centos
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
@@ -20,7 +20,7 @@ cost=750
 [qubes-builder-vm-r%QUBESVER%-security-testing]
 name = Qubes OS Repository for VM (security-testing)
 baseurl = http://yum.qubes-os.org/r%QUBESVER%/security-testing/vm/centos$releasever
-gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-centos
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
