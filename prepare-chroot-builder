@@ -108,7 +108,7 @@ cp ${PLUGIN_DIR}/repos/builder-local.repo $DIR/etc/yum.repos.d/
 sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
 
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
-    cp ${PLUGIN_DIR}/repos/qubes-repo-vm.repo $DIR/etc/yum.repos.d/
+    cp ${PLUGIN_DIR}/repos/qubes-repo-vm-${DISTRIBUTION}.repo $DIR/etc/yum.repos.d/
     if [ "$DIST" = "$DIST_DOM0" ]; then
         cp ${PLUGIN_DIR}/repos/qubes-repo-dom0.repo $DIR/etc/yum.repos.d/
     fi
