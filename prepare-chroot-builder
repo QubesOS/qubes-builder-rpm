@@ -116,15 +116,15 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
 
     if [ "${DIST_NAME}" == "fedora" ]; then
-        QUBES_SIGNING_KEY="qubes-release-$USE_QUBES_REPO_VERSION-primary.asc"
+        QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-primary"
     fi
     if [ "${DIST_NAME}" == "centos" ]; then
-        QUBES_SIGNING_KEY="qubes-release-$USE_QUBES_REPO_VERSION-centos.asc"
+        QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-centos"
     fi
 
-    if [ -r "$QUBES_SIGNING_KEY" ]; then
-        chroot $DIR rpm --import /dev/stdin < \
-            "$QUBES_SIGNING_KEY" || true
+    if [ -r "${PLUGIN_DIR}/keys/$QUBES_SIGNING_KEY" ]; then
+        cp "${PLUGIN_DIR}/keys/$QUBES_SIGNING_KEY" "$DIR/etc/pki/rpm-gpg/"
+        chroot $DIR rpm --import "/etc/pki/rpm-gpg/$QUBES_SIGNING_KEY" || true
     fi
 
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
