@@ -1,13 +1,3 @@
+@buildsys-build
 @development-tools
-@c-development
-make
-python
 MAKEDEV
-yum
-yum-utils
-dnf
-dnf-plugins-core
-tar
-rpm-build
-redhat-rpm-config
-which
