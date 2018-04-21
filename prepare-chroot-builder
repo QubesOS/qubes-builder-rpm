@@ -16,20 +16,20 @@ CHROOT_CACHE_FILE=
 
 if grep -q fc <<< "$DIST"; then
     YUM=dnf
-    DIST_NAME="fedora"
+    DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
 fi
 
 if grep -q centos <<< "$DIST"; then
     YUM=yum
-    DIST_NAME="centos"
+    DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
 fi
 
 if [ -n "$3" ]; then
     PKGLISTFILE="$3"
 else
-    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DIST_NAME}.list"
+    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list"
     if [ "0$CACHE_CHROOT" -eq 1 ]; then
         CHROOT_CACHE_FILE="${CACHEDIR}/chroot-${DIST}-base.tar"
     fi
@@ -59,7 +59,7 @@ elif ! [ -e $DIR/home/user/.prepared_base ]; then
 
     # Always install at least base pkgs
     cp  ${PLUGIN_DIR}/yum.conf $DIR/tmp/
-    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS $(cat ${PLUGIN_DIR}/build-pkgs-base-${DIST_NAME}.list)
+    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS $(cat ${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list)
 
     # setup user and group
     if [ -z "$USER_UID" -a -n "$SUDO_UID" ]; then
@@ -87,10 +87,10 @@ elif ! [ -e $DIR/home/user/.prepared_base ]; then
 
     # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
     chroot $DIR groupadd -rf uucp
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
     fi
-    if [ "${DIST_NAME}" == "centos" ]; then
+    if [ "${DISTRIBUTION}" == "centos" ]; then
         chroot $DIR sh -c "chown -R user /home/user;su -c 'mkdir qubes-src' - user"
     fi
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
@@ -98,7 +98,7 @@ elif ! [ -e $DIR/home/user/.prepared_base ]; then
 else
     # update chroot
     chroot $DIR groupadd -rf uucp 2>/dev/null || :
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
     fi
 fi
@@ -115,10 +115,10 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -i -e "s#%DIST%#$DIST#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
 
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-primary"
     fi
-    if [ "${DIST_NAME}" == "centos" ]; then
+    if [ "${DISTRIBUTION}" == "centos" ]; then
         QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-centos"
     fi
 

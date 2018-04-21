@@ -27,13 +27,13 @@ DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
 if { grep -q fc <<< "$DIST"; }; then
     YUM=dnf
-    DIST_NAME="fedora"
+    DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
 fi
 
 if { grep -q centos <<< "$DIST"; }; then
     YUM=yum
-    DIST_NAME="centos"
+    DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
 fi
 
@@ -54,12 +54,12 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
     rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
 
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
             ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary
     fi
 
-    if [ "${DIST_NAME}" == "centos" ]; then
+    if [ "${DISTRIBUTION}" == "centos" ]; then
         rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
             ${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}\
             ${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}
@@ -67,7 +67,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     echo "-> Retreiving core RPM packages..."
 
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         INITIAL_PACKAGES="filesystem setup fedora-release"
         if [ "${DIST_VER}" -ge 22 ]; then
             INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
@@ -114,7 +114,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
-    if [ "${DIST_NAME}" == "centos" ]; then
+    if [ "${DISTRIBUTION}" == "centos" ]; then
         INITIAL_PACKAGES="filesystem setup centos-release epel-release yum yum-utils"
 
         # Add groupadd, su etc.
@@ -194,14 +194,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         cp -a /dev/$f $INSTALLDIR/dev/
     done
 
-    if [ "${DIST_NAME}" == "fedora" ]; then
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
         if [ "x$FEDORA_MIRROR" != "x" ]; then
             sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
             sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
         fi
     fi
 
-    if [ "${DIST_NAME}" == "centos" ]; then
+    if [ "${DISTRIBUTION}" == "centos" ]; then
         # For compatibility with others packages spec Centos 7 <=> Fedora 20
         echo "%fedora 20" >> ${INSTALLDIR}/etc/rpm/macros.dist
     fi
