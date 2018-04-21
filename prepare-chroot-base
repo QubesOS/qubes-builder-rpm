@@ -37,10 +37,12 @@ if { grep -q centos <<< "$DIST"; }; then
     DIST_VER="${DIST#centos}"
 fi
 
-YUM="$YUM $YUM_OPTS --releasever ${DIST_VER} --downloaddir=${DOWNLOADDIR} --downloadonly install"
+YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
 if type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
+elif type dnf >/dev/null 2>/dev/null; then
+    YUM="dnf $YUM_OPTS --releasever "${DIST_VER}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
@@ -54,36 +56,36 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DIST_NAME}" == "fedora" ]; then
         rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST#fc}-primary
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary
     fi
 
     if [ "${DIST_NAME}" == "centos" ]; then
         rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST#centos} \
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST#centos}
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}\
+            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}
     fi
 
     echo "-> Retreiving core RPM packages..."
 
     if [ "${DIST_NAME}" == "fedora" ]; then
         INITIAL_PACKAGES="filesystem setup fedora-release"
-        if [ "${DIST#fc}" -ge 22 ]; then
+        if [ "${DIST_VER}" -ge 22 ]; then
             INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
         else
             INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils"
         fi
-        if [ "${DIST#fc}" -ge 25 ]; then
+        if [ "${DIST_VER}" -ge 25 ]; then
             # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
             # enough to try them both
             INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
         fi
 
-        if [ "${DIST#fc}" -ge 26 ]; then
+        if [ "${DIST_VER}" -ge 26 ]; then
             # coreutils conflicts with coreutils-single
             INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
         fi
 
-        if [ "${DIST#fc}" -ge 27 ]; then
+        if [ "${DIST_VER}" -ge 27 ]; then
             # curl-minimal conflicts with curl, same for libcurl
             INITIAL_PACKAGES="--exclude=curl --exclude=libcurl $INITIAL_PACKAGES"
         fi
@@ -102,11 +104,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
                 gsub("^#baseurl=.*/(linux|fedora)/", "baseurl=" mirror "/");
                 gsub("\\$releasever", releasever);
                 print;
-            }' "${FEDORA_MIRROR%/}" "${DIST#fc}" \
+            }' "${FEDORA_MIRROR%/}" "${DIST_VER}" \
                 < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
                 > "$yumconf"
         else
-            sed -e "s/\\\$releasever/${DIST#fc}/g" \
+            sed -e "s/\\\$releasever/${DIST_VER}/g" \
                 < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
                 > "$yumconf"
         fi
@@ -122,7 +124,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         yumconf=$(mktemp)
         yumconftmp=$(mktemp)
 
-        sed -e "s/\\\$releasever/${DIST#centos}/g" \
+        sed -e "s/\\\$releasever/${DIST_VER}/g" \
             < "${PLUGIN_DIR}"/yum-bootstrap-centos.conf \
             > "$yumconf"
 
