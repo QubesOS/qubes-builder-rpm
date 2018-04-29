@@ -110,7 +110,7 @@ sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     cp ${PLUGIN_DIR}/repos/qubes-repo-vm-${DISTRIBUTION}.repo $DIR/etc/yum.repos.d/
     if [ "$DIST" = "$DIST_DOM0" ]; then
-        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0.repo $DIR/etc/yum.repos.d/
+        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0-fedora.repo $DIR/etc/yum.repos.d/
     fi
     sed -i -e "s#%DIST%#$DIST#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
