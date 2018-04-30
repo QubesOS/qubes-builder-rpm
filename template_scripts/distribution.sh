@@ -10,7 +10,7 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
-if grep -q fc <<< "$DIST"; then
+if [ "${DIST#fc}" != "${DIST}" ]; then
     YUM=dnf
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
@@ -21,7 +21,7 @@ if grep -q fc <<< "$DIST"; then
     fi
 fi
 
-if grep -q centos <<< "$DIST"; then
+if [ "${DIST#centos}" != "${DIST}" ]; then
     YUM=yum
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
