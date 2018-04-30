@@ -13,7 +13,7 @@ DIST_BUILD_DIR = /home/user
 
 ifneq (1,$(NO_ARCHIVE))
 # allow Makefile.builder in component to override this value
-GIT_TARBALL_NAME ?= $(shell ORIG_SRC=$(ORIG_SRC) $(FEDORA_PLUGIN_DIR)scripts/query-spec \
+GIT_TARBALL_NAME ?= $(shell ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
 		"$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{NAME}-%{VERSION}.tar.gz\n"\
 		| head -n 1)
 endif
@@ -26,13 +26,46 @@ endif
 
 # Use += to allow Makefile.builder define some initial value
 RPM_BUILD_DEFINES += --define "dist .$(DIST)"
-RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 
 ### Private "functions"
 # List packages produced by by given spec file(s)
 RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
-RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
+
+ifeq (fedora,$(DISTRIBUTION))
+	RPM_BUILD_DEFINES += --define "fedora $(subst fc,,$(DIST))"
+
+	RPM_QUERY_DEFINES += --define "fedora $(subst fc,,$(DIST))"
+
+	BUILD_PKG_LIST = build-pkgs-base-fedora.list
+
+ifdef FEDORA_MIRROR
+	YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(subst fc,,$(DIST))/x86_64/
+endif
+
+endif
+
+ifeq (centos,$(DISTRIBUTION))
+	RPM_BUILD_DEFINES += --define "centos $(subst centos,,$(DIST))"
+	RPM_BUILD_DEFINES += --define "rhel $(subst centos,,$(DIST))"
+
+	RPM_QUERY_DEFINES += --define "centos $(subst centos,,$(DIST))"
+	RPM_QUERY_DEFINES += --define "rhel $(subst centos,,$(DIST))"
+
+	BUILD_PKG_LIST = build-pkgs-base-centos.list
+
+ifdef CENTOS_MIRROR
+	YUM_OPTS += --setopt=base.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/os/x86_64
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/updates/x86_64
+	YUM_OPTS += --setopt=extras.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(subst centos,,$(DIST))/extras/x86_64
+endif
+
+ifdef EPEL_MIRROR
+	YUM_OPTS += --setopt=epel.baseurl=$(patsubst %/,%,$(EPEL_MIRROR))/$(subst centos,,$(DIST))/x86_64
+endif
+
+endif
 
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256
@@ -41,22 +74,8 @@ RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
 ifdef REPO_PROXY
-    YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
+	YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
-
-ifdef FEDORA_MIRROR
-    YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(subst fc,,$(DIST))/Everything/x86_64/os/
-    YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(subst fc,,$(DIST))/x86_64/
-endif
-
-ifeq ($(shell expr $(subst fc,,$(DIST)) \>= 22),1)
-	YUM := dnf
-	YUM_BUILDDEP := dnf builddep --allowerasing --best
-else
-	YUM := yum
-	YUM_BUILDDEP := yum-builddep
-endif
-
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
@@ -64,7 +83,7 @@ spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 			0`git log -1 --pretty=format:%ct` ]; then \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
-		$(FEDORA_PLUGIN_DIR)scripts/query-spec "$(1)" "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
+		$(RPM_PLUGIN_DIR)scripts/query-spec "$(1)" "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
 	fi)
 srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
@@ -72,16 +91,16 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
 		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
-		$(FEDORA_PLUGIN_DIR)scripts/query-spec /dev/stdin "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
+		$(RPM_PLUGIN_DIR)scripts/query-spec /dev/stdin "$(RPM_QUERY_FORMAT)" 2>/dev/null; \
 	fi)
 
 %.spec: %.spec.in $(wildcard $(DIST_SRC)/version) $(wildcard $(DIST_SRC)/rel)
-	$(FEDORA_PLUGIN_DIR)scripts/generate-spec $< $@
+	$(RPM_PLUGIN_DIR)scripts/generate-spec $< $@
 
 dist-prep:
 	@true
 
-# Common target with Makefile-mock.fedora and Makefile-legacy.fedora for
+# Common target with Makefile-mock.rpmbuilder and Makefile-legacy.rpmbuilder for
 # generating the spec file
 dist-build-dep: $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
 
@@ -95,12 +114,12 @@ endif
 dist-package: dist-package-build
 
 ifeq (1,$(RPM_USE_MOCKBUILD))
-include $(FEDORA_PLUGIN_DIR)Makefile-mock.fedora
+include $(RPM_PLUGIN_DIR)Makefile-mock.rpmbuilder
 else
-include $(FEDORA_PLUGIN_DIR)Makefile-legacy.fedora
+include $(RPM_PLUGIN_DIR)Makefile-legacy.rpmbuilder
 endif
 
-# dist-package-build and dist-copy-out defined in Makefile-*.fedora included above
+# dist-package-build and dist-copy-out defined in Makefile-*.rpmbuilder included above
 
 ### Additional targets
 

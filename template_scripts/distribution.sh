@@ -10,15 +10,31 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
-if [ -n "${FEDORA_MIRROR}" ]; then
-    YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST/fc/}/Everything/x86_64/os/"
-    YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST/fc/}/x86_64/"
+if grep -q fc <<< "$DIST"; then
+    YUM=dnf
+    DISTRIBUTION="fedora"
+    DIST_VER="${DIST#fc}"
+
+    if [ -n "${FEDORA_MIRROR}" ]; then
+        YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST_VER}/Everything/x86_64/os/"
+        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/x86_64/"
+    fi
 fi
 
-if [ "${DIST/fc/}" -ge 22 ]; then
-    YUM=dnf
-else
+if grep -q centos <<< "$DIST"; then
     YUM=yum
+    DISTRIBUTION="centos"
+    DIST_VER="${DIST#centos}"
+
+    if [ -n "${CENTOS_MIRROR}" ]; then
+        YUM_OPTS="$YUM_OPTS --setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64"
+        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/updates/x86_64"
+        YUM_OPTS="$YUM_OPTS --setopt=extras.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/extras/x86_64"
+    fi
+
+    if [ -n "${EPEL_MIRROR}" ]; then
+        YUM_OPTS="$YUM_OPTS --setopt=epel.baseurl=${EPEL_MIRROR%/}/${DIST_VER}/x86_64"
+    fi
 fi
 
 # ==============================================================================
@@ -66,17 +82,23 @@ function yumInstall() {
     mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
+        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo ${INSTALLDIR}/etc/yum.repos.d/
         chroot_cmd $YUM --downloadonly \
             install ${YUM_OPTS} -y ${files[@]} || exit 1
         find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
         find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
-        # set http proxy to invalid one, to prevent any connection in case of
-        # --cacheonly being buggy: better fail the build than install something
-        # else than the logged one
-        chroot_cmd $YUM install ${YUM_OPTS} -y \
-            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
-        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
+        if [ "$DISTRIBUTION" == "fedora" ]; then
+            # set http proxy to invalid one, to prevent any connection in case of
+            # --cacheonly being buggy: better fail the build than install something
+            # else than the logged one
+            chroot_cmd $YUM install ${YUM_OPTS} -y \
+                --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+        fi
+        if [ "$DISTRIBUTION" == "centos" ]; then
+            # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
+            chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
+        fi
+        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
@@ -109,11 +131,17 @@ function yumGroupInstall() {
             group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
         find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
         find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
-        # set http proxy to invalid one, to prevent any connection in case of
-        # --cacheonly being buggy: better fail the build than install something
-        # else than the logged one
-        chroot_cmd $YUM group install $optional ${YUM_OPTS} -y \
-            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+        if [ "$DISTRIBUTION" == "fedora" ]; then
+            # set http proxy to invalid one, to prevent any connection in case of
+            # --cacheonly being buggy: better fail the build than install something
+            # else than the logged one
+            chroot_cmd $YUM install ${YUM_OPTS} -y \
+                --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+        fi
+        if [ "$DISTRIBUTION" == "centos" ]; then
+            # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
+            chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
+        fi
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
@@ -134,7 +162,7 @@ function yumUpdate() {
     mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
     mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp ${SCRIPTSDIR}/template-builder-repo.repo ${INSTALLDIR}/etc/yum.repos.d/
+        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo ${INSTALLDIR}/etc/yum.repos.d/
         chroot_cmd $YUM --downloadonly \
             update ${YUM_OPTS} -y ${files[@]} || exit 1
         find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
@@ -144,7 +172,7 @@ function yumUpdate() {
         # else than the logged one
         chroot_cmd $YUM update ${YUM_OPTS} -y \
             --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
-        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo.repo
+        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
@@ -189,8 +217,6 @@ function installPackages() {
             packages_list="$@"
         fi
     else
-        # TODO:  Add into template flavor handler the ability to 
-        #        detect flavors that will not append recursive values
         if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
             getFileLocations packages_list "packages.list" "${DIST}_${TEMPLATE_FLAVOR}"
         else

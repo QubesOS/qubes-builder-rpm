@@ -1,36 +1,44 @@
 #!/bin/sh
 # vim: set ts=4 sw=4 sts=4 et :
 
-PLUGIN_DIR="`dirname $0`"
-
-DIR=$1
-DISTRO=$2
-CHROOT_CACHE_FILE=
-if [ -n "$3" ]; then
-    PKGLISTFILE="$3"
-else
-    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base.list"
-    if [ "0$CACHE_CHROOT" -eq 1 ]; then
-        CHROOT_CACHE_FILE="${CACHEDIR}/chroot-${DISTRO}-base.tar"
-    fi
-fi
-
-YUM=yum
-
-if [ "${DISTRO#fc}" -ge 22 ]; then
-    YUM=dnf
-fi
-
 set -e
 if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq "1" ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
 fi
+
+PLUGIN_DIR="`dirname $0`"
+
+DIR=$1
+DIST=$2
+CHROOT_CACHE_FILE=
+
+if grep -q fc <<< "$DIST"; then
+    YUM=dnf
+    DISTRIBUTION="fedora"
+    DIST_VER="${DIST#fc}"
+fi
+
+if grep -q centos <<< "$DIST"; then
+    YUM=yum
+    DISTRIBUTION="centos"
+    DIST_VER="${DIST#centos}"
+fi
+
+if [ -n "$3" ]; then
+    PKGLISTFILE="$3"
+else
+    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list"
+    if [ "0$CACHE_CHROOT" -eq 1 ]; then
+        CHROOT_CACHE_FILE="${CACHEDIR}/chroot-${DIST}-base.tar"
+    fi
+fi
+
 if [ -f /etc/debian_version ]; then
     # On Debian system-release version isn't properly detected (because of
     # relocated rpmdb)
-    YUM_OPTS="$YUM_OPTS --releasever=${DISTRO#fc}"
+    YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 fi
 
 INITIAL=
@@ -38,11 +46,11 @@ INITIAL=
 if ! [ -d $DIR/home/user ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p $DIR
     tar xf "$CHROOT_CACHE_FILE" $DIR
-elif ! [ -d $DIR/home/user/.prepared_base ]; then
+elif ! [ -e $DIR/home/user/.prepared_base ]; then
     INITIAL=1
     mkdir -p $DIR
 
-    ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DISTRO"
+    ${PLUGIN_DIR}/prepare-chroot-base "$DIR" "$DIST"
 
     if ! [ -r $DIR/proc/cpuinfo ]; then
         mount -t proc proc $DIR/proc
@@ -50,8 +58,8 @@ elif ! [ -d $DIR/home/user/.prepared_base ]; then
     cp /etc/resolv.conf $DIR/etc/
 
     # Always install at least base pkgs
-    cp  ${PLUGIN_DIR}/yum.conf  $DIR/tmp/
-    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS `cat ${PLUGIN_DIR}/build-pkgs-base.list`
+    cp  ${PLUGIN_DIR}/yum.conf $DIR/tmp/
+    chroot $DIR $YUM install -c /tmp/yum.conf -y $YUM_OPTS $(cat ${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list)
 
     # setup user and group
     if [ -z "$USER_UID" -a -n "$SUDO_UID" ]; then
@@ -79,28 +87,46 @@ elif ! [ -d $DIR/home/user/.prepared_base ]; then
 
     # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
     chroot $DIR groupadd -rf uucp
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
+        chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
+    fi
+    if [ "${DISTRIBUTION}" == "centos" ]; then
+        chroot $DIR sh -c "chown -R user /home/user;su -c 'mkdir qubes-src' - user"
+    fi
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot $DIR rpm --rebuilddb 2> /dev/null
 else
     # update chroot
     chroot $DIR groupadd -rf uucp 2>/dev/null || :
-    chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
+        chroot $DIR sh -c "cd dev; /sbin/MAKEDEV generic loop"
+    fi
 fi
-${PLUGIN_DIR}/update-local-repo.sh $DISTRO
+
+${PLUGIN_DIR}/update-local-repo.sh $DIST
 cp ${PLUGIN_DIR}/repos/builder-local.repo $DIR/etc/yum.repos.d/
 sed -i -e "s#ROOT#$PWD#" $DIR/etc/yum.repos.d/*-local.repo
+
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
-    cp ${PLUGIN_DIR}/repos/qubes-repo-vm.repo $DIR/etc/yum.repos.d/
-    if [ "$DISTRO" = "$DIST_DOM0" ]; then
-        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0.repo $DIR/etc/yum.repos.d/
+    cp ${PLUGIN_DIR}/repos/qubes-repo-vm-${DISTRIBUTION}.repo $DIR/etc/yum.repos.d/
+    if [ "$DIST" = "$DIST_DOM0" ]; then
+        cp ${PLUGIN_DIR}/repos/qubes-repo-dom0-fedora.repo $DIR/etc/yum.repos.d/
     fi
-    sed -i -e "s#%DIST%#$DISTRO#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
+    sed -i -e "s#%DIST%#$DIST#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
-    if [ -r qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc ]; then
-        chroot $DIR rpm --import /dev/stdin < \
-            qubes-release-$USE_QUBES_REPO_VERSION-signing-key.asc || true
+
+    if [ "${DISTRIBUTION}" == "fedora" ]; then
+        QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-primary"
     fi
+    if [ "${DISTRIBUTION}" == "centos" ]; then
+        QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-centos"
+    fi
+
+    if [ -r "${PLUGIN_DIR}/keys/$QUBES_SIGNING_KEY" ]; then
+        cp "${PLUGIN_DIR}/keys/$QUBES_SIGNING_KEY" "$DIR/etc/pki/rpm-gpg/"
+        chroot $DIR rpm --import "/etc/pki/rpm-gpg/$QUBES_SIGNING_KEY" || true
+    fi
+
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
         if [ "$YUM" = "dnf" ]; then
             chroot $DIR dnf config-manager --set-enabled 'qubes-builder-*-current-testing'
