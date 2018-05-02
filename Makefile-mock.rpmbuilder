@@ -36,6 +36,9 @@ spec_pkg_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 dist-prepare-chroot:
 	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
 
+dist-build-dep:
+	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+
 ifeq ($(suffix $(PACKAGE)),.rpm)
 dist-package-build: srcrpm = $(PACKAGE)
 else
