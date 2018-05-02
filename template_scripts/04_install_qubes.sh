@@ -17,6 +17,12 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
         # symlink doesn't exists there yet
         chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
     fi
+    keypath="${SCRIPTSDIR}/../keys/RPM-GPG-KEY-qubes-${USE_QUBES_REPO_VERSION}-$DISTRIBUTION"
+    if [ -r "$keypath" ]; then
+        # use stdin to not copy the file into chroot. /dev/stdin
+        # symlink doesn't exists there yet
+        chroot_cmd rpm --import /proc/self/fd/0 < "$keypath"
+    fi
     if [ "0$USE_QUBES_REPO_TESTING" -gt 0 ]; then
         yumConfigRepository enable 'qubes-builder-*-current-testing'
     fi
