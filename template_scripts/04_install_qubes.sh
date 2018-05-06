@@ -11,6 +11,9 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -e "s/%QUBESVER%/$USE_QUBES_REPO_VERSION/g" \
         < ${SCRIPTSDIR}/../repos/qubes-repo-vm-$DISTRIBUTION.repo \
         > ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
+    if [ "x$QUBES_MIRROR" != "x" ]; then
+        sed -i "s#baseurl.*yum.qubes-os.org#baseurl = $QUBES_MIRROR#" ${INSTALLDIR}/etc/yum.repos.d/template-qubes-vm.repo
+    fi
     keypath="${BUILDER_DIR}/qubes-release-${USE_QUBES_REPO_VERSION}-signing-key.asc"
     if [ -r "$keypath" ]; then
         # use stdin to not copy the file into chroot. /dev/stdin

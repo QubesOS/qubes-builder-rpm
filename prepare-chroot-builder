@@ -112,6 +112,9 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     if [ "$DIST" = "$DIST_DOM0" ]; then
         cp ${PLUGIN_DIR}/repos/qubes-repo-dom0-fedora.repo $DIR/etc/yum.repos.d/
     fi
+    if [ "x$QUBES_MIRROR" != "x" ]; then
+        sed -i "s#baseurl.*yum.qubes-os.org#baseurl = $QUBES_MIRROR#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
+    fi
     sed -i -e "s#%DIST%#$DIST#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" $DIR/etc/yum.repos.d/qubes-repo-*.repo
 
