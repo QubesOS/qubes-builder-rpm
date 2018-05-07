@@ -21,8 +21,16 @@ if [ -r "${1}.in" ]; then
     # need to create a file due to a bug in process substitution (e.g. artwork package)
     tmp_spec=$(mktemp --tmpdir tmp.XXXXXX.spec)
     $(dirname $0)/generate-spec "${1}.in" "${tmp_spec}" 2> $ERR_OUTPUT
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "${tmp_spec}" 2> $ERR_OUTPUT
+    if [ "$2" = "%{SOURCE0}" ]; then
+        $(dirname "$0")/../tools/spectool --list-files --source 0 "${tmp_spec}" 2> $ERR_OUTPUT
+    else
+        rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "${tmp_spec}" 2> $ERR_OUTPUT
+    fi
     rm -f "${tmp_spec}"
 else
-    rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
+    if [ "$2" = "%{SOURCE0}" ]; then
+        $(dirname "$0")/../tools/spectool --list-files --source 0 "$1" 2> $ERR_OUTPUT
+    else
+        rpm -q $RPM_QUERY_DEFINES --qf "$2" --specfile "$1" 2> $ERR_OUTPUT
+    fi
 fi
