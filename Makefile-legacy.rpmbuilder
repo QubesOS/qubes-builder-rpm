@@ -2,7 +2,6 @@
 
 RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
 RPM_BUILD_DEFINES += --define "qubes_builder 1"
-RPM_BUILD_DEFINES += --define "_sourcedir $(DIST_SRC)"
 RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 
@@ -57,6 +56,8 @@ endif
 dist-build-dep: refresh-update.$(YUM)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
+dist-package-build: RPM_SOURCE_DIR ?= $(DIST_SRC)
+dist-package-build: RPM_BUILD_DEFINES += --define "_sourcedir $(RPM_SOURCE_DIR)"
 dist-package-build:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")

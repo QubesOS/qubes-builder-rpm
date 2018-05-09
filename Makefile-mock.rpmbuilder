@@ -2,8 +2,7 @@
 
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
-
-RPM_SOURCE_DIR = $(shell rpm --eval '%{_sourcedir}')
+RPM_SOURCE_DIR ?= $(DIST_SRC)
 
 MOCK_CFG = mock-$(DISTRIBUTION).cfg
 
@@ -54,7 +53,7 @@ endif
 		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
-		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(DIST_SRC)
+		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(RPM_SOURCE_DIR)
 ifdef INCREMENT_DEVEL_VERSIONS
 	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
 	echo $(devel_ver) > $(devel_ver_path)
