@@ -15,6 +15,7 @@ createrepo
 @printing
 bc
 bzip2
+cryptsetup
 git
 less
 lsof
