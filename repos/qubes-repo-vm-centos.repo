@@ -5,7 +5,7 @@ gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-centos
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
-enabled=0
+enabled=1
 
 [qubes-builder-vm-r%QUBESVER%-current-testing]
 name = Qubes OS Repository for VM (updates-testing)
