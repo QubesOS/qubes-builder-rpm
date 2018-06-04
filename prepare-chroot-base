@@ -17,10 +17,10 @@ RPM_VERSION="$(rpm --version | awk '{print $3}')"
 
 if [ "$(printf '%s\n' "$RPM_VERSION" "4.14.0" | sort -V | head -n1)" = "4.14.0" ]; then
     PGP_INVALID='SIGNATURES NOT OK'
-    PGP_NOTSIGNED='signatures OK'
+    PGP_SIGNED='signatures OK'
 else
     PGP_INVALID='PGP'
-    PGP_NOTSIGNED='pgp'
+    PGP_SIGNED=' pgp '
 fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
@@ -176,7 +176,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             echo "Filename: ${file} contains an invalid PGP signature. Exiting!"
             exit 1
         }
-        echo "${result_status}" | grep -q "$PGP_NOTSIGNED" || {
+        echo "${result_status}" | grep -q "$PGP_SIGNED" || {
             echo "Filename: ${file} is not signed.  Exiting!"
             exit 1
         }
