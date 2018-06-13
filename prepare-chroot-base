@@ -48,8 +48,9 @@ fi
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
     RPM_OPTS=()
-    if [ -e /etc/debian_version ]; then
+    if [ -e /etc/debian_version ] || grep -q openSUSE /etc/os-release; then
         # Debian by default keep rpmdb in ~/.rpmdb
+        # OpenSUSE by default keep rpmdb in /usr/lib/sysimage/rpm
         RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
     fi
     rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
