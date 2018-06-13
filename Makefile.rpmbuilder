@@ -30,7 +30,7 @@ RPM_BUILD_DEFINES += --define "dist .$(DIST)"
 
 ### Private "functions"
 # List packages produced by by given spec file(s)
-RPM_QUERY_DEFINES  = --define "dist .$(DIST)"
+RPM_QUERY_DEFINES += --define "dist .$(DIST)"
 RPM_QUERY_DEFINES += --define "qubes_builder 1"
 
 ifeq (fedora,$(DISTRIBUTION))
