@@ -139,7 +139,12 @@ ifeq (,$(PACKAGE_LIST))
 	@true
 else
 	@mkdir -p $(UPDATE_REPO)/rpm
-	@cd $(ORIG_SRC) && ln -f $(packages) $(UPDATE_REPO)/rpm/
+	@if [ -n "$(strip $(packages))" ]; then \
+		cd $(ORIG_SRC) && ln -f $(packages) $(UPDATE_REPO)/rpm/; \
+	else \
+		echo "`tput bold`No packages defined by $(PACKAGE_LIST), syntax error?`tput sgr0`"; \
+		exit 1; \
+	fi
 endif
 ifdef SNAPSHOT_FILE
 	@cd $(ORIG_SRC) && echo $(packages) > $(SNAPSHOT_FILE)
@@ -175,8 +180,9 @@ check-repo:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
-	@if [ -n "$(packages)" ]; then \
+	@if [ -n "$(strip $(packages))" ]; then \
 		cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(packages))) >/dev/null 2>&1 || exit 1; \
 	else \
-		true; \
+		echo "`tput bold`No packages defined by $(PACKAGE_LIST), syntax error?`tput sgr0`"; \
+		exit 1; \
 	fi
