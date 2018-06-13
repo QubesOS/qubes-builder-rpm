@@ -158,7 +158,7 @@ ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
 	for f in $(packages); do \
-		ln -f $(subst /$(TARGET_REPO)/,/$(SNAPSHOT_REPO)/,$(UPDATE_REPO))/rpm/`basename $$f` $(UPDATE_REPO)/rpm/ || exit 1; \
+		ln -f $(subst /$(TARGET_REPO)/,/$(SNAPSHOT_REPO)/,$(UPDATE_REPO)/)rpm/`basename $$f` $(UPDATE_REPO)/rpm/ || exit 1; \
 	done
 
 sign: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
