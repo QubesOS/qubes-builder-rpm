@@ -14,9 +14,10 @@ DIST_BUILD_DIR = /home/user
 ifneq (1,$(NO_ARCHIVE))
 # allow Makefile.builder in component to override this value
 GIT_TARBALL_NAME ?= $(notdir \
-		$(shell ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
-		"$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}"\
-		| cut -d ' ' -f 2))
+		$(shell [ -r "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))".in ] && \
+			ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
+			"$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" \
+			| cut -d ' ' -f 2))
 endif
 
 ### Local variables
