@@ -70,7 +70,7 @@ if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
         chroot_cmd dracut -f -a "qubes-vm" \
             /boot/initramfs-${kver}.img ${kver} || RETCODE=1
     done
-    chroot_cmd grub2-install "$dev" || RETCODE=1
+    chroot_cmd grub2-install --target=i386-pc "$dev" || RETCODE=1
     chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || RETCODE=1
     chroot_cmd umount /sys /dev
 fi
