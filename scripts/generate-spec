@@ -21,7 +21,7 @@ cp "$1" "$1.tmp"
 # 'rel', must contains list of release number corresponding to @REL@ @REL1@ ...
 cat "${ORIG_SRC}/version" | while read ver
 do
-    if [ "x$vnum" == "x" ]; then
+    if [ "x$vnum" = "x" ]; then
         sed -i "s|@VERSION@|$ver|g" "$1.tmp"
     else
         sed -i "s|@VERSION$vnum@|$ver|g" "$1.tmp"
@@ -32,7 +32,7 @@ done
 if [ -e "${ORIG_SRC}/rel" ]; then
 cat "${ORIG_SRC}/rel" | while read rel
 do
-    if [ "x$rnum" == "x" ]; then
+    if [ "x$rnum" = "x" ]; then
         sed -i "s|@REL@|$rel|g" "$1.tmp"
     else
         sed -i "s|@REL$rnum@|$rel|g" "$1.tmp"
