@@ -205,6 +205,16 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     if [ "${DISTRIBUTION}" = "centos" ]; then
         # For compatibility with others packages spec Centos 7 <=> Fedora 20
         echo "%fedora 20" >> ${INSTALLDIR}/etc/rpm/macros.dist
+
+        if [ "x$CENTOS_MIRROR" != "x" ]; then
+            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Base.repo"
+            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Base.repo"
+        fi
+
+        if [ "x$EPEL_MIRROR" != "x" ]; then
+            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
+            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
+        fi
     fi
 
     touch "${INSTALLDIR}/tmp/.prepared_base"
