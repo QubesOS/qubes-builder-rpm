@@ -50,7 +50,12 @@ fi
 
 
 if ! grep -q LANG= ${INSTALLDIR}/etc/locale.conf 2>/dev/null; then
-    echo "LANG=C.UTF-8" >> ${INSTALLDIR}/etc/locale.conf
+    if [ "$DISTRIBUTION" == "fedora" ]; then
+        echo "LANG=C.UTF-8" >> ${INSTALLDIR}/etc/locale.conf
+    fi
+    if [ "$DISTRIBUTION" == "centos" ]; then
+        echo "LANG=en_US.UTF-8" >> ${INSTALLDIR}/etc/locale.conf
+    fi
 fi
 
 if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
