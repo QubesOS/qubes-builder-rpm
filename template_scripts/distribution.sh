@@ -217,10 +217,17 @@ function installPackages() {
             packages_list="$@"
         fi
     else
+        # WIP: should be improuved for multiple patterns search
         if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
             getFileLocations packages_list "packages.list" "${DIST}_${TEMPLATE_FLAVOR}"
+            if [ -z "${packages_list}" ]; then
+                getFileLocations packages_list "packages.list" "${DIST//[0-9]*}_${TEMPLATE_FLAVOR}"
+            fi
         else
             getFileLocations packages_list "packages.list" "${DIST}"
+            if [ -z "${packages_list}" ]; then
+                getFileLocations packages_list "packages.list" "${DIST//[0-9]*}"
+            fi
         fi
         if [ -z "${packages_list}" ]; then
             error "Can not locate a package.list file!"
