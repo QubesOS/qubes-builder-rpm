@@ -38,11 +38,11 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
 fi
 
 YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
-if type yumdownloader >/dev/null 2>/dev/null; then
+if type dnf >/dev/null 2>/dev/null; then
+    YUM="dnf $YUM_OPTS --releasever "${DIST_VER}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
+elif type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader --resolve --destdir=${DOWNLOADDIR}"
-elif type dnf >/dev/null 2>/dev/null; then
-    YUM="dnf $YUM_OPTS --releasever "${DIST_VER}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
