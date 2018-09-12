@@ -11,7 +11,7 @@ endif
 
 ifeq (fedora,$(DISTRIBUTION))
 	YUM := dnf
-	YUM_BUILDDEP := dnf builddep --allowerasing --best
+	YUM_BUILDDEP := dnf builddep
 endif
 
 ifeq (centos,$(DISTRIBUTION))
