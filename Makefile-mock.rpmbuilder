@@ -37,23 +37,26 @@ dist-prepare-chroot:
 
 dist-build-dep:
 	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-
-ifeq ($(suffix $(PACKAGE)),.rpm)
-dist-package-build: srcrpm = $(PACKAGE)
-else
-dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE))*src.rpm
-endif
-dist-package-build:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
+
+dist-src-package-build:
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
 		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(RPM_SOURCE_DIR)
+
+ifeq ($(suffix $(PACKAGE)),.rpm)
+dist-package-build: srcrpm = $(PACKAGE)
+else
+dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE))*src.rpm
+dist-package-build: dist-src-package-build
+endif
+dist-package-build:
+ifndef PACKAGE
+	$(error "PACKAGE need to be set!")
+endif
 ifdef INCREMENT_DEVEL_VERSIONS
 	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR)
 	echo $(devel_ver) > $(devel_ver_path)
