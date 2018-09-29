@@ -11,7 +11,7 @@ endif
 
 ifeq (fedora,$(DISTRIBUTION))
 	YUM := dnf
-	YUM_BUILDDEP := dnf builddep
+	YUM_BUILDDEP := dnf builddep --spec
 endif
 
 ifeq (centos,$(DISTRIBUTION))
@@ -56,10 +56,10 @@ endif
 dist-build-dep: dist-build-dep$(suffix $(PACKAGE)) refresh-update.$(YUM)
 
 dist-build-dep.spec:
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y --spec $(PACKAGE)'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
 
 dist-build-dep.rpm:
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y --spec <(rpm2cpio $(PACKAGE)|cpio -civ --to-stdout '*.spec')'
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y <(rpm2cpio $(PACKAGE)|cpio -civ --to-stdout '*.spec')'
 
 dist-package-build: RPM_SOURCE_DIR ?= $(DIST_SRC)
 dist-package-build: RPM_BUILD_DEFINES += --define "_sourcedir $(RPM_SOURCE_DIR)"
