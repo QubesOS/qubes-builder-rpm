@@ -31,7 +31,7 @@ if [ -r "${1}.in" ]; then
     if [ "$2" = "%{SOURCE0}" ]; then
         $(dirname "$0")/../tools/spectool --list-files --source 0 "${tmp_spec}" 2> $ERR_OUTPUT
     else
-        rpm -q --define "dist $DIST" \
+        rpm -q --define "dist .$DIST" \
             --qf "$2" --specfile "${tmp_spec}" 2> $ERR_OUTPUT
     fi
     rm -f "${tmp_spec}"
