@@ -53,7 +53,7 @@ endif
 	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
 
-dist-build-dep: dist-build-dep$(suffix $(PACKAGE)) refresh-update.$(YUM)
+dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))
 
 dist-build-dep.spec:
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) -y $(PACKAGE)'
