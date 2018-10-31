@@ -20,7 +20,6 @@ stalonetray
 firefox
 thunderbird
 keepassx
-perl-File-MimeInfo
 gnome-terminal
 Terminal
 --exclude=kdegames
