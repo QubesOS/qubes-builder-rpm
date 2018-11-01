@@ -58,7 +58,7 @@ if ! grep -q LANG= ${INSTALLDIR}/etc/locale.conf 2>/dev/null; then
     fi
 fi
 
-if [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
+if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
     # if root.img have partitions, install kernel and grub there
     yumInstall kernel || RETCODE=1
     for kver in $(ls ${INSTALLDIR}/lib/modules); do
