@@ -51,3 +51,5 @@ dnf-utils
 --exclude=libreoffice*,unoconv
 --exclude=rng-tools,avahi,gssproxy,openssh-server
 --exclude=yum-utils
+--exclude=gnome-user-docs
+--exclude=geolite2-city
