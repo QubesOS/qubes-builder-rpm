@@ -41,6 +41,11 @@ do
 done
 fi
 
+# Handle suffix (e.g. kernel-latest)
+if [ -e "${ORIG_SRC}/suffix" ]; then
+sed -i -e "s:@SUFFIX@:`cat ${ORIG_SRC}/suffix`:g" "$1.tmp"
+fi
+
 # Handle default rel and backend_vmm
 sed -i \
     -e "s:@REL@:`cat ${ORIG_SRC}/rel 2>/dev/null || echo 1`:g" \
