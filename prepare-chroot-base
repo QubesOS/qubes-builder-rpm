@@ -2,13 +2,13 @@
 # vim: set ts=4 sw=4 sts=4 et :
 
 set -e
-if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
     set -x
 else
     YUM_OPTS="$YUM_OPTS -q"
 fi
 
-PLUGIN_DIR="`dirname $0`"
+PLUGIN_DIR=$(dirname "$0")
 
 INSTALLDIR=$1
 DIST=$2
@@ -53,17 +53,17 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         # OpenSUSE by default keep rpmdb in /usr/lib/sysimage/rpm
         RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
     fi
-    rpm "${RPM_OPTS[@]}" --initdb --root=${INSTALLDIR}
+    rpm "${RPM_OPTS[@]}" --initdb --root="${INSTALLDIR}"
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
-        rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary
+        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" \
+            "${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary"
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        rpm "${RPM_OPTS[@]}" --import --root=${INSTALLDIR} \
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}\
-            ${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}
+        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" \
+            "${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}"\
+            "${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}"
     fi
 
     echo "-> Retreiving core RPM packages..."
@@ -131,7 +131,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             }' "${CENTOS_MIRROR%/}" \
                 < "$yumconf" \
                 > "$yumconftmp"
-            mv $yumconftmp $yumconf
+            mv "$yumconftmp" "$yumconf"
         fi
 
         if [ "x${EPEL_MIRROR}" != "x" ]; then
@@ -146,19 +146,19 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             }' "${EPEL_MIRROR%/}" \
                 < "$yumconf" \
                 > "$yumconftmp"
-            mv $yumconftmp $yumconf
+            mv "$yumconftmp" "$yumconf"
         fi
     fi
 
+    # shellcheck disable=SC2086
     $YUM -c "$yumconf" -y \
-        --installroot="${INSTALLDIR}" \
-        ${INITIAL_PACKAGES}
+        --installroot="${INSTALLDIR}" ${INITIAL_PACKAGES}
     rm -f "$yumconf"
 
     echo "-> Verifying signatures..."
     set +x
     for file in "${DOWNLOADDIR}"/*; do
-        result=$(rpm "${RPM_OPTS[@]}" --root=${INSTALLDIR} --checksig "${file}") || {
+        result=$(rpm "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
@@ -175,14 +175,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     echo "-> Printing hashes of downloaded packages:"
     sha256sum "${DOWNLOADDIR}/"*.rpm
-    if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+    if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
         set -x
     fi
 
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
     for f in null urandom zero random console; do
-        cp -a /dev/$f $INSTALLDIR/dev/
+        cp -a /dev/$f "$INSTALLDIR/dev/"
     done
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
@@ -194,7 +194,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
         # For compatibility with others packages spec Centos 7 <=> Fedora 20
-        echo "%fedora 20" >> ${INSTALLDIR}/etc/rpm/macros.dist
+        echo "%fedora 20" >> "${INSTALLDIR}/etc/rpm/macros.dist"
 
         if [ "x$CENTOS_MIRROR" != "x" ]; then
             sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Base.repo"
