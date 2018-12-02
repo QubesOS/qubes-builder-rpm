@@ -5,7 +5,7 @@ set -e
 [ -z "$1" ] && { echo "Usage: $0 <dist>"; exit 1; }
 
 REPO_DIR=$BUILDER_REPO_DIR
-DIST=$1
+# DIST=$1
 
 mkdir -p "$REPO_DIR/rpm"
 if [ -e "$REPO_DIR/repodata/repomd.xml" ]; then

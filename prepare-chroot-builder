@@ -41,13 +41,10 @@ if [ -f /etc/debian_version ]; then
     YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 fi
 
-INITIAL=
-
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p "$DIR"
     tar xf "$CHROOT_CACHE_FILE" "$DIR"
 elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
-    INITIAL=1
     mkdir -p "$DIR"
 
     "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
@@ -156,7 +153,7 @@ touch "$DIR"/etc/fstab
 chmod 644 "$DIR"/etc/fstab
 
 PKGGROUPS=$(cat "$PKGLISTFILE")
-echo "-> Installing package groups..."
+printf "%s" "-> Installing package groups..."
 # shellcheck disable=SC2086,SC2046
 chroot "$DIR" "$YUM" install -y $YUM_OPTS $PKGGROUPS
 

@@ -39,7 +39,7 @@ fi
 
 YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
 if type dnf >/dev/null 2>/dev/null; then
-    YUM="dnf $YUM_OPTS --releasever "${DIST_VER}" --downloaddir=${DOWNLOADDIR} --downloadonly install"
+    YUM="dnf $YUM_OPTS --releasever ${DIST_VER} --downloaddir=${DOWNLOADDIR} --downloadonly install"
 elif type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
     YUM="yumdownloader -q --resolve --destdir=${DOWNLOADDIR}"

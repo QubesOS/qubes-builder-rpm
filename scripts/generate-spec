@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-if [ "${VERBOSE:-0}" -ge 2 -o "${DEBUG:-0}" -eq 1 ]; then
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
     set -x
 fi
 
@@ -19,7 +19,7 @@ cp "$1" "$1.tmp"
 # Handle sources with multiples package/version/release:
 # 'version' must contains list of version number corresponding to @VERSION@ @VERSION1@ ...
 # 'rel', must contains list of release number corresponding to @REL@ @REL1@ ...
-cat "${ORIG_SRC}/version" | while read ver
+while read -r ver
 do
     if [ "x$vnum" = "x" ]; then
         sed -i "s|@VERSION@|$ver|g" "$1.tmp"
@@ -27,23 +27,23 @@ do
         sed -i "s|@VERSION$vnum@|$ver|g" "$1.tmp"
     fi
     vnum=$(( vnum + 1 ))
-done
+done < "${ORIG_SRC}/version"
 
 if [ -e "${ORIG_SRC}/rel" ]; then
-cat "${ORIG_SRC}/rel" | while read rel
-do
-    if [ "x$rnum" = "x" ]; then
-        sed -i "s|@REL@|$rel|g" "$1.tmp"
-    else
-        sed -i "s|@REL$rnum@|$rel|g" "$1.tmp"
-    fi
-    rnum=$(( rnum + 1 ))
-done
+    while read -r rel
+    do
+        if [ "x$rnum" = "x" ]; then
+            sed -i "s|@REL@|$rel|g" "$1.tmp"
+        else
+            sed -i "s|@REL$rnum@|$rel|g" "$1.tmp"
+        fi
+        rnum=$(( rnum + 1 ))
+    done < "${ORIG_SRC}/rel"
 fi
 
 # Handle default rel and backend_vmm
 sed -i \
-    -e "s:@REL@:`cat ${ORIG_SRC}/rel 2>/dev/null || echo 1`:g" \
+    -e "s:@REL@:$(cat "${ORIG_SRC}/rel" 2>/dev/null || echo 1):g" \
     -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$1.tmp"
 
 # Handle changelog
@@ -53,7 +53,7 @@ else
     sed -i '/@CHANGELOG@/d' "$1.tmp"
 fi
 
-cat "$1.tmp" > $2
+cat "$1.tmp" > "$2"
 rm -rf "$1.tmp"
 
 # TODO: improve handlers
