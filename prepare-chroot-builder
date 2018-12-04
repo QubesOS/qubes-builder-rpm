@@ -90,7 +90,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
         chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
     fi
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir qubes-src' - user"
+        chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
     fi
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot "$DIR" rpm --rebuilddb 2> /dev/null
