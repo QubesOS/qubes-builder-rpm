@@ -52,10 +52,8 @@ sed -i \
     -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$1.tmp"
 
 # Handle changelog
-if [ -e "${ORIG_SRC}/changelog" ]; then
-    sed -i -e "/@CHANGELOG@/{r ${ORIG_SRC}/changelog" -e "d}" "$1.tmp"
-else
-    sed -i '/@CHANGELOG@/d' "$1.tmp"
+if grep -q "@CHANGELOG@" "$1.tmp"; then
+    "$(dirname "$0")"/generate-changelog "${ORIG_SRC}" "$1.tmp"
 fi
 
 cat "$1.tmp" > "$2"

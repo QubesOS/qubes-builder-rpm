@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Based on PLD Linux:
+# https://git.pld-linux.org/?p=packages/rpm-build-tools.git;a=blob;f=builder.sh;h=3c9a33648d2cb1b1410939c16637c7d9cac3b09d;hb=HEAD#l468
+
+# create tempfile. as secure as possible
+my_tempfile() {
+        prefix=builder.$PACKAGE_NAME
+        mktemp --tmpdir -t "$prefix.XXXXXX"
+}
+
+ORIG_SRC="$1"
+SPECFILE="$2"
+gitlog=$(my_tempfile) speclog=$(my_tempfile)
+
+log_entries=50
+
+# rpm5.org/rpm.org do not parse any other date format than 'Wed Jan 1 1997'
+# otherwise i'd use --date=iso here
+# http://rpm5.org/cvs/fileview?f=rpm/build/parseChangelog.c&v=2.44.2.1
+# http://rpm.org/gitweb?p=rpm.git;a=blob;f=build/parseChangelog.c;h=56ba69daa41d65ec9fd18c9f371b8ff14118cdca;hb=a113baa510a004476edc44b5ebaaf559238a18b6#l33
+# NOTE: changelog date is always in UTC for rpmbuild
+# * 1265749244 +0000 Random Hacker <nikt@pld-linux.org> 9370900
+git -C "$ORIG_SRC" rev-list --date-order -${log_entries:-20} HEAD 2>/dev/null | while read -r sha1; do
+        git -C "$ORIG_SRC" log -n 1 "$sha1" --format=format:"* %cd %an <%ae> - %h%n- %s%n%n" --date=raw | sed -re 's/^- +- */- /'| sed '/^$/q'
+done > "$gitlog"
+
+# add link to full git logs
+giturl="https://github.com/QubesOS/qubes-${COMPONENT}"
+gitauthor="Qubes OS Team <qubes-devel@groups.google.com>"
+gitdate=$(git -C "$ORIG_SRC" log -n 1 --date=raw --format=format:"%cd")
+LC_ALL=C gawk -vgiturl="$giturl" -vgitauthor="$gitauthor" -vgitdate="$gitdate" 'BEGIN{
+        printf("* %s %s\n- For complete changelog see: %s\n", strftime("%a %b %d %Y", gitdate), gitauthor, giturl);
+        print;
+        exit
+}' > "$speclog"
+
+LC_ALL=C gawk '/^\* /{printf("* %s %s\n", strftime("%a %b %d %Y", $2), substr($0, length($1)+length($2)+length($3)+4)); next}{print}' "$gitlog" >> "$speclog"
+sed -i -e "/@CHANGELOG@/{r ${speclog}" -e "d}" "$SPECFILE"
+rm -f "$gitlog" "$speclog"
