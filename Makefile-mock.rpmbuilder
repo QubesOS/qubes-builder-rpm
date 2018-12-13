@@ -76,7 +76,7 @@ dist-copy-out:
 	echo -n > $(pkg_list_path);\
 	for pkg in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm; do\
 		relative_path=`realpath --relative-to=$(CHROOT_DIR)/$(DIST_SRC) $$pkg`;\
-		echo "      $(ORIG_SRC)/$(OUTPUT_DIR)/$$relative_path" >&3 ;\
+		echo "      $(ORIG_SRC)/$$relative_path" >&3 ;\
 		echo "$$relative_path" >> $(pkg_list_path);\
 	done;\
 	mkdir -p $(BUILDER_REPO_DIR)/rpm;\
