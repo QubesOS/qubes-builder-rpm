@@ -70,6 +70,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
         INITIAL_PACKAGES="filesystem setup fedora-release dnf dnf-plugins-core"
+        # avoid pulling in glibc-all-langpacks to save space
+        INITIAL_PACKAGES="$INITIAL_PACKAGES glibc-langpack-en"
 
         if [ "${DIST_VER}" -ge 26 ]; then
             # coreutils conflicts with coreutils-single
