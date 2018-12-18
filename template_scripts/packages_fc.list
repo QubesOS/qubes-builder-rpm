@@ -53,3 +53,4 @@ dnf-utils
 --exclude=yum-utils
 --exclude=gnome-user-docs
 --exclude=geolite2-city
+--exclude=webkit2gtk3-plugin-process-gtk2
