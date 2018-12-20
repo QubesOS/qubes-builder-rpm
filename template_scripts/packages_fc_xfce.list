@@ -48,7 +48,7 @@ qt5ct
 --exclude=qemu-img,qemu-common,qemu-system
 --exclude=qemu-*,libvirt*,spice-glib,spice-gtk3,vinagre
 --exclude=libreoffice*,unoconv
---exclude=rng-tools,avahi,gssproxy,openssh-server
+--exclude=rng-tools,avahi,gssproxy,openssh-server,nss-mdns
 --exclude=yum-utils
 --exclude==autofs
 --exclude==acpid
