@@ -39,11 +39,15 @@ if [ -e "${ORIG_SRC}/rel" ]; then
         fi
         rnum=$(( rnum + 1 ))
     done < "${ORIG_SRC}/rel"
+else
+    if grep -q "@REL@" "$1.tmp"; then
+        echo "@REL@ found in spec, but no $ORIG_SRC/rel file" >&2
+        exit 1
+    fi
 fi
 
 # Handle default rel and backend_vmm
 sed -i \
-    -e "s:@REL@:$(cat "${ORIG_SRC}/rel" 2>/dev/null || echo 1):g" \
     -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$1.tmp"
 
 # Handle changelog
