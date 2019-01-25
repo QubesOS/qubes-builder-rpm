@@ -107,14 +107,13 @@ cp "${PLUGIN_DIR}/repos/builder-local.repo" "$DIR/etc/yum.repos.d/"
 sed -i -e "s#ROOT#$PWD#" "$DIR"/etc/yum.repos.d/*-local.repo
 
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
-    cp "${PLUGIN_DIR}/repos/qubes-repo-vm-${DISTRIBUTION}.repo" "$DIR/etc/yum.repos.d/"
-    if [ "$DIST" = "$DIST_DOM0" ]; then
-        cp "${PLUGIN_DIR}/repos/qubes-repo-dom0-fedora.repo" "$DIR/etc/yum.repos.d/"
-    fi
+    cp "${PLUGIN_DIR}/repos/qubes-repo-${PACKAGE_SET}-${DISTRIBUTION}.repo" "$DIR/etc/yum.repos.d/"
+
     if [ "x$QUBES_MIRROR" != "x" ]; then
         sed -i "s#baseurl.*yum.qubes-os.org#baseurl = $QUBES_MIRROR#" \
             "$DIR"/etc/yum.repos.d/qubes-repo-*.repo
     fi
+
     sed -i -e "s#%DIST%#$DIST#" "$DIR"/etc/yum.repos.d/qubes-repo-*.repo
     sed -i -e "s#%QUBESVER%#$USE_QUBES_REPO_VERSION#" "$DIR"/etc/yum.repos.d/qubes-repo-*.repo
 
