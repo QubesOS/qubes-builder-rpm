@@ -1,4 +1,4 @@
-# This file is included from Makefile.fedora if package do not define RPM_USE_MOCKBUILD
+# This file is included from Makefile.fedora if USE_DIST_BUILD_TOOLS is not defined
 
 RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
 RPM_BUILD_DEFINES += --define "qubes_builder 1"

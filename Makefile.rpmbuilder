@@ -4,7 +4,7 @@
 #
 # Variables supposed to be in component's Makefile.builder:
 #  RPM_SPEC_FILES - list of spec files to build
-#  RPM_USE_MOCKBUILD - if set to 1, use new "mock" build
+#  USE_DIST_BUILD_TOOLS - if set to 1, use new "mock" build
 
 ### Variables required Makefile.generic
 # Use spec files list as PACKAGE_LIST
@@ -117,7 +117,7 @@ endif
 
 dist-package: dist-package-build
 
-ifeq (1,$(RPM_USE_MOCKBUILD))
+ifeq (1,$(USE_DIST_BUILD_TOOLS))
 include $(RPM_PLUGIN_DIR)Makefile-mock.rpmbuilder
 else
 include $(RPM_PLUGIN_DIR)Makefile-legacy.rpmbuilder

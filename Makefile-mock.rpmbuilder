@@ -1,4 +1,4 @@
-# This file is included from Makefile.fedora if package defines RPM_USE_MOCKBUILD
+# This file is included from Makefile.fedora if USE_DIST_BUILD_TOOLS is defined
 
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
