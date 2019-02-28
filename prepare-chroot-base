@@ -110,7 +110,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        INITIAL_PACKAGES="filesystem setup centos-release epel-release yum yum-utils"
+        INITIAL_PACKAGES="filesystem setup centos-release epel-release yum yum-utils centos-release-xen-410"
 
         # Add groupadd, su etc.
         INITIAL_PACKAGES="$INITIAL_PACKAGES shadow-utils util-linux"
