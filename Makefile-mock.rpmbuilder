@@ -57,6 +57,7 @@ else
 dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_ver_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)).src.rpm
 dist-package-build: dist-src-package-build
 endif
+dist-package-build: buildinfo = $(notdir $(srcrpm:%.src.rpm=%.$(RPM_ARCH).buildinfo))
 dist-package-build:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
@@ -70,6 +71,13 @@ endif
 		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
 		$(RPM_BUILD_DEFINES) --rebuild $(srcrpm)
+	sudo $(MOCK_ENV) $(MOCK) \
+		'--plugin-option=bind_mount:dirs=[("$(RPM_PLUGIN_DIR)", "/builder-rpm")]' \
+		-q -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		$(MOCK_EXTRA_OPTS) \
+		$(RPM_BUILD_DEFINES) --chroot \
+		'/builder-rpm/scripts/rpmbuildinfo /builddir/build/SRPMS/$(notdir $(srcrpm))' \
+		> $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/$(buildinfo)
 
 dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
 dist-copy-out:
@@ -78,12 +86,16 @@ dist-copy-out:
 	shopt -s nullglob; shopt -s globstar;\
 	mkdir -p "$(ORIG_SRC)/$(OUTPUT_DIR)";\
 	echo -n > $(pkg_list_path);\
-	for pkg in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm; do\
+	for pkg in $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm \
+			$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*.buildinfo; do\
 		relative_path=`realpath --relative-to=$(CHROOT_DIR)/$(DIST_SRC) $$pkg`;\
 		echo "      $(ORIG_SRC)/$$relative_path" >&3 ;\
 		echo "$$relative_path" >> $(pkg_list_path);\
 	done;\
 	mkdir -p $(BUILDER_REPO_DIR)/rpm;\
 	ln -f -t $(BUILDER_REPO_DIR)/rpm $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm;\
-	mv -t $(ORIG_SRC)/$(OUTPUT_DIR) $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm
+	ln -f -t $(BUILDER_REPO_DIR)/rpm $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*.buildinfo;\
+	mv -t $(ORIG_SRC)/$(OUTPUT_DIR) $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm;\
+	mv $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*.buildinfo \
+		$(ORIG_SRC)/$(OUTPUT_DIR)/
 

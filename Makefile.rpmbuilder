@@ -26,6 +26,8 @@ ifndef OUTPUT_DIR
 OUTPUT_DIR= rpm
 endif
 
+RPM_ARCH := $(shell uname -m)
+
 # Use += to allow Makefile.builder define some initial value
 RPM_BUILD_DEFINES += --define "dist .$(DIST)"
 
