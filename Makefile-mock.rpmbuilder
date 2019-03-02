@@ -31,6 +31,10 @@ MOCK_ENV = DIST=$(DIST) \
 spec_pkg_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	rpm -q $(RPM_QUERY_DEFINES) --qf '%{NAME}\n' --specfile $(1) | head -n 1)
 
+# full name with version of base package - useful for src.rpm name build
+spec_pkg_ver_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
+    rpm -q $(RPM_QUERY_DEFINES) --qf '%{NAME}-%{VERSION}-%{RELEASE}\n' --specfile $(1) | head -n 1)
+
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot:
 	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
@@ -50,7 +54,7 @@ dist-src-package-build:
 ifeq ($(suffix $(PACKAGE)),.rpm)
 dist-package-build: srcrpm = $(PACKAGE)
 else
-dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE))*src.rpm
+dist-package-build: srcrpm = $(CHROOT_DIR)$(DIST_SRC)/$(OUTPUT_DIR)/$(call spec_pkg_ver_name,$(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)).src.rpm
 dist-package-build: dist-src-package-build
 endif
 dist-package-build:
