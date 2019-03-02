@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# Update rpm buildinfo file after signing packages
+
+# Usage: $0 <buildinfo file>
+# Updated builinfo file is printed to stdout
+# Packages referenced there are assumed to be present in the same directory
+# The script assumes Signed-Checksum-Sha256 (if any) is the last field and
+# Format: is the first
+
+set -e
+
+buildinfo="$1"
+[ -r "$buildinfo" ]
+
+dir="$(dirname "$buildinfo")"
+
+# Print everything until old Signed-Checksum-Sha256: header, skipping signature
+# header if any
+sed -n '/^Format:/,/^Signed-Checksum-Sha256:/{/^Signed-Checksum-Sha256/d; p}' < "$buildinfo"
+
+echo "Signed-Checksum-Sha256:"
+
+# Then, for each file listed in Checksum-Sha256, add it to Signed-Checksum-Sha256
+sed -n '/^Checksum-Sha256:/,/^[^ ]/{ /^ /p}' < "$buildinfo" |\
+while read -r _ size name; do
+    checksum=$(sha256sum -b "$dir/$name" | cut -c 1-64)
+    size=$(stat -c '%s' "$dir/$name")
+    printf ' %s %s %s\n' "$checksum" "$size" "$name"
+done

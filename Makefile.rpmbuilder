@@ -71,9 +71,12 @@ endif
 
 endif
 
+BUILDINFO_SIGN_CMD ?= $(firstword $(GNUPG) gpg2)
+BUILDINFO_SIGN_CMD += --clearsign
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256
 ifneq (,$(SIGN_KEY))
+BUILDINFO_SIGN_CMD += --local-user $(SIGN_KEY)
 RPMSIGN_OPTS += --key-id=$(SIGN_KEY)
 endif
 
@@ -172,8 +175,13 @@ sign:
 ifeq (,$(PACKAGE_LIST))
 	@true
 else
+# buildinfo should be the last on the list, so update-rpmbuildinfo will
+# collect hashes of already signed packages
 	@cd $(ORIG_SRC) && for pkg in $(packages); do \
-		if ! rpm -K $$pkg | grep -qi pgp; then \
+		if [ "$${pkg##*.}" = "buildinfo" ]; then \
+			$(RPM_PLUGIN_DIR)scripts/update-rpmbuildinfo "$$pkg" | $(BUILDINFO_SIGN_CMD) > "$$pkg".tmp && \
+			mv -f "$$pkg".tmp "$$pkg"; \
+		elif ! rpm -K $$pkg | grep -qi pgp; then \
 			setsid -w rpmsign $(RPMSIGN_OPTS) --addsign $$pkg </dev/null || exit 1; \
 		fi; \
 	done
