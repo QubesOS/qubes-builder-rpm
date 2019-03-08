@@ -24,6 +24,22 @@ jobs:
   include:
     - env: TEST=shellcheck
       script: shellcheck prepare-chroot-base prepare-chroot-builder update-local-repo.sh scripts/*
+    # example VM package, without upstream tarball
+    - script: ~/qubes-builder/scripts/travis-build core-vchan-xen
+      env: DISTS_VM=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
+    # example dom0 package
+    - script: ~/qubes-builder/scripts/travis-build linux-utils
+      env: DIST_DOM0=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
+    # example package, with upstream tarball
+    - script: ~/qubes-builder/scripts/travis-build linux-scrypt
+      env: DISTS_VM=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
+    # example centos7 package, with upstream tarball and no qubes repos
+    - script: ~/qubes-builder/scripts/travis-build python-u2flib-host
+      env: DISTS_VM=centos7
+    # example package with src.rpms
+    - script: ~/qubes-builder/scripts/travis-build linux-dom0-updates
+      env: DIST_DOM0=fc25 BRANCH_linux_dom0_updates=release4.0
+
 
 # don't build tags which are meant for code signing only
 branches:
