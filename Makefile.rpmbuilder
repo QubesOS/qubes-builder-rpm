@@ -118,6 +118,7 @@ dist-package: devel_ver_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).de
 dist-package: devel_ver_prev = $(shell cat $(devel_ver_path) 2>/dev/null)
 dist-package: devel_ver := $(shell expr $(devel_ver_prev) + 1)
 dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
+dist-package: RPM_QUERY_DEFINES += --define "dist .$(devel_ver).$(DIST)"
 endif
 
 dist-package: dist-package-build
