@@ -183,10 +183,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         set -x
     fi
 
-    echo "-> Installing core RPM packages..."
-    rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
-
     # Prepare /dev nodes
+    mkdir -p "${INSTALLDIR}/dev/"
     for f in null urandom zero random console; do
         cp -a /dev/$f "$INSTALLDIR/dev/"
     done
@@ -198,6 +196,9 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     do
         mknod -m 0666 "$INSTALLDIR/dev/loop$i" b 7 "$i"
     done
+
+    echo "-> Installing core RPM packages..."
+    rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
         if [ "x$FEDORA_MIRROR" != "x" ]; then
