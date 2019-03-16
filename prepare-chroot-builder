@@ -41,6 +41,15 @@ if [ -f /etc/debian_version ]; then
     YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 fi
 
+prepare_chroot_proc () {
+    mount -t proc proc "$DIR/proc"
+
+    chroot "$DIR" ln -sf /proc/self/fd /dev/fd
+    chroot "$DIR" ln -sf /proc/self/fd/0 /dev/stdin
+    chroot "$DIR" ln -sf /proc/self/fd/1 /dev/stdout
+    chroot "$DIR" ln -sf /proc/self/fd/2 /dev/stderr
+}
+
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p "$DIR"
     tar xf "$CHROOT_CACHE_FILE" "$DIR"
@@ -50,8 +59,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
     "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
 
     if ! [ -r "$DIR/proc/cpuinfo" ]; then
-        mount -t proc proc "$DIR/proc"
-        chroot "$DIR" ln -sf /proc/self/fd /dev/fd
+        prepare_chroot_proc
     fi
     cp /etc/resolv.conf "$DIR/etc/"
 
@@ -128,8 +136,7 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
 fi
 
 if ! [ -r "$DIR/proc/cpuinfo" ]; then
-    mount -t proc proc "$DIR/proc"
-    chroot "$DIR" ln -sf /proc/self/fd /dev/fd
+    prepare_chroot_proc
 fi
 
 if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
