@@ -51,6 +51,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
 
     if ! [ -r "$DIR/proc/cpuinfo" ]; then
         mount -t proc proc "$DIR/proc"
+        chroot "$DIR" ln -sf /proc/self/fd /dev/fd
     fi
     cp /etc/resolv.conf "$DIR/etc/"
 
@@ -128,6 +129,7 @@ fi
 
 if ! [ -r "$DIR/proc/cpuinfo" ]; then
     mount -t proc proc "$DIR/proc"
+    chroot "$DIR" ln -sf /proc/self/fd /dev/fd
 fi
 
 if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
