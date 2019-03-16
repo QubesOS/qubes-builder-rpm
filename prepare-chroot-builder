@@ -84,22 +84,10 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
         chroot "$DIR" usermod -u "$USER_UID" user
     fi
 
-    # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
-    chroot "$DIR" groupadd -rf uucp
-    if [ "${DISTRIBUTION}" = "fedora" ]; then
-        chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
-    fi
-    if [ "${DISTRIBUTION}" = "centos" ]; then
-        chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
-    fi
+    chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
+
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot "$DIR" rpm --rebuilddb 2> /dev/null
-else
-    # update chroot
-    chroot "$DIR" groupadd -rf uucp 2>/dev/null || :
-    if [ "${DISTRIBUTION}" = "fedora" ]; then
-        chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop"
-    fi
 fi
 
 "${PLUGIN_DIR}/update-local-repo.sh" "$DIST"
