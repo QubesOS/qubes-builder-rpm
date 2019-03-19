@@ -41,6 +41,15 @@ if [ -f /etc/debian_version ]; then
     YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 fi
 
+prepare_chroot_proc () {
+    mount -t proc proc "$DIR/proc"
+
+    chroot "$DIR" ln -sf /proc/self/fd /dev/fd
+    chroot "$DIR" ln -sf /proc/self/fd/0 /dev/stdin
+    chroot "$DIR" ln -sf /proc/self/fd/1 /dev/stdout
+    chroot "$DIR" ln -sf /proc/self/fd/2 /dev/stderr
+}
+
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p "$DIR"
     tar xf "$CHROOT_CACHE_FILE" "$DIR"
@@ -50,7 +59,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
     "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
 
     if ! [ -r "$DIR/proc/cpuinfo" ]; then
-        mount -t proc proc "$DIR/proc"
+        prepare_chroot_proc
     fi
     cp /etc/resolv.conf "$DIR/etc/"
 
@@ -84,22 +93,10 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
         chroot "$DIR" usermod -u "$USER_UID" user
     fi
 
-    # fc20 setup doesn't include uucp group, which would cause MAKEDEV failure
-    chroot "$DIR" groupadd -rf uucp
-    if [ "${DISTRIBUTION}" = "fedora" ]; then
-        chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop;chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
-    fi
-    if [ "${DISTRIBUTION}" = "centos" ]; then
-        chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
-    fi
+    chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
+
     # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
     chroot "$DIR" rpm --rebuilddb 2> /dev/null
-else
-    # update chroot
-    chroot "$DIR" groupadd -rf uucp 2>/dev/null || :
-    if [ "${DISTRIBUTION}" = "fedora" ]; then
-        chroot "$DIR" sh -c "cd dev; /sbin/MAKEDEV generic loop"
-    fi
 fi
 
 "${PLUGIN_DIR}/update-local-repo.sh" "$DIST"
@@ -139,7 +136,7 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
 fi
 
 if ! [ -r "$DIR/proc/cpuinfo" ]; then
-    mount -t proc proc "$DIR/proc"
+    prepare_chroot_proc
 fi
 
 if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
