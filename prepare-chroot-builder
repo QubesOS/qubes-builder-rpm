@@ -44,10 +44,10 @@ fi
 prepare_chroot_proc () {
     mount -t proc proc "$DIR/proc"
 
-    chroot "$DIR" ln -sf /proc/self/fd /dev/fd
-    chroot "$DIR" ln -sf /proc/self/fd/0 /dev/stdin
-    chroot "$DIR" ln -sf /proc/self/fd/1 /dev/stdout
-    chroot "$DIR" ln -sf /proc/self/fd/2 /dev/stderr
+    chroot "$DIR" ln -nsf /proc/self/fd /dev/fd
+    chroot "$DIR" ln -nsf /proc/self/fd/0 /dev/stdin
+    chroot "$DIR" ln -nsf /proc/self/fd/1 /dev/stdout
+    chroot "$DIR" ln -snf /proc/self/fd/2 /dev/stderr
 }
 
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
