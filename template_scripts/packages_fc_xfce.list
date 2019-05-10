@@ -64,3 +64,4 @@ qt5ct
 --exclude=gnome-classic-session
 --exclude=gnome-tweak-tool
 --exclude=gnome-documents
+--exclude=dnfdragora-updater
