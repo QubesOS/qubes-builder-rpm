@@ -59,19 +59,21 @@ if ! grep -q LANG= ${INSTALLDIR}/etc/locale.conf 2>/dev/null; then
 fi
 
 if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
-    # if root.img have partitions, install kernel and grub there
-    yumInstall kernel || RETCODE=1
-    for kver in $(ls ${INSTALLDIR}/lib/modules); do
-        yumInstall kernel-devel-${kver} || RETCODE=1
-    done
-    yumInstall make grub2 qubes-kernel-vm-support || RETCODE=1
     chroot_cmd mount -t sysfs sys /sys
     chroot_cmd mount -t devtmpfs none /dev
     # find the right loop device, _not_ its partition
     dev=$(df --output=source $INSTALLDIR | tail -n 1)
     dev=${dev%p?}
+    # if root.img have partitions, install kernel and grub there
+    yumInstall kernel || RETCODE=1
+    yumInstall make grub2 qubes-kernel-vm-support || RETCODE=1
+    if [ -x $INSTALLDIR/usr/sbin/dkms ]; then
+        for kver in $(ls ${INSTALLDIR}/lib/modules); do
+            yumInstall kernel-devel-${kver} || RETCODE=1
+            chroot_cmd dkms autoinstall -k "$kver" || RETCODE=1
+        done
+    fi
     for kver in $(ls ${INSTALLDIR}/lib/modules); do
-        chroot_cmd dkms autoinstall -k "$kver" || RETCODE=1
         chroot_cmd dracut -f -a "qubes-vm" \
             /boot/initramfs-${kver}.img ${kver} || RETCODE=1
     done
