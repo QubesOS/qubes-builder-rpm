@@ -66,8 +66,9 @@ if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; th
     dev=${dev%p?}
     # if root.img have partitions, install kernel and grub there
     yumInstall kernel || RETCODE=1
-    yumInstall make grub2 qubes-kernel-vm-support || RETCODE=1
+    yumInstall grub2 qubes-kernel-vm-support || RETCODE=1
     if [ -x $INSTALLDIR/usr/sbin/dkms ]; then
+        yumInstall make || RETCODE=1
         for kver in $(ls ${INSTALLDIR}/lib/modules); do
             yumInstall kernel-devel-${kver} || RETCODE=1
             chroot_cmd dkms autoinstall -k "$kver" || RETCODE=1
