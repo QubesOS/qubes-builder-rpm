@@ -7,7 +7,7 @@ firefox
 thunderbird
 keepassx
 network-manager-applet
-createrepo
+createrepo_c
 @hardware-support
 @networkmanager-submodules
 @multimedia

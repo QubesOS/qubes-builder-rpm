@@ -9,9 +9,9 @@ REPO_DIR=$BUILDER_REPO_DIR
 
 mkdir -p "$REPO_DIR/rpm"
 if [ -e "$REPO_DIR/repodata/repomd.xml" ]; then
-    createrepo --update -q "$REPO_DIR"
+    createrepo_c --update -q "$REPO_DIR"
 else
-    createrepo -q "$REPO_DIR"
+    createrepo_c -q "$REPO_DIR"
 fi
 
 if [ "$(id -u)" -eq 0 ]; then

@@ -29,7 +29,7 @@ yum-plugin-post-transaction-actions
 tinyproxy
 liblzma.so.0()(64bit)
 git
-createrepo
+createrepo_c
 rpm-build
 qubes-core-vm-kernel-placeholder
 ltrace
