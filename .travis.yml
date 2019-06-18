@@ -1,5 +1,5 @@
 sudo: required
-dist: trusty
+dist: xenial 
 install: git clone https://github.com/marmarek/qubes-builder ~/qubes-builder
 script: ~/qubes-builder/scripts/travis-build linux-template-builder
 after_success:
