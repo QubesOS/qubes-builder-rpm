@@ -1,2 +1,3 @@
 @buildsys-build
 @development-tools
+rpm-sign
