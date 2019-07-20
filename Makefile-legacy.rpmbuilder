@@ -17,6 +17,7 @@ endif
 
 ifeq (centos,$(DISTRIBUTION))
 	YUM := yum
+	YUM_BUILDDEP := yum-builddep
 	YUM_BUILDDEP_SRPM := yum-builddep
 endif
 
