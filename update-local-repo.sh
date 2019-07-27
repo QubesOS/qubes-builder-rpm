@@ -7,11 +7,13 @@ set -e
 REPO_DIR=$BUILDER_REPO_DIR
 # DIST=$1
 
+createrepo="$(command -v createrepo_c createrepo | head -n 1)"
+
 mkdir -p "$REPO_DIR/rpm"
 if [ -e "$REPO_DIR/repodata/repomd.xml" ]; then
-    createrepo_c --update -q "$REPO_DIR"
+    $createrepo --update -q "$REPO_DIR"
 else
-    createrepo_c -q "$REPO_DIR"
+    $createrepo -q "$REPO_DIR"
 fi
 
 if [ "$(id -u)" -eq 0 ]; then
