@@ -170,9 +170,17 @@ endif
 		ln -f $(subst /$(TARGET_REPO)/,/$(SNAPSHOT_REPO)/,$(UPDATE_REPO)/)rpm/`basename $$f` $(UPDATE_REPO)/rpm/ || exit 1; \
 	done
 
+sign-prep: rpmsign_client = $(if $(GNUPG),$(GNUPG),$(shell rpm --eval %{__gpg}))
+sign-prep:
+	@if [ -n "$(rpmsign_client)" ]; then \
+		mkdir -p $(BUILDER_DIR)/keyrings/rpmdb; \
+		$(rpmsign_client) --armor --export $(SIGN_KEY) > /tmp/key_$(SIGN_KEY); \
+		rpmkeys --dbpath=$(BUILDER_DIR)/keyrings/rpmdb --import /tmp/key_$(SIGN_KEY); \
+	fi
+
 sign: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
 sign: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
-sign:
+sign: sign-prep
 ifeq (,$(PACKAGE_LIST))
 	@true
 else
