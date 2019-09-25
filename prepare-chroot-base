@@ -25,16 +25,25 @@ fi
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
+YUM=dnf
+
 if [ "${DIST#fc}" != "${DIST}" ]; then
-    YUM=dnf
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
 fi
 
 if [ "${DIST#centos}" != "${DIST}" ]; then
-    YUM=yum
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
+    if [ "$DIST_VER" == "7" ]; then
+        YUM=yum
+    fi
+fi
+
+if [ -e yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf ]; then
+    YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf
+else
+    YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}.conf
 fi
 
 YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
@@ -100,17 +109,23 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
                 gsub("\\$releasever", releasever);
                 print;
             }' "${FEDORA_MIRROR%/}" "${DIST_VER}" \
-                < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
+                < "${PLUGIN_DIR}/${YUM_BOOTSTRAP_CONF}" \
                 > "$yumconf"
         else
             sed -e "s/\\\$releasever/${DIST_VER}/g" \
-                < "${PLUGIN_DIR}"/yum-bootstrap-fedora.conf \
+                < "${PLUGIN_DIR}/${YUM_BOOTSTRAP_CONF}" \
                 > "$yumconf"
         fi
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        INITIAL_PACKAGES="filesystem setup centos-release epel-release yum yum-utils centos-release-xen-412"
+        INITIAL_PACKAGES="filesystem setup centos-release epel-release"
+
+        if [ "$DIST_VER" == "7" ]; then
+            INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils centos-release-xen-412"
+        else
+            INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
+        fi
 
         # Add groupadd, su etc.
         INITIAL_PACKAGES="$INITIAL_PACKAGES shadow-utils util-linux"
@@ -120,7 +135,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         yumconftmp=$(mktemp)
 
         sed -e "s/\\\$releasever/${DIST_VER}/g" \
-            < "${PLUGIN_DIR}"/yum-bootstrap-centos.conf \
+            < "${PLUGIN_DIR}/${YUM_BOOTSTRAP_CONF}" \
             > "$yumconf"
 
         if [ "x${CENTOS_MIRROR}" != "x" ]; then
@@ -216,6 +231,10 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         if [ "x$EPEL_MIRROR" != "x" ]; then
             sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
             sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
+        fi
+
+        if [ "${DIST_VER}" == "8" ]; then
+            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-PowerTools.repo"
         fi
     fi
 

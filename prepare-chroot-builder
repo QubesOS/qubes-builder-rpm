@@ -13,23 +13,29 @@ PLUGIN_DIR=$(dirname "$0")
 DIR=$1
 DIST=$2
 CHROOT_CACHE_FILE=
+YUM=dnf
 
 if [ "${DIST#fc}" != "${DIST}" ]; then
-    YUM=dnf
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
 fi
 
 if [ "${DIST#centos}" != "${DIST}" ]; then
-    YUM=yum
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
+    if [ "$DIST_VER" == "7" ]; then
+        YUM=yum
+    fi
 fi
 
 if [ -n "$3" ]; then
     PKGLISTFILE="$3"
 else
-    PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list"
+    if [ -e "${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}-${DIST_VER}.list" ]; then
+        PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}-${DIST_VER}.list"
+    else
+        PKGLISTFILE="${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list"
+    fi
     if [ "0$CACHE_CHROOT" -eq 1 ]; then
         CHROOT_CACHE_FILE="${CACHEDIR}/chroot-${DIST}-base.tar"
     fi

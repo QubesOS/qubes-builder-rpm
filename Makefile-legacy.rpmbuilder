@@ -9,16 +9,20 @@ ifdef REPO_PROXY
     YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
 
-ifeq (fedora,$(DISTRIBUTION))
-	YUM := dnf
-	YUM_BUILDDEP := dnf builddep --spec
-	YUM_BUILDDEP_SRPM := dnf builddep --srpm
-endif
+YUM := dnf
+YUM_BUILDDEP := dnf builddep --spec
+YUM_BUILDDEP_SRPM := dnf builddep --srpm
 
 ifeq (centos,$(DISTRIBUTION))
-	YUM := yum
-	YUM_BUILDDEP := yum-builddep
-	YUM_BUILDDEP_SRPM := yum-builddep
+ifeq ($(subst centos,,$(DIST)),7)
+YUM := yum
+YUM_BUILDDEP := yum-builddep
+YUM_BUILDDEP_SRPM := yum-builddep
+endif
+ifeq ($(subst centos,,$(DIST)),8)
+YUM_BUILDDEP := dnf builddep --nobest --spec
+YUM_BUILDDEP_SRPM := dnf builddep --srpm
+endif
 endif
 
 ### Targets required by Makefile.generic to build packages
