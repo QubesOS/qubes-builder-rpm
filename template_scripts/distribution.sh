@@ -10,8 +10,9 @@ if [ -n "${REPO_PROXY}" ]; then
     YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
 fi
 
+YUM=dnf
+
 if [ "${DIST#fc}" != "${DIST}" ]; then
-    YUM=dnf
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
 
@@ -22,9 +23,12 @@ if [ "${DIST#fc}" != "${DIST}" ]; then
 fi
 
 if [ "${DIST#centos}" != "${DIST}" ]; then
-    YUM=yum
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
+
+    if [ "${DIST_VER}" == 7 ]; then
+        YUM=yum
+    fi
 
     if [ -n "${CENTOS_MIRROR}" ]; then
         YUM_OPTS="$YUM_OPTS --setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64"
