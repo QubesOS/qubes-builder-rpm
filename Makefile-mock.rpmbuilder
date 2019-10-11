@@ -11,7 +11,13 @@ MOCK_CFG = mock-$(DISTRIBUTION).cfg
 # strips environment variables
 MOCK ?= $(firstword $(wildcard /usr/libexec/mock/mock /usr/sbin/mock))
 
+YUM ?= dnf
+ifeq ($(shell rpm --eval %centos), 7)
+YUM = yum
+endif
+
 MOCK_EXTRA_OPTS ?=
+MOCK_EXTRA_OPTS += --$(YUM)
 
 ifneq (,$(USE_QUBES_REPO_VERSION))
 MOCK_EXTRA_OPTS += --enablerepo=qubes-current
@@ -49,6 +55,7 @@ dist-src-package-build:
 		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
+		$(MOCK_EXTRA_OPTS) \
 		--buildsrpm --spec $(PACKAGE) --sources $(CHROOT_DIR)$(RPM_SOURCE_DIR)
 
 ifeq ($(suffix $(PACKAGE)),.rpm)
