@@ -40,7 +40,7 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
     fi
 fi
 
-if [ -e yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf ]; then
+if [ -e "${PLUGIN_DIR}/yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf" ]; then
     YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf
 else
     YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}.conf
