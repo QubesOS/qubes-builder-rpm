@@ -60,3 +60,4 @@ wget
 --exclude=gnome-tweak-tool
 --exclude=gnome-documents
 --exclude=dnfdragora-updater
+--exclude=chrome-gnome-shell
