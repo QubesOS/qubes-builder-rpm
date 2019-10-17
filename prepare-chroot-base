@@ -35,7 +35,7 @@ fi
 if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
-    if [ "$DIST_VER" == "7" ]; then
+    if [ "$DIST_VER" = "7" ]; then
         YUM=yum
     fi
 fi
@@ -121,7 +121,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     if [ "${DISTRIBUTION}" = "centos" ]; then
         INITIAL_PACKAGES="filesystem setup centos-release epel-release"
 
-        if [ "$DIST_VER" == "7" ]; then
+        if [ "$DIST_VER" = "7" ]; then
             INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils centos-release-xen-412"
         else
             INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
@@ -233,7 +233,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
         fi
 
-        if [ "${DIST_VER}" == "8" ]; then
+        if [ "${DIST_VER}" = "8" ]; then
             sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-PowerTools.repo"
         fi
     fi

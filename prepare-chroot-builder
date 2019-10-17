@@ -23,7 +23,7 @@ fi
 if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
-    if [ "$DIST_VER" == "7" ]; then
+    if [ "$DIST_VER" = "7" ]; then
         YUM=yum
     fi
 fi
