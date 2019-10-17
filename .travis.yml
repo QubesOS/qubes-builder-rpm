@@ -30,7 +30,7 @@ jobs:
     - script: ~/qubes-builder/scripts/travis-build linux-scrypt
       env: DISTS_VM=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example centos7 package, with upstream tarball and no qubes repos
-    - script: ~/qubes-builder/scripts/travis-build python-u2flib-host
+    - script: ~/qubes-builder/scripts/travis-build app-linux-split-gpg
       env: DISTS_VM=centos7
     # example package with src.rpms
     - script: ~/qubes-builder/scripts/travis-build linux-dom0-updates
