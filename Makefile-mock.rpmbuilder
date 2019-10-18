@@ -4,7 +4,7 @@ RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
 RPM_SOURCE_DIR ?= $(DIST_SRC)
 
-ifneq (,$(wildcard mock-$(DISTRIBUTION)-$(DIST_VER).cfg))
+ifneq (,$(wildcard $(RPM_PLUGIN_DIR)/mock-$(DISTRIBUTION)-$(DIST_VER).cfg))
 MOCK_CFG = mock-$(DISTRIBUTION)-$(DIST_VER).cfg
 else
 MOCK_CFG = mock-$(DISTRIBUTION).cfg
