@@ -124,6 +124,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         if [ "$DIST_VER" = "7" ]; then
             INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils centos-release-xen-412"
         else
+            # coreutils conflicts with coreutils-single
+            INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
             INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
         fi
 
