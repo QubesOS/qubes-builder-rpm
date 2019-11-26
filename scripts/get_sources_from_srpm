@@ -1,0 +1,77 @@
+#!/bin/bash
+# vim: set ts=4 sw=4 sts=4 et :
+
+set -e
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
+    set -x
+fi
+
+localdir="$PWD"
+scriptdir="$(dirname "$(readlink -f "$0")")"
+builderdir="$scriptdir/../"
+
+releasever="${1//fc}"
+src_rpm="$2"
+src_file="${*:3}"
+
+errecho() {
+    >&2 echo "$@"
+}
+
+exit_get_sources() {
+    local exit_code=$?
+
+    # Clean
+    rm -rf "$tmpdir"
+
+    exit "${exit_code}"
+}
+
+exist_url() {
+    if wget -S --spider "$1" 2>&1 | grep -q 'HTTP/1.1 200 OK'; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+if [ "x$releasever" != "x" ]; then
+    if [[ ! "$releasever" =~ ^[1-9][0-9]$ ]]; then
+        errecho "Invalid Fedora release format"
+        exit 1
+    fi
+else
+    errecho "Please provide Fedora release"
+    exit 1
+fi
+
+release_url="https://dl.fedoraproject.org/pub/fedora/linux/releases/${releasever}/Everything/source/tree/Packages/${src_rpm::1}/${src_rpm}"
+update_url="https://dl.fedoraproject.org/pub/fedora/linux/updates/${releasever}/Everything/SRPMS/Packages/${src_rpm::1}/${src_rpm}"
+
+trap 'exit_get_sources' 0 1 2 3 6 15
+
+if [ "x$src_file" != "x" ] && [ "x$releasever" != "x" ]; then
+    # download rpm
+    tmpdir="$(mktemp -d -p "$localdir")"
+    if exist_url "$update_url"; then
+        wget -q "$update_url" -O "$tmpdir/$src_rpm.UNTRUSTED"
+    elif exist_url "$release_url"; then
+        wget -q "$release_url" -O "$tmpdir/$src_rpm.UNTRUSTED"
+    else
+        errecho "Cannot find source RPM: $src_rpm"
+        exit 1
+    fi
+
+    # check signature
+    mkdir -p "$tmpdir/rpmdb"
+    key="$builderdir/keys/RPM-GPG-KEY-fedora-$releasever-primary"
+    rpmkeys --dbpath="$tmpdir/rpmdb" --import "$key"
+    { rpmkeys --dbpath="$tmpdir/rpmdb" --checksig "$tmpdir/$src_rpm.UNTRUSTED" | grep -q 'signatures OK' ; } || { errecho "Failed to check signature"; exit 1; }
+    mv "$tmpdir/$src_rpm.UNTRUSTED" "$tmpdir/$src_rpm"
+
+    # get sources
+    for src in $src_file
+    do
+        rpm2cpio "$tmpdir/$src_rpm" | cpio --quiet -i --to-stdout "$src" > "$src.UNTRUSTED"
+    done
+fi
