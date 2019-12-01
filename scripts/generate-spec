@@ -21,7 +21,6 @@ cp "$1" "$1.tmp"
 # 'rel', must contains list of release number corresponding to @REL@ @REL1@ ...
 while read -r ver
 do
-    ver=$(echo "$ver" | sed 's/-rc/~rc/')
     if [ "x$vnum" = "x" ]; then
         sed -i "s|@VERSION@|$ver|g" "$1.tmp"
     else
