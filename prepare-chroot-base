@@ -57,10 +57,19 @@ fi
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
     RPM_OPTS=()
+    YUM_OPTS=()
     if [ -e /etc/debian_version ] || grep -q openSUSE /etc/os-release; then
         # Debian by default keep rpmdb in ~/.rpmdb
         # OpenSUSE by default keep rpmdb in /usr/lib/sysimage/rpm
         RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
+    fi
+    if grep -q openSUSE /etc/os-release; then
+        # zchunk is broken on OpenSUSE (at least together with Fedora repos):
+        # https://bugzilla.opensuse.org/1160702
+        YUM_OPTS+=("--setopt=zchunk=0")
+        # Since OpenSUSE enable gpgcheck by default, make it find the keys
+        mkdir -p "${INSTALLDIR}/usr/lib/sysimage"
+        ln -ns ../../../var/lib/rpm "${INSTALLDIR}/usr/lib/sysimage/rpm"
     fi
     rpm "${RPM_OPTS[@]}" --initdb --root="${INSTALLDIR}"
 
@@ -172,7 +181,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     # shellcheck disable=SC2086
-    $YUM -c "$yumconf" -y \
+    $YUM "${YUM_OPTS[@]}" -c "$yumconf" -y \
         --installroot="${INSTALLDIR}" ${INITIAL_PACKAGES}
     rm -f "$yumconf"
 
