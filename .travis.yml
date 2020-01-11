@@ -25,7 +25,7 @@ jobs:
       env: DISTS_VM=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example dom0 package
     - script: ~/qubes-builder/scripts/travis-build linux-utils
-      env: DIST_DOM0=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
+      env: DIST_DOM0=fc31 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example package, with upstream tarball
     - script: ~/qubes-builder/scripts/travis-build linux-scrypt
       env: DISTS_VM=fc29 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
