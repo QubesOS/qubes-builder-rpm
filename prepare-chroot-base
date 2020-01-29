@@ -91,6 +91,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         if [ "${DIST_VER}" -ge 25 ]; then
             # avoid pulling in glibc-all-langpacks to save space
             INITIAL_PACKAGES="$INITIAL_PACKAGES glibc-langpack-en"
+        fi
         if [ "${DIST_VER}" -eq 25 ]; then
             # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
             # enough to try them both
