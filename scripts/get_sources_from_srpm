@@ -10,6 +10,9 @@ localdir="$PWD"
 scriptdir="$(dirname "$(readlink -f "$0")")"
 builderdir="$scriptdir/../"
 
+# shellcheck disable=SC1090
+source "$scriptdir/functions.sh"
+
 releasever="${1//fc}"
 src_rpm="$2"
 src_file="${*:3}"
@@ -25,14 +28,6 @@ exit_get_sources() {
     rm -rf "$tmpdir"
 
     exit "${exit_code}"
-}
-
-exist_url() {
-    if wget -S --spider "$1" 2>&1 | grep -q 'HTTP/1.1 200 OK'; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 if [ "x$releasever" != "x" ]; then

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Script for extracting BSD-style checksum into
+# 'file'.'method of checksum' with 'hash' content
+
+set -e
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
+    set -x
+fi
+
+localdir="$PWD"
+scriptdir="$(dirname "$(readlink -f "$0")")"
+fedora_sources="$1"
+
+# shellcheck disable=SC1090
+source "$scriptdir/functions.sh"
+
+if exist_url "$fedora_sources"; then
+    tmpsources="$(mktemp)"
+    wget -q "$fedora_sources" -O "$tmpsources"
+
+    while read -r src
+    do
+        method="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\1/p')"
+        file="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\2/p')"
+        hash="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\3/p')"
+
+        echo "$hash" > "$localdir/${file}.${method,,}"
+    done < "$tmpsources"
+
+    rm -rf "$tmpsources"
+else
+    echo "Cannot download: $fedora_sources."
+    exit 1
+fi
