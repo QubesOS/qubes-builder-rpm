@@ -10,7 +10,7 @@ localdir="$PWD"
 scriptdir="$(dirname "$(readlink -f "$0")")"
 builderdir="$scriptdir/../"
 
-# shellcheck disable=SC1090
+# shellcheck source=scripts/functions.sh
 source "$scriptdir/functions.sh"
 
 releasever="${1//fc}"

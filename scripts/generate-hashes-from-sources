@@ -12,7 +12,7 @@ localdir="$PWD"
 scriptdir="$(dirname "$(readlink -f "$0")")"
 fedora_sources="$1"
 
-# shellcheck disable=SC1090
+# shellcheck source=scripts/functions.sh
 source "$scriptdir/functions.sh"
 
 if exist_url "$fedora_sources"; then
