@@ -25,7 +25,17 @@ if exist_url "$fedora_sources"; then
         file="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\2/p')"
         hash="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\3/p')"
 
-        echo "$hash" > "$localdir/${file}.${method,,}"
+        # sanitized
+        smethod="$(sanitize "$method")"
+        smethod="${smethod,,}"
+        sfile="$(sanitize "$file")"
+        shash="$(sanitize "$hash")"
+
+        if [ "$smethod" == "md5" ] || [ "$smethod" == "sha256" ] || [ "$smethod" == "sha512" ]; then
+            echo "$shash" > "$localdir/${sfile}.${smethod}"
+        else
+            echo "Unknown method"
+        fi
     done < "$tmpsources"
 
     rm -rf "$tmpsources"
