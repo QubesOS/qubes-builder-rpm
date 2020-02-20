@@ -3,6 +3,7 @@ tar
 haveged
 sudo
 python2-futures
+parted
 --exclude=kdegames
 --exclude=firstboot
 --exclude=xorg-x11-drv-nouveau
