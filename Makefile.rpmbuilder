@@ -6,6 +6,9 @@
 #  RPM_SPEC_FILES - list of spec files to build
 #  RPM_SRC_PACKAGES - list of src.rpm packages to rebuild (if any)
 #  USE_DIST_BUILD_TOOLS - if set to 1, use new "mock" build
+#
+# Extra variables that may influence the build:
+#  RPM_BUILD_EXTRA_DEFINES - extra --define=... options to rpm-build (or mock)
 
 ### Variables required Makefile.generic
 # Use spec files list as PACKAGE_LIST
@@ -124,6 +127,7 @@ dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
 dist-package: RPM_QUERY_DEFINES += --define "dist .$(devel_ver).$(DIST)"
 endif
 
+dist-package: RPM_BUILD_DEFINES += $(RPM_BUILD_EXTRA_DEFINES)
 dist-package: dist-package-build
 
 ifeq (1,$(USE_DIST_BUILD_TOOLS))
