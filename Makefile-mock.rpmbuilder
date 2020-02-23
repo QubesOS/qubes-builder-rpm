@@ -87,7 +87,7 @@ endif
 		-q -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) \
 		$(RPM_BUILD_DEFINES) --chroot \
-		'/builder-rpm/scripts/rpmbuildinfo /builddir/build/SRPMS/$(notdir $(srcrpm))' \
+		'/builder-rpm/scripts/rpmbuildinfo /builddir/build/SRPMS/*.src.rpm' \
 		> $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/$(buildinfo)
 
 dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
