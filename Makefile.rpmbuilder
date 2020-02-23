@@ -4,6 +4,7 @@
 #
 # Variables supposed to be in component's Makefile.builder:
 #  RPM_SPEC_FILES - list of spec files to build
+#  RPM_SRC_PACKAGES - list of src.rpm packages to rebuild (if any)
 #  USE_DIST_BUILD_TOOLS - if set to 1, use new "mock" build
 
 ### Variables required Makefile.generic
