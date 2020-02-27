@@ -19,20 +19,20 @@ if exist_url "$fedora_sources"; then
     tmpsources="$(mktemp)"
     wget -q "$fedora_sources" -O "$tmpsources"
 
-    while read -r src
+    while read -r untrusted_src
     do
-        method="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\1/p')"
-        file="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\2/p')"
-        hash="$(echo "$src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\3/p')"
+        untrusted_method="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\1/p')"
+        untrusted_file="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\2/p')"
+        untrusted_hash="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\3/p')"
 
         # sanitized
-        smethod="$(sanitize "$method")"
-        smethod="${smethod,,}"
-        sfile="$(sanitize "$file")"
-        shash="$(sanitize "$hash")"
+        method="$(sanitize "$untrusted_method")"
+        method="${method,,}"
+        file="$(sanitize "$untrusted_file")"
+        hash="$(sanitize "$untrusted_hash")"
 
-        if [ "$smethod" == "md5" ] || [ "$smethod" == "sha256" ] || [ "$smethod" == "sha512" ]; then
-            echo "$shash" > "$localdir/${sfile}.${smethod}"
+        if [ "$method" == "md5" ] || [ "$method" == "sha256" ] || [ "$method" == "sha512" ]; then
+            echo "$hash" > "$localdir/${file}.${method}"
         else
             echo "Unknown method"
         fi
