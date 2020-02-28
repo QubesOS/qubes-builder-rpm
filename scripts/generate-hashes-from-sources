@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Script for extracting BSD-style checksum into
+# 'file'.'method of checksum' with 'hash' content
+
+set -e
+if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
+    set -x
+fi
+
+localdir="$PWD"
+scriptdir="$(dirname "$(readlink -f "$0")")"
+fedora_sources="$1"
+
+# shellcheck source=scripts/functions.sh
+source "$scriptdir/functions.sh"
+
+if exist_url "$fedora_sources"; then
+    tmpsources="$(mktemp)"
+    wget -q "$fedora_sources" -O "$tmpsources"
+
+    while read -r untrusted_src
+    do
+        untrusted_method="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\1/p')"
+        untrusted_file="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\2/p')"
+        untrusted_hash="$(echo "$untrusted_src" | sed -ne 's/^\(.*\) (\(.*\)) = \(.*\)/\3/p')"
+
+        # sanitized
+        method="$(sanitize "$untrusted_method")"
+        method="${method,,}"
+        file="$(sanitize "$untrusted_file")"
+        hash="$(sanitize "$untrusted_hash")"
+
+        if [ "$method" == "md5" ] || [ "$method" == "sha256" ] || [ "$method" == "sha512" ]; then
+            echo "$hash" > "$localdir/${file}.${method}"
+        else
+            echo "Unknown method"
+        fi
+    done < "$tmpsources"
+
+    rm -rf "$tmpsources"
+else
+    echo "Cannot download: $fedora_sources."
+    exit 1
+fi
