@@ -48,12 +48,15 @@ if [ -f /etc/debian_version ]; then
 fi
 
 prepare_chroot_proc () {
-    mount -t proc proc "$DIR/proc"
+    if ! [ -r "$DIR/proc/cpuinfo" ]; then
+        mount -t proc proc "$DIR/proc"
+    fi
+}
 
-    chroot "$DIR" ln -nsf /proc/self/fd /dev/fd
-    chroot "$DIR" ln -nsf /proc/self/fd/0 /dev/stdin
-    chroot "$DIR" ln -nsf /proc/self/fd/1 /dev/stdout
-    chroot "$DIR" ln -snf /proc/self/fd/2 /dev/stderr
+prepare_chroot_dev () {
+    if ! [ -r "$DIR/dev/null" ]; then
+        mount -t devtmpfs devtmpfs "$DIR/dev"
+    fi
 }
 
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
@@ -64,9 +67,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
 
     "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
 
-    if ! [ -r "$DIR/proc/cpuinfo" ]; then
-        prepare_chroot_proc
-    fi
+    prepare_chroot_proc
     cp /etc/resolv.conf "$DIR/etc/"
 
     # Always install at least base pkgs
@@ -141,9 +142,8 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     fi
 fi
 
-if ! [ -r "$DIR/proc/cpuinfo" ]; then
-    prepare_chroot_proc
-fi
+prepare_chroot_proc
+prepare_chroot_dev
 
 if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
     mkdir -p "$DIR"/tmp/qubes-packages-mirror-repo

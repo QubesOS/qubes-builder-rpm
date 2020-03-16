@@ -30,6 +30,9 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
+	@if ! [ -r $(CHROOT_DIR)/dev/null ]; then\
+		sudo mount -t devtmpfs devtmpfs $(CHROOT_DIR)/dev;\
+	fi
 	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo/rpm ]; then\
 		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
 		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
