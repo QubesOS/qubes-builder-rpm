@@ -34,6 +34,7 @@ dejavu-sans-fonts
 dejavu-sans-mono-fonts
 dejavu-serif-font
 yum-utils
+--exclude=qubes-artwork
 --exclude=kdegames
 --exclude=firstboot
 --exclude=xorg-x11-drv-nouveau
