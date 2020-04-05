@@ -13,6 +13,11 @@ trap cleanup ERR
 trap cleanup EXIT
 
 #### '----------------------------------------------------------------------
+info ' Distribution specific steps (install systemd, add sources, etc)'
+#### '----------------------------------------------------------------------
+buildStep "$0" "${DIST}"
+
+#### '----------------------------------------------------------------------
 info " Installing extra packages in script_${DIST}/packages.list file"
 #### '----------------------------------------------------------------------
 export YUM0=${PWD}/pkgs-for-template
