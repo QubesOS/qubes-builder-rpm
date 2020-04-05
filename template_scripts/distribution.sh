@@ -249,3 +249,15 @@ function installPackages() {
         yumInstall "${packages[@]}" || return $?
     done
 }
+
+# ==============================================================================
+# Enable or Disable Copr Fedora repositories
+# ==============================================================================
+function yumCopr() {
+    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    local op=$1
+    local repo=$2
+
+    chroot_cmd $YUM copr ${op} -y $repo
+    umount ${INSTALLDIR}/etc/resolv.conf
+}
