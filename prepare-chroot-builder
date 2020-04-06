@@ -172,4 +172,5 @@ fi
 
 if [ "$DISTRIBUTION" = "centos" ] && [ "${DIST_VER}" -ge 8 ]; then
     chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
+    chroot "$DIR" dnf config-manager --disable '*modular'
 fi
