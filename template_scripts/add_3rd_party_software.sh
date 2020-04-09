@@ -86,34 +86,37 @@ if [ ${VERSION} -ge 20 ]; then
     #### '----------------------------------------------------------------------
     info ' Installing rpmfusion-free repos'
     #### '----------------------------------------------------------------------
-    yumInstall /tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm
+    if [ -e "/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm" ]; then
+        yumInstall "/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm"
 
-    # Disable rpmfusion-free repos
-    yumConfigRepository disable rpmfusion-free > /dev/null
-    yumConfigRepository disable rpmfusion-free-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-free-source > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates-source > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
-
+        # Disable rpmfusion-free repos
+        yumConfigRepository disable rpmfusion-free > /dev/null
+        yumConfigRepository disable rpmfusion-free-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-source > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-source > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
+    fi
     #### '----------------------------------------------------------------------
     info ' Installing rpmfusion-nonfree repos'
     #### '----------------------------------------------------------------------
-    yumInstall /tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm
+    if [ -e "/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
+        yumInstall "/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm"
 
-    # Disable rpmfusion-nonfree repos
-    yumConfigRepository disable rpmfusion-nonfree > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-source > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates-source > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
-    yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
+        # Disable rpmfusion-nonfree repos
+        yumConfigRepository disable rpmfusion-nonfree > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-source > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
+        yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
+    fi
 fi
 
 #### '----------------------------------------------------------------------
