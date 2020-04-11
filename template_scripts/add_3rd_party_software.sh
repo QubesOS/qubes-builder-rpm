@@ -101,6 +101,7 @@ if [ ${VERSION} -ge 20 ]; then
         yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
     else
         warn "rpmfusion-free-release-${VERSION}.noarch.rpm not found!"
+        exit 1
     fi
     #### '----------------------------------------------------------------------
     info ' Installing rpmfusion-nonfree repos'
@@ -120,6 +121,7 @@ if [ ${VERSION} -ge 20 ]; then
         yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
     else
         warn "rpmfusion-nonfree-release-${VERSION}.noarch.rpm not found!"
+        exit 1
     fi
 fi
 
