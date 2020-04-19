@@ -1,7 +1,10 @@
 import:
   - source: QubesOS/qubes-continuous-integration:R4.1/travis-base-r4.1.yml
   - source: QubesOS/qubes-continuous-integration:R4.0/travis-vms-rpm-r4.0.yml
+  - source: QubesOS/qubes-continuous-integration:R4.0/travis-vms-rpm-flavors-r4.0.yml
   - source: QubesOS/qubes-continuous-integration:R4.1/travis-vms-rpm-r4.1.yml
+  - source: QubesOS/qubes-continuous-integration:R4.1/travis-vms-rpm-flavors-r4.1.yml
+
 
 script: ~/qubes-builder/scripts/travis-build linux-template-builder
 after_success:
