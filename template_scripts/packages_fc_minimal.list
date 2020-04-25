@@ -2,7 +2,6 @@ xterm
 tar
 haveged
 sudo
-python2-futures
 --exclude=kdegames
 --exclude=firstboot
 --exclude=xorg-x11-drv-nouveau
