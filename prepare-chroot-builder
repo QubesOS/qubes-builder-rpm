@@ -71,9 +71,9 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
 
     # Always install at least base pkgs
     cp  "${PLUGIN_DIR}/yum.conf" "$DIR/tmp/"
+    rm -f "$DIR/etc/yum.repos.d/builder-local.repo"
     # shellcheck disable=SC2086,SC2046
     chroot "$DIR" $YUM install -c /tmp/yum.conf -y $YUM_OPTS \
-        --disablerepo=qubes-builder-pkgs \
         $(cat ${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list)
 
     # setup user and group
