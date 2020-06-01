@@ -3,6 +3,9 @@
 RPM_BUILD_DEFINES += --define "_rpmdir $(OUTPUT_DIR)/"
 RPM_BUILD_DEFINES += --define "qubes_builder 1"
 RPM_BUILD_DEFINES += --define "backend_vmm $(BACKEND_VMM)"
+RPM_BUILD_DEFINES += --define "source_date_epoch_from_changelog Y"
+RPM_BUILD_DEFINES += --define "clamp_mtime_to_source_date_epoch Y"
+RPM_BUILD_DEFINES += --define "use_source_date_epoch_as_buildtime Y"
 RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{ARCH}/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 
 ifdef REPO_PROXY
