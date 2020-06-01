@@ -30,7 +30,7 @@ tac "$gitlog" | awk '/^\* /{ if ($2 < prev_time) {gsub($2, prev_time)} else {pre
 mv -f "$gitlog"- "$gitlog"
 
 # add link to full git logs
-giturl="https://github.com/QubesOS/qubes-${COMPONENT}"
+giturl="${GIT_BASEURL}/${GIT_PREFIX}${COMPONENT}${GIT_SUFFIX}"
 gitauthor="Qubes OS Team <qubes-devel@googlegroups.com>"
 gitdate=$(git -C "$ORIG_SRC" log -n 1 --date=raw --format=format:"%cd")
 LC_ALL=C gawk -vgiturl="$giturl" -vgitauthor="$gitauthor" -vgitdate="$gitdate" 'BEGIN{
