@@ -223,7 +223,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     # Create loop devices as much as Mock does
     mknod -m 0666 "$INSTALLDIR/dev/loop-control" c 10 237
 
-    for i in $(seq 0 4)
+    for i in $(seq 0 8)
     do
         mknod -m 0666 "$INSTALLDIR/dev/loop$i" b 7 "$i"
     done
