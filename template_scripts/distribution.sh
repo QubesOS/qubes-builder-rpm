@@ -30,7 +30,9 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
         YUM=yum
     fi
 
-    YUM_OPTS="$YUM_OPTS --nobest"
+    if [ "${DIST_VER}" >= 8 ]; then
+        YUM_OPTS="$YUM_OPTS --nobest"
+    fi
 
     if [ -n "${CENTOS_MIRROR}" ]; then
         YUM_OPTS="$YUM_OPTS --setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64"
