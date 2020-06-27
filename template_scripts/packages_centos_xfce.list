@@ -1,8 +1,5 @@
 @networkmanager-submodules
 @xfce-desktop
-@xfce-apps
-@xfce-media
-@xfce-office
 attr
 bc
 bzip2
@@ -22,13 +19,11 @@ qt5-qtstyleplugins
 qt5ct
 rsync
 sudo
-system-config-printer
 thunderbird
 tree
 unzip
 vim-enhanced
 wget
-wireless-tools
 xorg-x11-fonts-100dpi
 xorg-x11-fonts-Type1
 xterm
