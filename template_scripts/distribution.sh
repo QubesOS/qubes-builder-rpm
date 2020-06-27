@@ -30,6 +30,8 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
         YUM=yum
     fi
 
+    YUM_OPTS="$YUM_OPTS --nobest"
+
     if [ -n "${CENTOS_MIRROR}" ]; then
         YUM_OPTS="$YUM_OPTS --setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64"
         YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/updates/x86_64"
