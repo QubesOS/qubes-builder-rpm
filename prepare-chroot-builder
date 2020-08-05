@@ -164,9 +164,14 @@ if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -ge 29 ]; then
     chroot "$DIR" dnf config-manager --disable '*modular'
 fi
 
-if [ "$DISTRIBUTION" = "centos" ] && [ "${DIST_VER}" -ge 8 ]; then
-    chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
-    chroot "$DIR" dnf config-manager --disable '*modular'
+if [ "$DISTRIBUTION" = "centos" ]; then
+    if [ "${DIST_VER}" -eq 7 ]; then
+        chroot "$DIR" yum copr enable -y fepitre/epel-7-qubes
+    fi
+    if [ "${DIST_VER}" -eq 8 ]; then
+        chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
+        chroot "$DIR" dnf config-manager --disable '*modular'
+    fi
 fi
 
 # shellcheck disable=SC2086,SC2046
