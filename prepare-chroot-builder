@@ -171,6 +171,9 @@ if [ "$DISTRIBUTION" = "centos" ]; then
     if [ "${DIST_VER}" -eq 8 ]; then
         chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
         chroot "$DIR" dnf config-manager --disable '*modular'
+        # Add Appstream and @fepitre python38 repositories
+        chroot "$DIR" dnf module enable -y python38-devel:3.8
+        chroot "$DIR" dnf copr enable -y fepitre/epel-8-python38
     fi
 fi
 

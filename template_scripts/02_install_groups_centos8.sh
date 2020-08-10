@@ -16,6 +16,11 @@ info ' Enable fepitre/epel-8-qubes COPR repo'
 yumCopr enable fepitre/epel-8-qubes
 
 #### '----------------------------------------------------------------------
+info ' Enable fepitre/epel-8-python38 COPR repo'
+#### '----------------------------------------------------------------------
+yumCopr enable fepitre/epel-8-python38
+
+#### '----------------------------------------------------------------------
 info ' Cleanup'
 #### '----------------------------------------------------------------------
 trap - ERR EXIT

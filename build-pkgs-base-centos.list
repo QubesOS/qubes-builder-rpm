@@ -22,3 +22,5 @@ patch
 util-linux
 findutils
 grep
+python38
+python38-rpm-macros
