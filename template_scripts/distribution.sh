@@ -139,14 +139,13 @@ function yumGroupInstall() {
             group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
         find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
         find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
-        if [ "$DISTRIBUTION" = "fedora" ]; then
+        if [ "${DIST}" != "centos7" ]; then
             # set http proxy to invalid one, to prevent any connection in case of
             # --cacheonly being buggy: better fail the build than install something
             # else than the logged one
             chroot_cmd $YUM install ${YUM_OPTS} -y \
                 --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
-        fi
-        if [ "$DISTRIBUTION" = "centos" ]; then
+        else
             # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
             chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
         fi
