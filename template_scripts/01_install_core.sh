@@ -6,6 +6,8 @@ source "${SCRIPTSDIR}/distribution.sh"
 export YUM_OPTS
 ${SCRIPTSDIR}/../prepare-chroot-base "${INSTALLDIR}" "${DIST}"
 
+# remove systemd-resolved symlink
+rm -f "${INSTALLDIR}/etc/resolv.conf"
 cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc/"
 chmod 644 "${INSTALLDIR}/etc/resolv.conf"
 cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig/"
