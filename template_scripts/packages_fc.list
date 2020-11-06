@@ -41,7 +41,6 @@ zip
 --exclude=anaconda*
 --exclude=aspell-*
 --exclude=autofs
---exclude=avahi
 --exclude=catfish
 --exclude=chrome-gnome-shell
 --exclude=desktop-backgrounds-basic
