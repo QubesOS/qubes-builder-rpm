@@ -6,7 +6,9 @@ import:
   - source: QubesOS/qubes-continuous-integration:R4.1/travis-vms-rpm-flavors-r4.1.yml
 
 
-script: ~/qubes-builder/scripts/travis-build linux-template-builder
+script:
+ - ~/qubes-builder/scripts/travis-prepare linux-template-builder
+ - ~/qubes-builder/scripts/travis-build linux-template-builder
 after_success:
   - ls -l ~/qubes-builder/qubes-src/linux-template-builder/rpm/noarch
 jobs:
@@ -14,17 +16,27 @@ jobs:
     - env: TEST=shellcheck
       script: shellcheck prepare-chroot-base prepare-chroot-builder update-local-repo.sh scripts/*
     # example VM package, without upstream tarball
-    - script: ~/qubes-builder/scripts/travis-build core-vchan-xen
+    - script: 
+       - ~/qubes-builder/scripts/travis-prepare core-vchan-xen
+       - ~/qubes-builder/scripts/travis-build core-vchan-xen
       env: DISTS_VM=fc31 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example dom0 package
-    - script: ~/qubes-builder/scripts/travis-build linux-utils
+    - script:
+       - ~/qubes-builder/scripts/travis-prepare linux-utils
+       - ~/qubes-builder/scripts/travis-build linux-utils
       env: DIST_DOM0=fc31 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example package, with upstream tarball
-    - script: ~/qubes-builder/scripts/travis-build linux-scrypt
+    - script:
+       - ~/qubes-builder/scripts/travis-prepare linux-scrypt
+       - ~/qubes-builder/scripts/travis-build linux-scrypt
       env: DISTS_VM=fc31 USE_QUBES_REPO_VERSION=4.1 USE_QUBES_REPO_TESTING=1
     # example centos7 package, with upstream tarball and no qubes repos
-    - script: ~/qubes-builder/scripts/travis-build app-linux-split-gpg
+    - script:
+       - ~/qubes-builder/scripts/travis-prepare app-linux-split-gpg
+       - ~/qubes-builder/scripts/travis-build app-linux-split-gpg
       env: DISTS_VM=centos7
     # example package with src.rpms
-    - script: ~/qubes-builder/scripts/travis-build linux-dom0-updates
+    - script:
+       - ~/qubes-builder/scripts/travis-prepare linux-dom0-updates
+       - ~/qubes-builder/scripts/travis-build linux-dom0-updates
       env: DIST_DOM0=fc25 BRANCH_linux_dom0_updates=release4.0
