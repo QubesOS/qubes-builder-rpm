@@ -37,7 +37,6 @@ zip
 --exclude=anaconda*
 --exclude=aspell-*
 --exclude=autofs
---exclude=avahi
 --exclude=catfish
 --exclude=desktop-backgrounds-basic
 --exclude=dnfdragora-updater
