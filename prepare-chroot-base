@@ -217,7 +217,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     # Prepare /dev nodes
     mkdir -p "${INSTALLDIR}/dev/"
     for f in null urandom zero random console; do
-        cp -a /dev/$f "$INSTALLDIR/dev/"
+        cp -a "/dev/$f" "$INSTALLDIR/dev/" || true
     done
 
     # Create loop devices as much as Mock does
