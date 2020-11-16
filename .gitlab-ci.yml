@@ -1,0 +1,97 @@
+include:
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.1/gitlab-base.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.1/gitlab-vm-fedora-build.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.1/gitlab-vm-centos-build.yml'
+
+default:
+  tags:
+    - vm-runner
+    - long-living-job
+
+after_script:
+  - ls -l ~/qubes-builder/qubes-src/linux-template-builder/rpm/noarch
+
+variables:
+  COMPONENTS: linux-template-builder
+  USE_DIST_BUILD_TOOL: 0
+  
+prep:sources:
+  extends: .components_prepare
+  variables:
+    COMPONENTS: "linux-template-builder core-vchan-xen linux-utils linux-scrypt app-linux-split-gpg linux-dom0-updates"
+    BRANCH_linux_dom0_updates: "release4.0"
+
+tests:vm-fc32:no-upstream-tarball:
+  extends: .components_build
+  stage: tests
+  needs:
+    - prep:sources
+  tags:
+    - docker-runner
+    - short-living-job
+  variables:
+    DISTS_VM: fc32
+    USE_QUBES_REPO_VERSION: "4.1"
+    USE_QUBES_REPO_TESTING: "1"
+    USE_DIST_BUILD_TOOL: 1
+    COMPONENTS: core-vchan-xen
+
+tests:dom0-fc32:dom0-package:
+  extends: .components_build
+  stage: tests
+  needs:
+    - prep:sources
+  tags:
+    - docker-runner
+    - short-living-job
+  variables:
+    DIST_DOM0: fc32
+    USE_QUBES_REPO_VERSION: "4.1"
+    USE_QUBES_REPO_TESTING: "1"
+    USE_DIST_BUILD_TOOL: 1
+    COMPONENTS: linux-utils
+
+tests:vm-fc32:upstream-tarball:
+  extends: .components_build
+  stage: tests
+  needs:
+    - prep:sources
+  tags:
+    - docker-runner
+    - short-living-job
+  variables:
+    DISTS_VM: fc32
+    USE_QUBES_REPO_VERSION: "4.1"
+    USE_QUBES_REPO_TESTING: "1"
+    USE_DIST_BUILD_TOOL: 1
+    COMPONENTS: linux-scrypt
+
+tests:vm-centos8:upstream-tarball-no-qubes-repos:
+  extends: .components_build
+  stage: tests
+  needs:
+    - prep:sources
+  tags:
+    - docker-runner
+    - short-living-job
+  variables:
+    DISTS_VM: centos8
+    USE_DIST_BUILD_TOOL: 1
+    COMPONENTS: app-linux-split-gpg
+
+tests:dom0-fc25:src-rpm:
+  extends: .components_build
+  stage: tests
+  needs:
+    - prep:sources
+  tags:
+    - docker-runner
+    - short-living-job
+  variables:
+    DIST_DOM0: fc25
+    USE_DIST_BUILD_TOOL: 1
+    COMPONENTS: linux-dom0-updates
+    BRANCH_linux_dom0_updates: "release4.0"
