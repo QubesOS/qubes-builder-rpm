@@ -28,6 +28,8 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
     fi
 fi
 
+YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
+
 if [ -n "$3" ]; then
     PKGLISTFILE="$3"
 else
@@ -39,12 +41,6 @@ else
     if [ "0$CACHE_CHROOT" -eq 1 ]; then
         CHROOT_CACHE_FILE="${CACHEDIR}/chroot-${DIST}-base.tar"
     fi
-fi
-
-if [ -f /etc/debian_version ]; then
-    # On Debian system-release version isn't properly detected (because of
-    # relocated rpmdb)
-    YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 fi
 
 prepare_chroot_proc () {
