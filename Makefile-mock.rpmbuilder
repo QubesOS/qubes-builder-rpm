@@ -46,8 +46,18 @@ spec_pkg_ver_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
     rpm -q $(RPM_QUERY_DEFINES) --qf '%{NAME}-%{VERSION}-%{RELEASE}\n' --specfile $(1) | head -n 1)
 
 ### Targets required by Makefile.generic to build packages
-dist-prepare-chroot:
+dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_mock
+	@true
+
+$(CHROOT_DIR)/home/user/.prepared_mock:
 	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
+	sudo $(MOCK_ENV) $(MOCK) \
+		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		$(RPM_BUILD_DEFINES) \
+		$(MOCK_EXTRA_OPTS) \
+		--disablerepo=builder-local \
+		--init
+	touch $(CHROOT_DIR)/home/user/.prepared_mock
 
 dist-build-dep:
 	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
@@ -109,4 +119,3 @@ dist-copy-out:
 	mv -t $(ORIG_SRC)/$(OUTPUT_DIR) $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/**/*.rpm;\
 	mv $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*.buildinfo \
 		$(ORIG_SRC)/$(OUTPUT_DIR)/
-
