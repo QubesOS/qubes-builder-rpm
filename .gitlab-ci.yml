@@ -4,7 +4,7 @@ include:
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.1/gitlab-vm-fedora-build.yml'
   - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-vm-centos-build.yml'
+    file: '/r4.1/gitlab-vm-centos-build-template.yml'
 
 default:
   tags:
@@ -29,6 +29,7 @@ tests:vm-fc32:no-upstream-tarball:
   stage: tests
   needs:
     - prep:sources
+    - chroot:vm-fc32
   tags:
     - docker-runner
     - short-living-job
@@ -44,6 +45,7 @@ tests:dom0-fc32:dom0-package:
   stage: tests
   needs:
     - prep:sources
+    - chroot:dom0-fc32
   tags:
     - docker-runner
     - short-living-job
@@ -59,6 +61,7 @@ tests:vm-fc32:upstream-tarball:
   stage: tests
   needs:
     - prep:sources
+    - chroot:vm-fc32
   tags:
     - docker-runner
     - short-living-job
@@ -74,6 +77,7 @@ tests:vm-centos8:upstream-tarball-no-qubes-repos:
   stage: tests
   needs:
     - prep:sources
+    - chroot:vm-centos8
   tags:
     - docker-runner
     - short-living-job
@@ -87,6 +91,7 @@ tests:dom0-fc25:src-rpm:
   stage: tests
   needs:
     - prep:sources
+    - chroot:dom0-fc25
   tags:
     - docker-runner
     - short-living-job
