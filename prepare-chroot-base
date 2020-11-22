@@ -84,7 +84,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}"
     fi
 
-    echo "-> Retreiving core RPM packages..."
+    echo "-> Retrieving core RPM packages..."
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
         INITIAL_PACKAGES="filesystem setup fedora-release dnf dnf-plugins-core"
