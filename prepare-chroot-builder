@@ -63,6 +63,7 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
     if ! [ -r "$DIR/proc/cpuinfo" ]; then
         prepare_chroot_proc
     fi
+    rm -f "$DIR/etc/resolv.conf"
     cp /etc/resolv.conf "$DIR/etc/"
 
     # Always install at least base pkgs
