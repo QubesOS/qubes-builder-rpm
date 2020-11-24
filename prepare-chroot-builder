@@ -159,8 +159,8 @@ printf "%s" "-> Installing package groups..."
 # Disable Fedora modular repos because
 # it can make dnf builddep to fail
 # resolving dependencies
-if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -le 32 ]; then
-    chroot "$DIR" dnf config-manager --disable '*modular'
+if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -ge 27 ] && [ "${DIST_VER}" -le 32 ]; then
+    chroot "$DIR" dnf config-manager --disablerepo '*modular' || :
 fi
 
 if [ "$DISTRIBUTION" = "centos" ]; then
@@ -169,7 +169,7 @@ if [ "$DISTRIBUTION" = "centos" ]; then
     fi
     if [ "${DIST_VER}" -eq 8 ]; then
         chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
-        chroot "$DIR" dnf config-manager --disable '*modular'
+        chroot "$DIR" dnf config-manager --disablerepo '*modular'
         # Add Appstream and @fepitre python38 repositories
         chroot "$DIR" dnf module enable -y python38-devel:3.8
         chroot "$DIR" dnf copr enable -y fepitre/epel-8-python38
