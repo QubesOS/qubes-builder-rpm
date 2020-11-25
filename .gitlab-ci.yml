@@ -106,3 +106,10 @@ tests:dom0-fc25:src-rpm:
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-dom0-updates
     BRANCH_linux_dom0_updates: "release4.0"
+
+checks:shellcheck:
+  stage: checks
+  before_script:
+    - sudo dnf install -y ShellCheck
+  script:
+    - shellcheck -e SC1117 $(grep -l '^#!/bin/\(ba\)\?sh' $(git ls-files))
