@@ -37,8 +37,7 @@ tests:vm-fc32:no-upstream-tarball:
     - prep:sources
     - chroot:vm-fc32
   tags:
-    - docker-runner
-    - short-living-job
+    - docker
   variables:
     DISTS_VM: fc32
     USE_QUBES_REPO_VERSION: "4.1"
@@ -53,8 +52,7 @@ tests:dom0-fc32:dom0-package:
     - prep:sources
     - chroot:dom0-fc32
   tags:
-    - docker-runner
-    - short-living-job
+    - docker
   variables:
     DIST_DOM0: fc32
     USE_QUBES_REPO_VERSION: "4.1"
@@ -69,8 +67,7 @@ tests:vm-fc32:upstream-tarball:
     - prep:sources
     - chroot:vm-fc32
   tags:
-    - docker-runner
-    - short-living-job
+    - docker
   variables:
     DISTS_VM: fc32
     USE_QUBES_REPO_VERSION: "4.1"
@@ -85,8 +82,7 @@ tests:vm-centos8:upstream-tarball-no-qubes-repos:
     - prep:sources
     - chroot:vm-centos8
   tags:
-    - docker-runner
-    - short-living-job
+    - docker
   variables:
     DISTS_VM: centos8
     USE_DIST_BUILD_TOOL: 1
@@ -99,8 +95,7 @@ tests:dom0-fc25:src-rpm:
     - prep:sources
     - chroot:dom0-fc25
   tags:
-    - docker-runner
-    - short-living-job
+    - docker
   variables:
     DIST_DOM0: fc25
     USE_DIST_BUILD_TOOL: 1
@@ -109,6 +104,8 @@ tests:dom0-fc25:src-rpm:
 
 checks:shellcheck:
   stage: checks
+  tags:
+    - docker
   before_script:
     - sudo dnf install -y ShellCheck
   script:
