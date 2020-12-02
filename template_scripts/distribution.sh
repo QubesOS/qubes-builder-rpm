@@ -82,37 +82,38 @@ function yumConfigRepository() {
 # Yum install package(s)
 # ==============================================================================
 function yumInstall() {
-    files="$@"
-    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    declare -a files
+    files=("$@")
+    mount --bind /etc/resolv.conf "${INSTALLDIR}/etc/resolv.conf"
     if [ "$YUM" = "dnf" ]; then
-        mkdir -p ${INSTALLDIR}/var/lib/dnf
+        mkdir -p "${INSTALLDIR}/var/lib/dnf"
     fi
-    mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
-    mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
+    mkdir -p "${INSTALLDIR}/tmp/template-builder-repo"
+    mount --bind pkgs-for-template "${INSTALLDIR}/tmp/template-builder-repo"
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo ${INSTALLDIR}/etc/yum.repos.d/
+        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}/etc/yum.repos.d/"
         chroot_cmd $YUM --downloadonly \
-            install ${YUM_OPTS} -y ${files[@]} || exit 1
-        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+            install ${YUM_OPTS} -y "${files[@]}" || exit 1
+        find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALLDIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         if [ "$DISTRIBUTION" = "fedora" ]; then
             # set http proxy to invalid one, to prevent any connection in case of
             # --cacheonly being buggy: better fail the build than install something
             # else than the logged one
             chroot_cmd $YUM install ${YUM_OPTS} -y \
-                --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+                --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
         fi
         if [ "$DISTRIBUTION" = "centos" ]; then
             # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
-            chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
+            chroot_cmd $YUM install ${YUM_OPTS} -y "${files[@]}" || exit 1
         fi
-        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
+        rm -f "${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo"
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
     fi
-    umount ${INSTALLDIR}/etc/resolv.conf
-    umount ${INSTALLDIR}/tmp/template-builder-repo
+    umount "${INSTALLDIR}/etc/resolv.conf"
+    umount "${INSTALLDIR}/tmp/template-builder-repo"
 }
 
 # ==============================================================================
@@ -124,44 +125,46 @@ function yumGroupInstall() {
         optional=with-optional
         shift
     fi
-    files="$@"
-    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    declare -a files
+    files=("$@")
+    mount --bind /etc/resolv.conf "${INSTALLDIR}/etc/resolv.conf"
     if [ "$YUM" = "dnf" ]; then
-        mkdir -p ${INSTALLDIR}/var/lib/dnf
+        mkdir -p "${INSTALLDIR}/var/lib/dnf"
     else
         optional=--setopt=group_package_types=mandatory,default,optional
     fi
-    mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
-    mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
+    mkdir -p "${INSTALLDIR}/tmp/template-builder-repo"
+    mount --bind pkgs-for-template "${INSTALLDIR}/tmp/template-builder-repo"
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         chroot_cmd $YUM clean expire-cache
         chroot_cmd $YUM --downloadonly \
-            group install $optional ${YUM_OPTS} -y ${files[@]} || exit 1
-        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+            group install $optional ${YUM_OPTS} -y "${files[@]}" || exit 1
+        find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALLDIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         if [ "${DIST}" != "centos7" ]; then
             # set http proxy to invalid one, to prevent any connection in case of
             # --cacheonly being buggy: better fail the build than install something
             # else than the logged one
             chroot_cmd $YUM install ${YUM_OPTS} -y \
-                --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+                --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
         else
             # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
-            chroot_cmd $YUM install ${YUM_OPTS} -y ${files[@]} || exit 1
+            chroot_cmd $YUM install ${YUM_OPTS} -y "${files[@]}" || exit 1
         fi
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
     fi
-    umount ${INSTALLDIR}/etc/resolv.conf
-    umount ${INSTALLDIR}/tmp/template-builder-repo
+    umount "${INSTALLDIR}/etc/resolv.conf"
+    umount "${INSTALLDIR}/tmp/template-builder-repo"
 }
 
 # ==============================================================================
 # Yum update
 # ==============================================================================
 function yumUpdate() {
-    files="$@"
+    declare -a files
+    files=("$@")
     mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
     if [ "$YUM" = "dnf" ]; then
         mkdir -p ${INSTALLDIR}/var/lib/dnf
@@ -171,14 +174,14 @@ function yumUpdate() {
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
         cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo ${INSTALLDIR}/etc/yum.repos.d/
         chroot_cmd $YUM --downloadonly \
-            update ${YUM_OPTS} -y ${files[@]} || exit 1
+            update ${YUM_OPTS} -y "${files[@]}" || exit 1
         find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
         find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
         # else than the logged one
         chroot_cmd $YUM update ${YUM_OPTS} -y \
-            --cacheonly --setopt=proxy=http://127.0.0.1:1/ ${files[@]} || exit 1
+            --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
         rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
