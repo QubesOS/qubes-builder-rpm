@@ -14,8 +14,9 @@ builderdir="$scriptdir/../"
 source "$scriptdir/functions.sh"
 
 releasever="${1//fc}"
-src_rpm="$2"
-src_file="${*:3}"
+package="$2"
+src_rpm="$3"
+src_file="${*:4}"
 
 errecho() {
     >&2 echo "$@"
@@ -31,8 +32,8 @@ exit_get_sources() {
 }
 
 if [ "x$releasever" != "x" ]; then
-    if [[ ! "$releasever" =~ ^[1-9][0-9]$ ]]; then
-        errecho "Invalid Fedora release format"
+    if [[ ! "$releasever" =~ ^[1-9][0-9]$ ]] && [ "$releasever" != "rawhide" ]; then
+        errecho "Invalid release format"
         exit 1
     fi
 else
@@ -40,22 +41,14 @@ else
     exit 1
 fi
 
-release_url="https://dl.fedoraproject.org/pub/fedora/linux/releases/${releasever}/Everything/source/tree/Packages/${src_rpm::1}/${src_rpm}"
-update_url="https://dl.fedoraproject.org/pub/fedora/linux/updates/${releasever}/Everything/SRPMS/Packages/${src_rpm::1}/${src_rpm}"
-
 trap 'exit_get_sources' 0 1 2 3 6 15
 
 if [ "x$src_file" != "x" ] && [ "x$releasever" != "x" ]; then
     # download rpm
     tmpdir="$(mktemp -d -p "$localdir")"
-    if exist_url "$update_url"; then
-        wget -q "$update_url" -O "$tmpdir/$src_rpm.UNTRUSTED"
-    elif exist_url "$release_url"; then
-        wget -q "$release_url" -O "$tmpdir/$src_rpm.UNTRUSTED"
-    else
-        errecho "Cannot find source RPM: $src_rpm"
-        exit 1
-    fi
+    # shellcheck disable=SC2086
+    dnf -q download --destdir="$tmpdir" --source --releasever="$releasever" "$package"
+    mv "$tmpdir/$src_rpm" "$tmpdir/$src_rpm.UNTRUSTED"
 
     # check signature
     mkdir -p "$tmpdir/rpmdb"
@@ -67,6 +60,7 @@ if [ "x$src_file" != "x" ] && [ "x$releasever" != "x" ]; then
     # get sources
     for src in $src_file
     do
-        rpm2cpio "$tmpdir/$src_rpm" | cpio --quiet -i --to-stdout "$src" > "$src.UNTRUSTED"
+        # shellcheck disable=2094
+        rpm2cpio "$tmpdir/$src_rpm" | cpio --quiet -i --to-stdout "$src" > "$src"
     done
 fi
