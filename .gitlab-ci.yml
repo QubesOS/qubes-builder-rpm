@@ -110,3 +110,4 @@ checks:shellcheck:
     - sudo dnf install -y ShellCheck
   script:
     - shellcheck -e SC1117 $(grep -l '^#!/bin/\(ba\)\?sh' $(git ls-files))
+  allow_failure: true
