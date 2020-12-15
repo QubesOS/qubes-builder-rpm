@@ -249,8 +249,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
         if [ "x$CENTOS_MIRROR" != "x" ]; then
-            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Base.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Base.repo"
+            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-Base.repo"
+            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-Base.repo"
         fi
 
         if [ "x$EPEL_MIRROR" != "x" ]; then
@@ -259,7 +259,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
 
         if [ "${DIST_VER}" = "8" ]; then
-            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-PowerTools.repo"
+            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-PowerTools.repo"
         fi
     fi
 
