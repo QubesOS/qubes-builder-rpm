@@ -133,14 +133,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        INITIAL_PACKAGES="filesystem setup centos-release epel-release"
+        INITIAL_PACKAGES="filesystem setup epel-release"
 
         if [ "$DIST_VER" = "7" ]; then
-            INITIAL_PACKAGES="$INITIAL_PACKAGES yum yum-utils yum-plugin-copr centos-release-xen-412"
+            INITIAL_PACKAGES="$INITIAL_PACKAGES centos-release yum yum-utils yum-plugin-copr centos-release-xen-412"
         else
             # coreutils conflicts with coreutils-single
             INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
-            INITIAL_PACKAGES="$INITIAL_PACKAGES dnf dnf-plugins-core"
+            INITIAL_PACKAGES="$INITIAL_PACKAGES centos-release-stream dnf dnf-plugins-core"
         fi
 
         # Add groupadd, su etc.
@@ -249,8 +249,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
         if [ "x$CENTOS_MIRROR" != "x" ]; then
-            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-Base.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-Base.repo"
+            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
+            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
         fi
 
         if [ "x$EPEL_MIRROR" != "x" ]; then
@@ -259,7 +259,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
 
         if [ "${DIST_VER}" = "8" ]; then
-            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Linux-PowerTools.repo"
+            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-PowerTools.repo"
         fi
     fi
 
