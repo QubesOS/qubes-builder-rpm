@@ -102,7 +102,7 @@ do
     test -n "$value" && printf ' %s="%s"\n' "$var" "$value"
 done
 
-printf 'Checksum-Sha256:\n'
+printf 'Checksums-Sha256:\n'
 for rpm in $SRPM $RPMS
 do
     checksum=$(sha256sum -b "$rpm" | cut -c 1-64)
