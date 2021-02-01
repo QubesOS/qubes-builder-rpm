@@ -78,7 +78,7 @@ EOF
 printf 'Installed-Build-Depends:\n'
 rpm -qa --queryformat '%{epoch}:%{name}-%{version}-%{release}.%{arch}\n' \
     | LC_ALL=C sort -t: -k2 \
-    | sed -e 's/^(none)://' -e 's/^/ /'
+    | sed -e 's/^(none)://; /\.(none)$/d; s/^/ /'
 
 printf 'Environment:\n'
 
