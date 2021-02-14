@@ -74,3 +74,4 @@ zip
 --exclude=xfce4-sensors-plugin
 --exclude=xorg-x11-drv-nouveau
 --exclude=yum-utils
+--exclude=pipewire-pulseaudio
