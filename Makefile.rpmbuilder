@@ -15,6 +15,11 @@
 PACKAGE_LIST = $(strip $(RPM_SPEC_FILES) $(RPM_SRC_PACKAGES))
 DIST_BUILD_DIR = /home/user
 
+ifneq (,$(PACKAGE))
+CACHE_FILE ::= $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
+CACHE_FILE ::= $(shell test -f $(CACHE_FILE) && echo $(CACHE_FILE))
+endif
+
 ifneq (1,$(NO_ARCHIVE))
 # allow Makefile.builder in component to override this value
 GIT_TARBALL_NAME ?= $(notdir \
