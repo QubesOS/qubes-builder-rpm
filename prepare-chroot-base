@@ -13,16 +13,6 @@ PLUGIN_DIR=$(dirname "$0")
 INSTALLDIR=$1
 DIST=$2
 
-RPM_VERSION="$(rpm --version | awk '{print $3}')"
-
-if [ "$(printf '%s\n' "$RPM_VERSION" "4.14.0" | sort -V | head -n1)" = "4.14.0" ]; then
-    PGP_INVALID='SIGNATURES NOT OK'
-    PGP_SIGNED='signatures OK'
-else
-    PGP_INVALID='PGP'
-    PGP_SIGNED=' pgp '
-fi
-
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
 YUM=dnf
@@ -46,27 +36,24 @@ else
     YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}.conf
 fi
 
-YUM="yum --downloaddir=${DOWNLOADDIR} --downloadonly install"
+YUM=(yum "--downloaddir=$DOWNLOADDIR" --downloadonly install)
 if type dnf >/dev/null 2>/dev/null; then
-    YUM="dnf $YUM_OPTS --releasever ${DIST_VER} --downloaddir=${DOWNLOADDIR} --downloadonly install"
+    YUM=(dnf $YUM_OPTS --releasever "$DIST_VER" "--downloaddir=$DOWNLOADDIR" --downloadonly install)
 elif type yumdownloader >/dev/null 2>/dev/null; then
     # debian does not have --downloadonly plugin
-    YUM="yumdownloader -q --resolve --destdir=${DOWNLOADDIR}"
+    YUM=(yumdownloader -q --resolve "--destdir=$DOWNLOADDIR")
 fi
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
-    RPM_OPTS=()
-    YUM_OPTS=()
-    if [ -e /etc/debian_version ] || grep -q openSUSE /etc/os-release; then
-        # Debian by default keep rpmdb in ~/.rpmdb
-        # OpenSUSE by default keep rpmdb in /usr/lib/sysimage/rpm
-        RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
-    fi
+    # We ALWAYS ALWAYS ALWAYS want signature checks.
+    RPM_OPTS=('--define=_pkgverify_level all')
+    # Delta RPMs and zchunk are unnecessary attack surface
+    YUM_OPTS=(--setopt=deltarpm=False --setopt=deltarpm_percentage=0 --setopt=zchunk=0)
+    # Debian by default keep rpmdb in ~/.rpmdb
+    # OpenSUSE by default keep rpmdb in /usr/lib/sysimage/rpm
+    RPM_OPTS+=("--define=_dbpath %{_var}/lib/rpm")
     if grep -q openSUSE /etc/os-release; then
-        # zchunk is broken on OpenSUSE (at least together with Fedora repos):
-        # https://bugzilla.opensuse.org/1160702
-        YUM_OPTS+=("--setopt=zchunk=0")
         # Since OpenSUSE enable gpgcheck by default, make it find the keys
         mkdir -p "${INSTALLDIR}/usr/lib/sysimage"
         ln -ns ../../../var/lib/rpm "${INSTALLDIR}/usr/lib/sysimage/rpm"
@@ -74,12 +61,12 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     rpm "${RPM_OPTS[@]}" --initdb --root="${INSTALLDIR}"
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
-        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" \
+        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" -- \
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary"
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" \
+        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" -- \
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}"\
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}"
     fi
@@ -134,7 +121,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
         INITIAL_PACKAGES="filesystem setup epel-release"
-
+        YUM_OPTS+=(--setopt=repo_gpgcheck=True)
         if [ "$DIST_VER" = "7" ]; then
             INITIAL_PACKAGES="$INITIAL_PACKAGES centos-release yum yum-utils yum-plugin-copr centos-release-xen-412"
         else
@@ -193,16 +180,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Verifying signatures..."
     set +x
     for file in "${DOWNLOADDIR}"/*; do
-        result=$(rpm "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig "${file}") || {
+        result=$(rpm "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig -- "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
-        result_status="${result##*:}"
-        echo "${result_status}" | grep -q "$PGP_INVALID" && {
-            echo "Filename: ${file} contains an invalid PGP signature. Exiting!"
-            exit 1
-        }
-        echo "${result_status}" | grep -q "$PGP_SIGNED" || {
+        [[ "$result" = "$file: digests signatures OK" ]] || {
             echo "Filename: ${file} is not signed.  Exiting!"
             exit 1
         }
@@ -229,7 +211,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     done
 
     echo "-> Installing core RPM packages..."
-    rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" "${DOWNLOADDIR}/"*.rpm || exit 1
+    rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" -- "${DOWNLOADDIR}/"*.rpm || exit 1
 
     if grep -q openSUSE /etc/os-release; then
         # Build the rpmdb again, in case of huge rpm version difference that makes
