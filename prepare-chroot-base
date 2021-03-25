@@ -8,6 +8,18 @@ else
     YUM_OPTS="$YUM_OPTS -q"
 fi
 
+set -o pipefail
+rpm_version=$(rpm --version)
+if ! [[ "$rpm_version" =~ ^RPM\ version\ ([0-9][0-9.]*)$ ]]; then
+    echo 'Bad RPM version' >&2
+    exit 1
+fi
+version=$(printf '%s\n4.14.2.0\n' "${BASH_REMATCH[1]}"|sort -V)
+if [[ "$version" = 4.14.2.0 ]]; then
+    echo 'Sorry, your RPM version is too old (need at least 4.14.2.1)'>&2
+    exit 1
+fi
+
 PLUGIN_DIR=$(dirname "$0")
 
 INSTALLDIR=$1
