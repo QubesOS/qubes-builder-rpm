@@ -15,7 +15,7 @@ DIST=$2
 
 DOWNLOADDIR="${CACHEDIR}/base_rpms"
 
-YUM=dnf
+YUM=(dnf)
 
 if [ "${DIST#fc}" != "${DIST}" ]; then
     DISTRIBUTION="fedora"
@@ -26,7 +26,7 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
     if [ "$DIST_VER" = "7" ]; then
-        YUM=yum
+        YUM=(yum)
     fi
 fi
 
@@ -36,13 +36,21 @@ else
     YUM_BOOTSTRAP_CONF=yum-bootstrap-${DISTRIBUTION}.conf
 fi
 
-YUM=(yum "--downloaddir=$DOWNLOADDIR" --downloadonly install)
-if type dnf >/dev/null 2>/dev/null; then
-    YUM=(dnf $YUM_OPTS --releasever "$DIST_VER" "--downloaddir=$DOWNLOADDIR" --downloadonly install)
-elif type yumdownloader >/dev/null 2>/dev/null; then
-    # debian does not have --downloadonly plugin
-    YUM=(yumdownloader -q --resolve "--destdir=$DOWNLOADDIR")
-fi
+case ${YUM[0]} in
+(dnf)
+    YUM+=($YUM_OPTS --releasever "$DIST_VER" "--downloaddir=$DOWNLOADDIR" --downloadonly install)
+    ;;
+(yum)
+    YUM+=("--downloaddir=$DOWNLOADDIR" --downloadonly install)
+    if type yumdownloader >/dev/null 2>/dev/null; then
+        # debian does not have --downloadonly plugin
+        YUM=(yumdownloader -q --resolve "--destdir=$DOWNLOADDIR")
+    fi
+    ;;
+(*)
+    exit 1
+    ;;
+esac
 
 if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Initializing RPM database..."
@@ -74,28 +82,28 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Retrieving core RPM packages..."
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
-        INITIAL_PACKAGES="filesystem setup fedora-release dnf dnf-plugins-core"
+        INITIAL_PACKAGES=(filesystem setup fedora-release dnf dnf-plugins-core)
         if [ "${DIST_VER}" -ge 25 ]; then
             # avoid pulling in glibc-all-langpacks to save space
-            INITIAL_PACKAGES="$INITIAL_PACKAGES glibc-langpack-en"
+            INITIAL_PACKAGES+=(glibc-langpack-en)
         fi
         if [ "${DIST_VER}" -eq 25 ]; then
             # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
             # enough to try them both
-            INITIAL_PACKAGES="--exclude=libcrypt $INITIAL_PACKAGES"
+            INITIAL_PACKAGES=(--exclude=libcrypt "${INITIAL_PACKAGES[@]}")
         fi
 
         if [ "${DIST_VER}" -ge 26 ]; then
             # coreutils conflicts with coreutils-single
-            INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
+            INITIAL_PACKAGES=(--exclude=coreutils-single "${INITIAL_PACKAGES[@]}")
         fi
 
         if [ "${DIST_VER}" -ge 27 ]; then
             # curl-minimal conflicts with curl, same for libcurl
-            INITIAL_PACKAGES="--exclude=curl --exclude=libcurl $INITIAL_PACKAGES"
+            INITIAL_PACKAGES=(--exclude=curl --exclude=libcurl "${INITIAL_PACKAGES[@]}")
         fi
 
-        mkdir -p "${DOWNLOADDIR}"
+        mkdir -p -- "${DOWNLOADDIR}"
         yumconf=$(mktemp)
 
         if [ "x${FEDORA_MIRROR}" != "x" ]; then
@@ -120,20 +128,20 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        INITIAL_PACKAGES="filesystem setup epel-release"
+        INITIAL_PACKAGES=(filesystem setup epel-release)
         YUM_OPTS+=(--setopt=repo_gpgcheck=True)
         if [ "$DIST_VER" = "7" ]; then
-            INITIAL_PACKAGES="$INITIAL_PACKAGES centos-release yum yum-utils yum-plugin-copr centos-release-xen-412"
+            INITIAL_PACKAGES+=(centos-release yum yum-utils yum-plugin-copr centos-release-xen-412)
         else
             # coreutils conflicts with coreutils-single
-            INITIAL_PACKAGES="--exclude=coreutils-single $INITIAL_PACKAGES"
-            INITIAL_PACKAGES="$INITIAL_PACKAGES centos-release-stream dnf dnf-plugins-core"
+            INITIAL_PACKAGES=(--exclude=coreutils-single "${INITIAL_PACKAGES[@]}")
+            INITIAL_PACKAGES+=(centos-release-stream dnf dnf-plugins-core)
         fi
 
         # Add groupadd, su etc.
-        INITIAL_PACKAGES="$INITIAL_PACKAGES shadow-utils util-linux"
+        INITIAL_PACKAGES+=(shadow-utils util-linux)
 
-        mkdir -p "${DOWNLOADDIR}"
+        mkdir -p -- "${DOWNLOADDIR}"
         yumconf=$(mktemp)
         yumconftmp=$(mktemp)
 
@@ -172,9 +180,8 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
-    # shellcheck disable=SC2086
-    $YUM "${YUM_OPTS[@]}" -c "$yumconf" -y \
-        --installroot="${INSTALLDIR}" ${INITIAL_PACKAGES}
+    "${YUM[@]}" "${YUM_OPTS[@]}" -c "$yumconf" -y \
+        --installroot="${INSTALLDIR}" "${INITIAL_PACKAGES[@]}"
     rm -f "$yumconf"
 
     echo "-> Verifying signatures..."
