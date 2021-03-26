@@ -141,7 +141,6 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
         INITIAL_PACKAGES=(filesystem setup epel-release)
-        YUM_OPTS+=(--setopt=repo_gpgcheck=True)
         if [ "$DIST_VER" = "7" ]; then
             INITIAL_PACKAGES+=(centos-release yum yum-utils yum-plugin-copr centos-release-xen-412)
         else
