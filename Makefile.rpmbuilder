@@ -49,8 +49,8 @@ ifeq (fedora,$(DISTRIBUTION))
 	BUILD_PKG_LIST = build-pkgs-base-fedora.list
 
 ifdef FEDORA_MIRROR
-	YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(DIST_VER)/Everything/x86_64/os/
-	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(DIST_VER)/x86_64/
+	YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(DIST_VER)/Everything/x86_64/os/ --setopt=fedora.metalink=
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(DIST_VER)/x86_64/ --setopt=updates.metalink=
 endif
 
 endif
@@ -66,13 +66,13 @@ ifeq (centos,$(DISTRIBUTION))
 	BUILD_PKG_LIST = build-pkgs-base-centos.list
 
 ifdef CENTOS_MIRROR
-	YUM_OPTS += --setopt=base.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/os/x86_64
-	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/updates/x86_64
-	YUM_OPTS += --setopt=extras.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/extras/x86_64
+	YUM_OPTS += --setopt=base.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/os/x86_64 --setopt=base.mirrorlist=
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/updates/x86_64 --setopt=updates.mirrorlist=
+	YUM_OPTS += --setopt=extras.baseurl=$(patsubst %/,%,$(CENTOS_MIRROR))/$(DIST_VER)/extras/x86_64 --setopt=extras.mirrorlist=
 endif
 
 ifdef EPEL_MIRROR
-	YUM_OPTS += --setopt=epel.baseurl=$(patsubst %/,%,$(EPEL_MIRROR))/$(DIST_VER)/x86_64
+	YUM_OPTS += --setopt=epel.baseurl=$(patsubst %/,%,$(EPEL_MIRROR))/$(DIST_VER)/x86_64 --setopt=epel.metalink=
 endif
 
 endif

@@ -241,23 +241,10 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     fi
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
-        if [ "x$FEDORA_MIRROR" != "x" ]; then
-            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
-        fi
+        true
     fi
 
     if [ "${DISTRIBUTION}" = "centos" ]; then
-        if [ "x$CENTOS_MIRROR" != "x" ]; then
-            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
-        fi
-
-        if [ "x$EPEL_MIRROR" != "x" ]; then
-            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
-        fi
-
         if [ "${DIST_VER}" = "8" ]; then
             sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-PowerTools.repo"
         fi
