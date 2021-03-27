@@ -55,11 +55,15 @@ prepare_chroot_proc () {
 if ! [ -d "$DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
     mkdir -p "$DIR"
     tar xf "$CHROOT_CACHE_FILE" "$DIR"
-elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
-    mkdir -p "$DIR"
+fi
 
-    "${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
+mkdir -p "$DIR"
+"${PLUGIN_DIR}/prepare-chroot-base" "$DIR" "$DIST"
+mkdir -p "$DIR/etc/dnf/vars"
+echo "$DIR" > "$DIR/etc/dnf/vars/sysroot"
+echo "$BUILDER_REPO_DIR" > "$DIR/etc/dnf/vars/builder_repo_dir"
 
+if ! [ -e "$DIR/home/user/.prepared_base" ]; then
     if ! [ -r "$DIR/proc/cpuinfo" ]; then
         prepare_chroot_proc
     fi
@@ -67,10 +71,9 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
     cp /etc/resolv.conf "$DIR/etc/"
 
     # Always install at least base pkgs
-    cp  "${PLUGIN_DIR}/yum.conf" "$DIR/tmp/"
     rm -f "$DIR/etc/yum.repos.d/builder-local.repo"
     # shellcheck disable=SC2086,SC2046
-    chroot "$DIR" $YUM install -c /tmp/yum.conf -y $YUM_OPTS \
+    $YUM --installroot="$DIR" install -c "${PLUGIN_DIR}/yum.conf" -y $YUM_OPTS \
         $(cat ${PLUGIN_DIR}/build-pkgs-base-${DISTRIBUTION}.list)
 
     # setup user and group
@@ -98,9 +101,6 @@ elif ! [ -d "$DIR/home/user/.prepared_base" ]; then
     fi
 
     chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
-
-    # Just to be sure that RPMDB has right format (eg when building host is newer than FC13)
-    chroot "$DIR" rpm --rebuilddb 2> /dev/null
 fi
 
 "${PLUGIN_DIR}/update-local-repo.sh" "$DIST"
@@ -143,10 +143,6 @@ if ! [ -r "$DIR/proc/cpuinfo" ]; then
     prepare_chroot_proc
 fi
 
-if ! [ -d "$DIR"/tmp/qubes-packages-mirror-repo/rpm ]; then
-    mkdir -p "$DIR"/tmp/qubes-packages-mirror-repo
-    mount --bind "$BUILDER_REPO_DIR" "$DIR/tmp/qubes-packages-mirror-repo"
-fi
 # remove systemd-resolved symlink
 rm -f "$DIR/etc/resolv.conf"
 cp /etc/resolv.conf "$DIR/etc/"
@@ -159,22 +155,22 @@ printf "%s" "-> Installing package groups..."
 # Disable Fedora modular repos because
 # it can make dnf builddep to fail
 # resolving dependencies
-if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -le 32 ]; then
+if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -ge 28 ] && [ "${DIST_VER}" -le 32 ]; then
     chroot "$DIR" dnf config-manager --disable '*modular' || :
 fi
 
 if [ "$DISTRIBUTION" = "centos" ]; then
     if [ "${DIST_VER}" -eq 8 ]; then
-        chroot "$DIR" dnf copr enable -y fepitre/epel-8-qubes
-        chroot "$DIR" dnf config-manager --disable '*modular'
+        chroot "$DIR" dnf --disablerepo='qubes*' --releasever="$DIST_VER" copr enable -y fepitre/epel-8-qubes
+        chroot "$DIR" dnf config-manager --disable --releasever="$DIST_VER" '*modular'
         # Add Appstream and @fepitre python38 repositories
-        chroot "$DIR" dnf module enable -y python38-devel:3.8
-        chroot "$DIR" dnf copr enable -y fepitre/epel-8-python38
+        chroot "$DIR" dnf --disablerepo='qubes*' --releasever="$DIST_VER" module enable -y python38-devel:3.8
+        chroot "$DIR" dnf --disablerepo='qubes*' --releasever="$DIST_VER" copr enable -y fepitre/epel-8-python38
     fi
 fi
 
 # shellcheck disable=SC2086,SC2046
-chroot "$DIR" "$YUM" install -y $YUM_OPTS $PKGGROUPS
+"$YUM" --installroot="$DIR" install -y $YUM_OPTS $PKGGROUPS
 
 if [ -n "$CHROOT_CACHE_FILE" ]; then
     tar cf "$CHROOT_CACHE_FILE" --one-file-system "$DIR"
