@@ -17,11 +17,6 @@ YUM_BUILDDEP := dnf builddep --spec
 YUM_BUILDDEP_SRPM := dnf builddep --srpm
 
 ifeq (centos,$(DISTRIBUTION))
-ifeq ($(subst centos,,$(DIST)),7)
-YUM := yum
-YUM_BUILDDEP := yum-builddep
-YUM_BUILDDEP_SRPM := yum-builddep
-endif
 ifeq ($(subst centos,,$(DIST)),8)
 YUM_BUILDDEP := dnf builddep --nobest --spec
 YUM_BUILDDEP_SRPM := dnf builddep --srpm
@@ -43,16 +38,6 @@ $(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder
 	@echo "-> Preparing $(DIST) build environment"
 	@sudo -E $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
-
-.PHONY: refresh-update.dnf
-refresh-update.yum:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
-	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
 
 .PHONY: refresh-update.dnf
 refresh-update.dnf:

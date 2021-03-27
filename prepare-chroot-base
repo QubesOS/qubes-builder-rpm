@@ -37,9 +37,6 @@ fi
 if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
-    if [ "$DIST_VER" = "7" ]; then
-        YUM=(yum)
-    fi
 fi
 
 if [ -e "${PLUGIN_DIR}/yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf" ]; then
@@ -52,14 +49,8 @@ case ${YUM[0]} in
 (dnf)
     YUM+=($YUM_OPTS --releasever "$DIST_VER" "--downloaddir=$DOWNLOADDIR" --downloadonly install)
     ;;
-(yum)
-    YUM+=("--downloaddir=$DOWNLOADDIR" --downloadonly install)
-    if type yumdownloader >/dev/null 2>/dev/null; then
-        # debian does not have --downloadonly plugin
-        YUM=(yumdownloader -q --resolve "--destdir=$DOWNLOADDIR")
-    fi
-    ;;
 (*)
+    echo "DNF is missing, fallback to YUM is no longer supported, please install DNF" >&2
     exit 1
     ;;
 esac
