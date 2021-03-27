@@ -5,6 +5,7 @@ gpgkey = file://$sysroot/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
+repo_gpgcheck = 1
 enabled=1
 
 [qubes-builder-vm-r%QUBESVER%-current-testing]
@@ -14,6 +15,7 @@ gpgkey = file://$sysroot/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
+repo_gpgcheck = 1
 enabled=0
 cost=750
 
@@ -24,6 +26,7 @@ gpgkey = file://$sysroot/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-primary
 skip_if_unavailable=False
 metadata_expire = 6h
 gpgcheck = 1
+repo_gpgcheck = 1
 enabled=0
 cost=740
 
@@ -33,5 +36,6 @@ baseurl = https://yum.qubes-os.org/r%QUBESVER%/unstable/vm/fc$releasever
 gpgkey = file://$sysroot/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-%QUBESVER%-unstable
 metadata_expire = 6h
 gpgcheck = 1
+repo_gpgcheck = 1
 enabled=0
 
