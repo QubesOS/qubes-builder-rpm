@@ -26,10 +26,6 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
 
-    if [ "${DIST_VER}" == 7 ]; then
-        YUM=yum
-    fi
-
     if [ "${DIST_VER}" >= 8 ]; then
         YUM_OPTS="$YUM_OPTS --nobest"
     fi

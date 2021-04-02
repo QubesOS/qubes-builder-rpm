@@ -37,9 +37,6 @@ fi
 if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
-    if [ "$DIST_VER" = "7" ]; then
-        YUM=(yum)
-    fi
 fi
 
 if [ -e "${PLUGIN_DIR}/yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf" ]; then
@@ -52,14 +49,8 @@ case ${YUM[0]} in
 (dnf)
     YUM+=($YUM_OPTS --releasever "$DIST_VER" "--downloaddir=$DOWNLOADDIR" --downloadonly install)
     ;;
-(yum)
-    YUM+=("--downloaddir=$DOWNLOADDIR" --downloadonly install)
-    if type yumdownloader >/dev/null 2>/dev/null; then
-        # debian does not have --downloadonly plugin
-        YUM=(yumdownloader -q --resolve "--destdir=$DOWNLOADDIR")
-    fi
-    ;;
 (*)
+    echo "DNF is missing, fallback to YUM is no longer supported, please install DNF" >&2
     exit 1
     ;;
 esac
@@ -134,6 +125,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
                 > "$yumconf"
         else
             sed -e "s/\\\$releasever/${DIST_VER}/g" \
+                -e "s#\\\$plugindir#${PLUGIN_DIR}#g" \
                 < "${PLUGIN_DIR}/${YUM_BOOTSTRAP_CONF}" \
                 > "$yumconf"
         fi
@@ -230,38 +222,26 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
 
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" -- "${DOWNLOADDIR}/"*.rpm || exit 1
-
-    if grep -q openSUSE /etc/os-release; then
-        # Build the rpmdb again, in case of huge rpm version difference that makes
-        # rpmdb --rebuilddb doesn't work anymore. Export using rpm from outside
-        # chroot and import using rpm from within chroot
-        rpmdb "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --exportdb > "${CACHEDIR}/rpmdb.export" || exit 1
-        rm -rf "${INSTALLDIR}/var/lib/rpm"
-        chroot "${INSTALLDIR}" rpmdb --importdb < "${CACHEDIR}/rpmdb.export" || exit 1
-    fi
-
-    if [ "${DISTRIBUTION}" = "fedora" ]; then
-        if [ "x$FEDORA_MIRROR" != "x" ]; then
-            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/fedora.repo" "${INSTALLDIR}/etc/yum.repos.d/fedora-updates.repo"
-        fi
-    fi
-
-    if [ "${DISTRIBUTION}" = "centos" ]; then
-        if [ "x$CENTOS_MIRROR" != "x" ]; then
-            sed -i "s/^mirrorlist/#mirrorlist/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-Base.repo"
-        fi
-
-        if [ "x$EPEL_MIRROR" != "x" ]; then
-            sed -i "s/^metalink/#metalink/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
-            sed -i "s/#baseurl/baseurl/g" "${INSTALLDIR}/etc/yum.repos.d/epel.repo"
-        fi
-
-        if [ "${DIST_VER}" = "8" ]; then
-            sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-PowerTools.repo"
-        fi
-    fi
-
-    touch "${INSTALLDIR}/tmp/.prepared_base"
 fi
+
+# this part is executed also when updating chroot
+
+if [ "${DISTRIBUTION}" = "fedora" ]; then
+    if [ -e "${PLUGIN_DIR}/repos/fedora-${DIST_VER}.repo" ]; then
+        # override fedora repo files, in a way that prevents an updated
+        # package restoring them
+        for f in "${INSTALLDIR}/etc/yum.repos.d/"fedora*.repo; do
+            echo "# this file is intentionally cleared" > "$f"
+        done
+        cp -f "${PLUGIN_DIR}/repos/fedora-${DIST_VER}.repo" "${INSTALLDIR}/etc/yum.repos.d/"
+        cp -f "${PLUGIN_DIR}/repos/fedora-${DIST_VER}"*.metalink "${INSTALLDIR}/etc/yum.repos.d/"
+    fi
+fi
+
+if [ "${DISTRIBUTION}" = "centos" ]; then
+    if [ "${DIST_VER}" = "8" ]; then
+        sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-PowerTools.repo"
+    fi
+fi
+
+touch "${INSTALLDIR}/tmp/.prepared_base"

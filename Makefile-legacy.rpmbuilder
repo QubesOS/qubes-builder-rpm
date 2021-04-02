@@ -12,16 +12,13 @@ ifdef REPO_PROXY
     YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
 
+YUM_OPTS += --installroot=$(CHROOT_DIR)
+
 YUM := dnf
 YUM_BUILDDEP := dnf builddep --spec
 YUM_BUILDDEP_SRPM := dnf builddep --srpm
 
 ifeq (centos,$(DISTRIBUTION))
-ifeq ($(subst centos,,$(DIST)),7)
-YUM := yum
-YUM_BUILDDEP := yum-builddep
-YUM_BUILDDEP_SRPM := yum-builddep
-endif
 ifeq ($(subst centos,,$(DIST)),8)
 YUM_BUILDDEP := dnf builddep --nobest --spec
 YUM_BUILDDEP_SRPM := dnf builddep --srpm
@@ -33,10 +30,6 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
-	@if ! [ -d $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo/rpm ]; then\
-		mkdir -p $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
-		sudo mount --bind $(BUILDER_REPO_DIR) $(CHROOT_DIR)/tmp/qubes-packages-mirror-repo;\
-	fi
 	@sudo cp $(RPM_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
 $(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(RPM_PLUGIN_DIR)/$(BUILD_PKG_LIST)
@@ -45,32 +38,22 @@ $(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder
 	@touch $(CHROOT_DIR)/home/user/.prepared_base
 
 .PHONY: refresh-update.dnf
-refresh-update.yum:
-ifndef PACKAGE
-	$(error "PACKAGE need to be set!")
-endif
-	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) $(YUM) --disablerepo=* --enablerepo=qubes-builder-pkgs $(YUM_OPTS) clean all
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) makecache'
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) -y update'
-
-.PHONY: refresh-update.dnf
 refresh-update.dnf:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
 	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) sh -c 'cd $(DIST_SRC); $(YUM) $(YUM_OPTS) --refresh -y update'
+	sudo $(CHROOT_ENV) $(YUM) $(YUM_OPTS) --refresh -y update
 
 dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))
 
 dist-build-dep.spec:
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(PACKAGE)'
+	sudo $(CHROOT_ENV) $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
 
 dist-build-dep.rpm:
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); \
-		rpm2cpio $(PACKAGE) | cpio --extract --to-stdout "*.spec" > $(PACKAGE).spec && \
-		$(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(PACKAGE).spec'
+		rpm2cpio $(PACKAGE) | cpio --extract --to-stdout "*.spec" > $(PACKAGE).spec' && \
+		sudo $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE).spec
 
 dist-package-build: RPM_SOURCE_DIR ?= $(DIST_SRC)
 dist-package-build: RPM_BUILD_DEFINES += --define "_sourcedir $(RPM_SOURCE_DIR)"

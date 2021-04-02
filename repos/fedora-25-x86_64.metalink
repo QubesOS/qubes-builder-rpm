@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metalink version="3.0" xmlns="http://www.metalinker.org/" type="dynamic" pubdate="Thu, 25 Mar 2021 23:34:45 GMT" generator="mirrormanager" xmlns:mm0="http://fedorahosted.org/mirrormanager">
+ <files>
+  <file name="repomd.xml">
+   <mm0:timestamp>1479239358</mm0:timestamp>
+   <size>4385</size>
+   <verification>
+    <hash type="sha256">8b10198541fad5dc2ada493b4cbb7e68975194dc5cb3b1432b2af773e9058bf0</hash>
+    <hash type="sha512">37c5a709fdd371b4fca277c3771a4b94bb1ebe92c195dfeed8e6aab3209e59ef1e93d76c42c24d3b65cff4afe8389060b264a7896fd91d046c467121b06e0e4e</hash>
+   </verification>
+   <resources maxconnections="1">
+    <url protocol="https" type="https" location="DE" preference="100">https://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="DE" preference="100">http://ftp-stud.hs-esslingen.de/pub/Mirrors/archive.fedoraproject.org/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="DK" preference="99">http://mirrors.dotsrc.org/fedora-buffet/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="https" type="https" location="DK" preference="99">https://mirrors.dotsrc.org/fedora-buffet/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="ID" preference="98">http://archivefedora.mirror.angkasa.id/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="https" type="https" location="ID" preference="98">https://archivefedora.mirror.angkasa.id/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="KE" preference="97">http://fedora-archive.mirror.liquidtelecom.com/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="US" preference="96">http://mirror.math.princeton.edu/pub/fedora-archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="US" preference="95">http://mirrors.kernel.org/fedora-buffet/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="https" type="https" location="US" preference="94">https://d2lzkl7pfhq30w.cloudfront.net/pub/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="US" preference="93">http://pubmirror1.math.uh.edu/fedora-buffet/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="https" type="https" location="US" preference="93">https://pubmirror1.math.uh.edu/fedora-buffet/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="https" type="https" location="US" preference="92">https://dl.fedoraproject.org/pub/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+    <url protocol="http" type="http" location="US" preference="92">http://dl.fedoraproject.org/pub/archive/fedora/linux/releases/25/Everything/x86_64/os/repodata/repomd.xml</url>
+   </resources>
+  </file>
+ </files>
+</metalink>
