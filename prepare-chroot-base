@@ -138,7 +138,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         else
             # coreutils conflicts with coreutils-single
             INITIAL_PACKAGES=(--exclude=coreutils-single "${INITIAL_PACKAGES[@]}")
-            INITIAL_PACKAGES+=(centos-release-stream dnf dnf-plugins-core)
+            INITIAL_PACKAGES+=(centos-stream-release centos-stream-repos dnf dnf-plugins-core)
         fi
 
         # Add groupadd, su etc.
