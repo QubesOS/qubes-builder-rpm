@@ -18,7 +18,7 @@ if [ "${DIST#fc}" != "${DIST}" ]; then
 
     if [ -n "${FEDORA_MIRROR}" ]; then
         YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST_VER}/Everything/x86_64/os/"
-        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/x86_64/"
+        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/Everything/x86_64/"
     fi
 fi
 
