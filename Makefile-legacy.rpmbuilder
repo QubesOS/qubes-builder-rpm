@@ -25,6 +25,10 @@ YUM_BUILDDEP_SRPM := dnf builddep --srpm
 endif
 endif
 
+ifeq (opensuse,$(DISTRIBUTION))
+YUM_OPTS += --exclude=busybox*
+endif
+
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
@@ -45,7 +49,16 @@ endif
 	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
 	sudo $(CHROOT_ENV) $(YUM) $(YUM_OPTS) --refresh -y update
 
-dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))
+refresh-update.rpmdb:
+ifeq (opensuse,$(DISTRIBUTION))
+	sudo rpmdb --root=$(CHROOT_DIR) --exportdb > $(CACHEDIR)/rpmdb.export
+	sudo rm -rf $(CHROOT_DIR)/var/lib/rpm
+	sudo chroot $(CHROOT_DIR) rpmdb --importdb < $(CACHEDIR)/rpmdb.export
+else
+	@true
+endif
+
+dist-build-dep: refresh-update.$(YUM) refresh-update.rpmdb dist-build-dep$(suffix $(PACKAGE))
 
 dist-build-dep.spec:
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'rpmspec -P $(RPM_QUERY_DEFINES) $(DIST_SRC)/$(PACKAGE) > $(DIST_SRC)/$(PACKAGE).parsed' - $(RUN_AS_USER)
@@ -91,4 +104,3 @@ dist-copy-out:
 		ln -f -t $(BUILDER_REPO_DIR)/rpm $$arch_chroot_dir/*;\
 		mv -t $$arch_rpm_dir $$arch_chroot_dir/*;\
 	done
-

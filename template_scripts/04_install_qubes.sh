@@ -7,6 +7,10 @@ prepareChroot
 export YUM0=$PWD/pkgs-for-template
 
 cp "${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo" "${INSTALLDIR}/etc/yum.repos.d/"
+if [ "${DISTRIBUTION}" == "opensuse" ]; then
+    sed -i "s/opensuse/$DIST/" "${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo"
+fi
+
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     sed -e "s/%QUBESVER%/$USE_QUBES_REPO_VERSION/g" \
         -e "s/\$sysroot//g" \
@@ -53,7 +57,6 @@ if [ "$DISTRIBUTION" == "fedora" ]; then
     fi
 fi
 
-
 if ! grep -q LANG= "${INSTALLDIR}/etc/locale.conf" 2>/dev/null; then
     if [ "$DISTRIBUTION" == "fedora" ]; then
         echo "LANG=C.UTF-8" >> "${INSTALLDIR}/etc/locale.conf"
@@ -62,6 +65,8 @@ if ! grep -q LANG= "${INSTALLDIR}/etc/locale.conf" 2>/dev/null; then
         echo "LANG=en_US.UTF-8" >> "${INSTALLDIR}/etc/locale.conf"
     fi
 fi
+
+yumConfigRepository disable 'qubes-vm-*'
 
 if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
     chroot_cmd mount -t sysfs sys /sys

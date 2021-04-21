@@ -25,7 +25,7 @@ PLUGIN_DIR=$(dirname "$0")
 INSTALLDIR=$1
 DIST=$2
 
-DOWNLOADDIR="${CACHEDIR}/base_rpms"
+DOWNLOADDIR="$(readlink -f "${CACHEDIR}"/base_rpms)"
 
 YUM=(dnf)
 
@@ -37,6 +37,16 @@ fi
 if [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
+fi
+
+if [ "$DIST" = "tumbleweed" ] || [ "$DIST" = "leap" ]; then
+    DISTRIBUTION="opensuse"
+    DIST_VER="$DIST"
+    # using DNF from the outside makes using expected path from inside chroot
+    # to the builder host so ensure it has the key at the expected location.
+    if ! [ -e /etc/pki/rpm-gpg/RPM-GPG-KEY-openSUSE ]  && [ -e /usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE ]; then
+        ln -s /usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE /etc/pki/rpm-gpg/
+    fi
 fi
 
 if [ -e "${PLUGIN_DIR}/yum-bootstrap-${DISTRIBUTION}-${DIST_VER}.conf" ]; then
@@ -80,6 +90,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" -- \
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}"\
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}"
+    fi
+
+    if [ "${DISTRIBUTION}" = "opensuse" ]; then
+        rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" -- \
+            "${PLUGIN_DIR}/keys/RPM-GPG-KEY-openSUSE"
     fi
 
     echo "-> Retrieving core RPM packages..."
@@ -183,6 +198,21 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
+    if [ "${DISTRIBUTION}" = "opensuse" ]; then
+        INITIAL_PACKAGES=(filesystem rpm-repos-openSUSE-Tumbleweed dnf dnf-plugins-core)
+
+        # Add groupadd, su etc.
+        INITIAL_PACKAGES+=(shadow util-linux coreutils ca-certificates-cacert ca-certificates-mozilla)
+        INITIAL_PACKAGES+=(--exclude=busybox*)
+
+        mkdir -p -- "${DOWNLOADDIR}"
+        yumconf=$(mktemp)
+
+        sed -e "s/\\\$releasever/${DIST_VER}/g" \
+            < "${PLUGIN_DIR}/${YUM_BOOTSTRAP_CONF}" \
+            > "$yumconf"
+    fi
+
     "${YUM[@]}" "${YUM_OPTS[@]}" -c "$yumconf" -y \
         --installroot="${INSTALLDIR}" "${INITIAL_PACKAGES[@]}"
     rm -f "$yumconf"
@@ -220,6 +250,14 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         mknod -m 0666 "$INSTALLDIR/dev/loop$i" b 7 "$i"
     done
 
+    # openSUSE: some complains a lot about missing /proc
+    if [ "${DISTRIBUTION}" = "opensuse" ]; then
+        if ! [ -r "$INSTALLDIR/proc/cpuinfo" ]; then
+            mkdir -p "$INSTALLDIR/proc"
+            mount -t proc proc "$INSTALLDIR/proc"
+        fi
+    fi
+
     echo "-> Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALLDIR}" -- "${DOWNLOADDIR}/"*.rpm || exit 1
 fi
@@ -244,4 +282,15 @@ if [ "${DISTRIBUTION}" = "centos" ]; then
     fi
 fi
 
+if [ "${DISTRIBUTION}" = "opensuse" ]; then
+    chmod 4755 "${INSTALLDIR}/usr/bin/mount"
+    chmod 4755 "${INSTALLDIR}/usr/bin/umount"
+    chmod 2755 "${INSTALLDIR}/usr/bin/wall"
+    chmod 2755 "${INSTALLDIR}/usr/bin/write"
+    chmod 4755 "${INSTALLDIR}/usr/bin/su"
+
+    if [ -r "$INSTALLDIR/proc/cpuinfo" ]; then
+        umount "$INSTALLDIR/proc"
+    fi
+fi
 touch "${INSTALLDIR}/tmp/.prepared_base"

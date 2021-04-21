@@ -77,6 +77,17 @@ endif
 
 endif
 
+ifeq (opensuse,$(DISTRIBUTION))
+	DIST_VER = $(subst opensuse,,$(DIST))
+	RPM_BUILD_DEFINES += --define "opensuse $(DIST_VER)"
+
+	RPM_BUILD_DEFINES += --define "dist .suse.tw"
+	RPM_QUERY_DEFINES += --define "dist .suse.tw"
+
+	RPM_BUILD_DEFINES += --define "python3_pkgversion %{python3_version_nodots}"
+	RPM_QUERY_DEFINES += --define "python3_pkgversion %{python3_version_nodots}"
+endif
+
 BUILDINFO_SIGN_CMD ?= $(firstword $(GNUPG) gpg2)
 BUILDINFO_SIGN_CMD += --clearsign
 RPMSIGN_OPTS ?=

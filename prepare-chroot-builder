@@ -28,6 +28,11 @@ if [ "${DIST#centos}" != "${DIST}" ]; then
     fi
 fi
 
+if [ "$DIST" = "tumbleweed" ] || [ "$DIST" = "leap" ]; then
+    DISTRIBUTION="opensuse"
+    DIST_VER="$DIST"
+fi
+
 YUM_OPTS="$YUM_OPTS --releasever=${DIST_VER}"
 
 if [ -n "$3" ]; then
@@ -87,6 +92,8 @@ if ! [ -e "$DIR/home/user/.prepared_base" ]; then
     elif [ -z "$USER_GID" ]; then
         USER_GID=1000
     fi
+    USER_GID=1000
+    USER_UID=1000
     existing_gid=$(chroot "$DIR" id -g user 2>/dev/null || :)
     if [ -z "$existing_gid" ]; then
         chroot "$DIR" groupadd -g "$USER_GID" user
@@ -100,7 +107,7 @@ if ! [ -e "$DIR/home/user/.prepared_base" ]; then
         chroot "$DIR" usermod -u "$USER_UID" user
     fi
 
-    chroot "$DIR" sh -c "chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
+    chroot "$DIR" sh -c "mkdir -p /home/user && chown -R user /home/user;su -c 'mkdir -p qubes-src' - user"
 fi
 
 "${PLUGIN_DIR}/update-local-repo.sh" "$DIST"

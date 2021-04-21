@@ -17,8 +17,8 @@ chroot "${INSTALLDIR}" rpmdb --importdb < "${CACHEDIR}/rpmdb.export" || exit 1
 rm -f "${INSTALLDIR}/etc/resolv.conf"
 cp "${SCRIPTSDIR}/resolv.conf" "${INSTALLDIR}/etc/"
 chmod 644 "${INSTALLDIR}/etc/resolv.conf"
-cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig/"
-chmod 644 "${INSTALLDIR}/etc/sysconfig/network"
+#cp "${SCRIPTSDIR}/network" "${INSTALLDIR}/etc/sysconfig/"
+#chmod 644 "${INSTALLDIR}/etc/sysconfig/network"
 cp -a /dev/null /dev/zero /dev/random /dev/urandom "${INSTALLDIR}/dev/"
 
 export YUM0=${PWD}/pkgs-for-template
