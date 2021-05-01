@@ -50,7 +50,7 @@ ifeq (fedora,$(DISTRIBUTION))
 
 ifdef FEDORA_MIRROR
 	YUM_OPTS += --setopt=fedora.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/releases/$(DIST_VER)/Everything/x86_64/os/ --setopt=fedora.metalink=
-	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(DIST_VER)/x86_64/ --setopt=updates.metalink=
+	YUM_OPTS += --setopt=updates.baseurl=$(patsubst %/,%,$(FEDORA_MIRROR))/updates/$(DIST_VER)/Everything/x86_64/ --setopt=updates.metalink=
 endif
 
 endif
