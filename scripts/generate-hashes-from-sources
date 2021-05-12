@@ -17,7 +17,11 @@ source "$scriptdir/functions.sh"
 
 if exist_url "$fedora_sources"; then
     tmpsources="$(mktemp)"
-    wget -q "$fedora_sources" -O "$tmpsources"
+    if [ -n "${REPO_PROXY+x}" ]; then
+        curl --proto '=https' --http1.1 --tlsv1.2 -sSo "$tmpsources" --proxy "$REPO_PROXY" -- "$fedora_sources"
+    else
+        curl --proto '=https' --http1.1 --tlsv1.2 -sSo "$tmpsources" -- "$fedora_sources"
+    fi
 
     while read -r untrusted_src
     do
