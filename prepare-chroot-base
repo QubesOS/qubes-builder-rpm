@@ -190,7 +190,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Verifying signatures..."
     set +x
     for file in "${DOWNLOADDIR}"/*; do
-        result=$(rpm "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig -- "${file}") || {
+        result=$(rpmkeys "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --checksig -- "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
