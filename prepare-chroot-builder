@@ -18,9 +18,10 @@ YUM=dnf
 if [ "${DIST#fc}" != "${DIST}" ]; then
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
-fi
-
-if [ "${DIST#centos}" != "${DIST}" ]; then
+elif [ "${DIST#centos-stream}" != "${DIST}" ]; then
+    DISTRIBUTION="centos-stream"
+    DIST_VER="${DIST#centos-stream}"
+elif [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
     if [ "$DIST_VER" = "7" ]; then
@@ -121,7 +122,7 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     if [ "${DISTRIBUTION}" = "fedora" ]; then
         QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-primary"
     fi
-    if [ "${DISTRIBUTION}" = "centos" ]; then
+    if [ "${DISTRIBUTION}" = "centos-stream" ] || [ "${DISTRIBUTION}" = "centos" ]; then
         QUBES_SIGNING_KEY="RPM-GPG-KEY-qubes-$USE_QUBES_REPO_VERSION-centos"
     fi
 
@@ -157,6 +158,13 @@ printf "%s" "-> Installing package groups..."
 # resolving dependencies
 if [ "$DISTRIBUTION" = "fedora" ] && [ "${DIST_VER}" -ge 28 ] && [ "${DIST_VER}" -le 32 ]; then
     chroot "$DIR" dnf config-manager --disable '*modular' || :
+fi
+
+if [ "$DISTRIBUTION" = "centos-stream" ]; then
+    if [ "${DIST_VER}" -eq 8 ]; then
+        chroot "$DIR" dnf --disablerepo='qubes*' --releasever="$DIST_VER" copr enable -y fepitre/epel-8-qubes
+        chroot "$DIR" dnf config-manager --disable --releasever="$DIST_VER" '*modular'
+    fi
 fi
 
 if [ "$DISTRIBUTION" = "centos" ]; then

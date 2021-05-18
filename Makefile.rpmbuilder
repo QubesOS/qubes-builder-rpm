@@ -32,18 +32,15 @@ endif
 
 RPM_ARCH := $(shell uname -m)
 
-# Use += to allow Makefile.builder define some initial value
-RPM_BUILD_DEFINES += --define "dist .$(DIST)"
-
-### Private "functions"
-# List packages produced by by given spec file(s)
-RPM_QUERY_DEFINES += --define "dist .$(DIST)"
-RPM_QUERY_DEFINES += --define "qubes_builder 1"
+# In RPM_BUILD_DEFINES and RPM_QUERY_DEFINES, use += to allow
+# Makefile.builder to define some initial values
 
 ifeq (fedora,$(DISTRIBUTION))
 	DIST_VER = $(subst fc,,$(DIST))
+	RPM_BUILD_DEFINES += --define "dist .$(DIST)"
 	RPM_BUILD_DEFINES += --define "fedora $(DIST_VER)"
 
+	RPM_QUERY_DEFINES += --define "dist .$(DIST)"
 	RPM_QUERY_DEFINES += --define "fedora $(DIST_VER)"
 
 	BUILD_PKG_LIST = build-pkgs-base-fedora.list
@@ -55,11 +52,26 @@ endif
 
 endif
 
-ifeq (centos,$(DISTRIBUTION))
-	DIST_VER = $(subst centos,,$(DIST))
+ifeq (centos-stream,$(DISTRIBUTION))
+	DIST_VER = $(subst centos-stream,,$(DIST))
+	RPM_BUILD_DEFINES += --define "dist .el$(DIST_VER)"
 	RPM_BUILD_DEFINES += --define "centos $(DIST_VER)"
 	RPM_BUILD_DEFINES += --define "rhel $(DIST_VER)"
 
+	RPM_QUERY_DEFINES += --define "dist .el$(DIST_VER)"
+	RPM_QUERY_DEFINES += --define "centos $(DIST_VER)"
+	RPM_QUERY_DEFINES += --define "rhel $(DIST_VER)"
+
+	BUILD_PKG_LIST = build-pkgs-base-centos-stream.list
+endif
+
+ifeq (centos,$(DISTRIBUTION))
+	DIST_VER = $(subst centos,,$(DIST))
+	RPM_BUILD_DEFINES += --define "dist .el$(DIST_VER)"
+	RPM_BUILD_DEFINES += --define "centos $(DIST_VER)"
+	RPM_BUILD_DEFINES += --define "rhel $(DIST_VER)"
+
+	RPM_QUERY_DEFINES += --define "dist .el$(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "centos $(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "rhel $(DIST_VER)"
 
@@ -89,6 +101,10 @@ endif
 ifdef REPO_PROXY
 	YUM_OPTS += --setopt=proxy=$(REPO_PROXY)
 endif
+
+### Private "functions"
+
+# List packages produced by given spec file(s)
 
 # this '[ -n "$(1)" ] && ' is to suppress "call" at function definition
 spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
