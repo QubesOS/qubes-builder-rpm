@@ -200,7 +200,7 @@ else
 			$(RPM_PLUGIN_DIR)scripts/update-rpmbuildinfo "$$pkg" | $(BUILDINFO_SIGN_CMD) > "$$pkg".tmp && \
 			mv -f "$$pkg".tmp "$$pkg"; \
 		elif [ "$$(rpmkeys --checksig -- "$$pkg")" != "$$pkg: digests signatures OK" ]; then \
-			setsid -w rpmsign $(RPMSIGN_OPTS) --addsign $$pkg </dev/null || exit 1; \
+			setsid -w rpmsign $(RPMSIGN_OPTS) --addsign $(and $(filter fc25,$(DIST)),--rpmv3) -- "$$pkg" </dev/null || exit 1; \
 		fi; \
 	done
 endif
