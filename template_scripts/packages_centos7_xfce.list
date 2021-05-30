@@ -22,7 +22,7 @@ man-db
 man-pages
 zip
 unzip
-wget
+curl-minimal
 iw
 attr
 dos2unix
@@ -32,7 +32,7 @@ ristretto
 pragha
 atril
 gnome-keyring-pam
-wget
+curl-minimal
 --exclude=kdegames
 --exclude=firstboot
 --exclude=xorg-x11-drv-nouveau

@@ -18,7 +18,7 @@ man-db
 man-pages
 zip
 unzip
-wget
+curl
 wireless-tools
 iw
 attr
