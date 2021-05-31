@@ -20,13 +20,15 @@ if [ "${DIST#fc}" != "${DIST}" ]; then
         YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST_VER}/Everything/x86_64/os/"
         YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/Everything/x86_64/"
     fi
-fi
-
-if [ "${DIST#centos}" != "${DIST}" ]; then
+elif [ "${DIST#centos-stream}" != "${DIST}" ]; then
+    DISTRIBUTION="centos-stream"
+    DIST_VER="${DIST#centos-stream}"
+    YUM_OPTS="$YUM_OPTS --nobest"
+elif [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
 
-    if [ "${DIST_VER}" >= 8 ]; then
+    if [ "${DIST_VER}" -ge 8 ]; then
         YUM_OPTS="$YUM_OPTS --nobest"
     fi
 
@@ -92,14 +94,13 @@ function yumInstall() {
             install ${YUM_OPTS} -y "${files[@]}" || exit 1
         find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALLDIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
-        if [ "$DISTRIBUTION" = "fedora" ]; then
+        if [ "$DISTRIBUTION" != "centos7" ]; then
             # set http proxy to invalid one, to prevent any connection in case of
             # --cacheonly being buggy: better fail the build than install something
             # else than the logged one
             chroot_cmd $YUM install ${YUM_OPTS} -y \
                 --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
-        fi
-        if [ "$DISTRIBUTION" = "centos" ]; then
+        else
             # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
             chroot_cmd $YUM install ${YUM_OPTS} -y "${files[@]}" || exit 1
         fi

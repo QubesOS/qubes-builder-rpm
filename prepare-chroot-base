@@ -32,9 +32,10 @@ YUM=(dnf)
 if [ "${DIST#fc}" != "${DIST}" ]; then
     DISTRIBUTION="fedora"
     DIST_VER="${DIST#fc}"
-fi
-
-if [ "${DIST#centos}" != "${DIST}" ]; then
+elif [ "${DIST#centos-stream}" != "${DIST}" ]; then
+    DISTRIBUTION="centos-stream"
+    DIST_VER="${DIST#centos-stream}"
+elif [ "${DIST#centos}" != "${DIST}" ]; then
     DISTRIBUTION="centos"
     DIST_VER="${DIST#centos}"
 fi
@@ -76,7 +77,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-fedora-${DIST_VER}-primary"
     fi
 
-    if [ "${DISTRIBUTION}" = "centos" ]; then
+    if [ "${DISTRIBUTION}" = "centos-stream" ] || [ "${DISTRIBUTION}" = "centos" ]; then
         rpm "${RPM_OPTS[@]}" --import --root="${INSTALLDIR}" -- \
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-CentOS-${DIST_VER}"\
             "${PLUGIN_DIR}/keys/RPM-GPG-KEY-EPEL-${DIST_VER}"
@@ -131,7 +132,7 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
-    if [ "${DISTRIBUTION}" = "centos" ]; then
+    if [ "${DISTRIBUTION}" = "centos-stream" ] || [ "${DISTRIBUTION}" = "centos" ]; then
         INITIAL_PACKAGES=(filesystem setup epel-release)
         if [ "$DIST_VER" = "7" ]; then
             INITIAL_PACKAGES+=(centos-release yum yum-utils yum-plugin-copr centos-release-xen-412)
@@ -238,7 +239,7 @@ if [ "${DISTRIBUTION}" = "fedora" ]; then
     fi
 fi
 
-if [ "${DISTRIBUTION}" = "centos" ]; then
+if [ "${DISTRIBUTION}" = "centos-stream" ] || [ "${DISTRIBUTION}" = "centos" ]; then
     if [ "${DIST_VER}" = "8" ]; then
         sed -i "s/enabled=0/enabled=1/g" "${INSTALLDIR}/etc/yum.repos.d/CentOS-Stream-PowerTools.repo"
     fi

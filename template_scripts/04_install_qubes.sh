@@ -53,12 +53,11 @@ if [ "$DISTRIBUTION" == "fedora" ]; then
     fi
 fi
 
-
 if ! grep -q LANG= "${INSTALLDIR}/etc/locale.conf" 2>/dev/null; then
     if [ "$DISTRIBUTION" == "fedora" ]; then
         echo "LANG=C.UTF-8" >> "${INSTALLDIR}/etc/locale.conf"
     fi
-    if [ "$DISTRIBUTION" == "centos" ]; then
+    if [ "$DISTRIBUTION" == "centos-stream" ] || [ "$DISTRIBUTION" == "centos" ]; then
         echo "LANG=en_US.UTF-8" >> "${INSTALLDIR}/etc/locale.conf"
     fi
 fi
