@@ -62,6 +62,7 @@ zip
 --exclude=nss-mdns
 --exclude=openssh-server
 --exclude=PackageKit*
+--exclude=pipewire-*
 --exclude=plymouth
 --exclude=plymouth-system-theme
 --exclude=qemu-*
