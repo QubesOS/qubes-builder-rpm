@@ -75,16 +75,16 @@ tests:vm-fc32:upstream-tarball:
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-scrypt
 
-tests:vm-centos8:upstream-tarball-no-qubes-repos:
+tests:vm-centos-stream8:upstream-tarball-no-qubes-repos:
   extends: .components_build
   stage: tests
   needs:
     - prep:sources
-    - chroot:vm-centos8
+    - chroot:vm-centos-stream8
   tags:
     - docker
   variables:
-    DISTS_VM: centos8
+    DISTS_VM: centos-stream8
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: app-linux-split-gpg
 
