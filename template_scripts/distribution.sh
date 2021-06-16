@@ -89,7 +89,7 @@ function yumInstall() {
     mkdir -p "${INSTALLDIR}/tmp/template-builder-repo"
     mount --bind pkgs-for-template "${INSTALLDIR}/tmp/template-builder-repo"
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}/etc/yum.repos.d/"
+        cp "${SCRIPTSDIR}"/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}/etc/yum.repos.d/"
         chroot_cmd $YUM --downloadonly \
             install ${YUM_OPTS} -y "${files[@]}" || exit 1
         find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
@@ -162,36 +162,36 @@ function yumGroupInstall() {
 function yumUpdate() {
     declare -a files
     files=("$@")
-    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    mount --bind /etc/resolv.conf "${INSTALLDIR}"/etc/resolv.conf
     if [ "$YUM" = "dnf" ]; then
-        mkdir -p ${INSTALLDIR}/var/lib/dnf
+        mkdir -p "${INSTALLDIR}"/var/lib/dnf
     fi
-    mkdir -p ${INSTALLDIR}/tmp/template-builder-repo
-    mount --bind pkgs-for-template ${INSTALLDIR}/tmp/template-builder-repo
+    mkdir -p "${INSTALLDIR}"/tmp/template-builder-repo
+    mount --bind pkgs-for-template "${INSTALLDIR}"/tmp/template-builder-repo
     if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp ${SCRIPTSDIR}/template-builder-repo-$DISTRIBUTION.repo ${INSTALLDIR}/etc/yum.repos.d/
+        cp "${SCRIPTSDIR}"/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}"/etc/yum.repos.d/
         chroot_cmd $YUM --downloadonly \
             update ${YUM_OPTS} -y "${files[@]}" || exit 1
-        find ${INSTALLDIR}/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find ${INSTALLDIR}/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALLDIR}"/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALLDIR}"/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
         # else than the logged one
         chroot_cmd $YUM update ${YUM_OPTS} -y \
             --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
-        rm -f ${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
+        rm -f "${INSTALLDIR}"/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
     else
         echo "$YUM not installed in $INSTALLDIR, exiting!"
         exit 1
     fi
-    umount ${INSTALLDIR}/etc/resolv.conf
-    umount ${INSTALLDIR}/tmp/template-builder-repo
+    umount "${INSTALLDIR}"/etc/resolv.conf
+    umount "${INSTALLDIR}"/tmp/template-builder-repo
 }
 # ==============================================================================
 # Verify RPM packages
 # ==============================================================================
 function verifyPackages() {
-    for file in $@; do
+    for file in "$@"; do
         result=$(rpm --root="${INSTALLDIR}" --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
@@ -221,7 +221,7 @@ function installPackages() {
         if [ ${#@} == "1" ]; then
             getFileLocations packages_list "${1}" ""
         else
-            packages_list="$@"
+            packages_list="$*"
         fi
     else
         # WIP: should be improuved for multiple patterns search
@@ -243,12 +243,12 @@ function installPackages() {
         fi
     fi
 
-    for package_list in ${packages_list[@]}; do
+    for package_list in ${packages_list[*]}; do
         debug "Installing extra packages from: ${package_list}"
         declare -a packages
         readarray -t packages < "${package_list}"
 
-        info "Packages: "${packages[@]}""
+        info "Packages: ${packages[*]}"
         yumInstall "${packages[@]}" || return $?
     done
 }
@@ -257,10 +257,10 @@ function installPackages() {
 # Enable or Disable Copr Fedora repositories
 # ==============================================================================
 function yumCopr() {
-    mount --bind /etc/resolv.conf ${INSTALLDIR}/etc/resolv.conf
+    mount --bind /etc/resolv.conf "${INSTALLDIR}"/etc/resolv.conf
     local op=$1
     local repo=$2
 
     chroot_cmd $YUM copr ${op} -y $repo
-    umount ${INSTALLDIR}/etc/resolv.conf
+    umount "${INSTALLDIR}"/etc/resolv.conf
 }

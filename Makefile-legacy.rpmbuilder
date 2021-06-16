@@ -48,7 +48,8 @@ endif
 dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))
 
 dist-build-dep.spec:
-	sudo $(CHROOT_ENV) $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'rpmspec -P --define "debug_package %{nil}" $(RPM_QUERY_DEFINES) $(DIST_SRC)/$(PACKAGE) > $(DIST_SRC)/$(PACKAGE).parsed' - $(RUN_AS_USER)
+	sudo $(CHROOT_ENV) $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE).parsed
 
 dist-build-dep.rpm:
 	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) bash -c 'cd $(DIST_SRC); \
@@ -90,4 +91,3 @@ dist-copy-out:
 		ln -f -t $(BUILDER_REPO_DIR)/rpm $$arch_chroot_dir/*;\
 		mv -t $$arch_rpm_dir $$arch_chroot_dir/*;\
 	done
-

@@ -74,6 +74,7 @@ zip
 --exclude=mlocate
 --exclude=nss-mdns
 --exclude=openssh-server
+--exclude=pipewire-*
 --exclude=plymouth
 --exclude=plymouth-system-theme
 --exclude=qemu-*
