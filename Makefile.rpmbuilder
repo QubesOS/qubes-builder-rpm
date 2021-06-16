@@ -37,10 +37,9 @@ RPM_ARCH := $(shell uname -m)
 
 ifeq (fedora,$(DISTRIBUTION))
 	DIST_VER = $(subst fc,,$(DIST))
-	RPM_BUILD_DEFINES += --define "dist .$(DIST)"
+	DIST_TAG = $(DIST)
 	RPM_BUILD_DEFINES += --define "fedora $(DIST_VER)"
 
-	RPM_QUERY_DEFINES += --define "dist .$(DIST)"
 	RPM_QUERY_DEFINES += --define "fedora $(DIST_VER)"
 
 	BUILD_PKG_LIST = build-pkgs-base-fedora.list
@@ -54,11 +53,10 @@ endif
 
 ifeq (centos-stream,$(DISTRIBUTION))
 	DIST_VER = $(subst centos-stream,,$(DIST))
-	RPM_BUILD_DEFINES += --define "dist .el$(DIST_VER)"
+	DIST_TAG = el$(DIST_VER)
 	RPM_BUILD_DEFINES += --define "centos $(DIST_VER)"
 	RPM_BUILD_DEFINES += --define "rhel $(DIST_VER)"
 
-	RPM_QUERY_DEFINES += --define "dist .el$(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "centos $(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "rhel $(DIST_VER)"
 
@@ -67,11 +65,10 @@ endif
 
 ifeq (centos,$(DISTRIBUTION))
 	DIST_VER = $(subst centos,,$(DIST))
-	RPM_BUILD_DEFINES += --define "dist .el$(DIST_VER)"
+	DIST_TAG = el$(DIST_VER)
 	RPM_BUILD_DEFINES += --define "centos $(DIST_VER)"
 	RPM_BUILD_DEFINES += --define "rhel $(DIST_VER)"
 
-	RPM_QUERY_DEFINES += --define "dist .el$(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "centos $(DIST_VER)"
 	RPM_QUERY_DEFINES += --define "rhel $(DIST_VER)"
 
@@ -88,6 +85,9 @@ ifdef EPEL_MIRROR
 endif
 
 endif
+
+RPM_BUILD_DEFINES += --define "dist .$(DIST_TAG)"
+RPM_QUERY_DEFINES += --define "dist .$(DIST_TAG)"
 
 BUILDINFO_SIGN_CMD ?= $(firstword $(GNUPG) gpg2)
 BUILDINFO_SIGN_CMD += --clearsign
