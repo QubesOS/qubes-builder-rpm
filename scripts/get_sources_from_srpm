@@ -47,7 +47,7 @@ if [ "x$src_file" != "x" ] && [ "x$releasever" != "x" ]; then
     # download rpm
     tmpdir="$(mktemp -d -p "$localdir")"
     # shellcheck disable=SC2086
-    dnf -q download --destdir="$tmpdir" --source --releasever="$releasever" "$package"
+    dnf -q download --disablerepo=* --enablerepo=fedora-source --enablerepo=updates-source --destdir="$tmpdir" --source --releasever="$releasever" "$package"
     mv "$tmpdir/$src_rpm" "$tmpdir/$src_rpm.UNTRUSTED"
 
     # check signature
