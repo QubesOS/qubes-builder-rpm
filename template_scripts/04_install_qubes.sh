@@ -23,7 +23,12 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
         # for DNF to be able to verify metadata too, the file must be copied anyway :/
         cp "$keypath" "${INSTALLDIR}/etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-${USE_QUBES_REPO_VERSION}-primary"
     fi
-    keypath="${SCRIPTSDIR}/../keys/RPM-GPG-KEY-qubes-${USE_QUBES_REPO_VERSION}-$DISTRIBUTION"
+    if [ "$DISTRIBUTION" = "centos-stream" ]; then
+        key_dist=centos
+    else
+        key_dist="$DISTRIBUTION"
+    fi
+    keypath="${SCRIPTSDIR}/../keys/RPM-GPG-KEY-qubes-${USE_QUBES_REPO_VERSION}-$key_dist"
     if [ -r "$keypath" ]; then
         # use stdin to not copy the file into chroot. /dev/stdin
         # symlink doesn't exists there yet
