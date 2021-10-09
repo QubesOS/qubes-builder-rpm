@@ -47,7 +47,7 @@ spec_pkg_ver_name = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_mock
-	@true
+	${Q}true
 
 $(CHROOT_DIR)/home/user/.prepared_mock:
 	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
@@ -103,7 +103,7 @@ endif
 dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
 dist-copy-out:
 	@echo "--> Done:" >&3
-	@set -e;\
+	${Q}set -e;\
 	shopt -s nullglob; shopt -s globstar;\
 	mkdir -p "$(ORIG_SRC)/$(OUTPUT_DIR)";\
 	echo -n > $(pkg_list_path);\

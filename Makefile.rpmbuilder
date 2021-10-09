@@ -129,7 +129,7 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	$(RPM_PLUGIN_DIR)scripts/generate-spec $< $@
 
 dist-prep:
-	@true
+	${Q}true
 
 # Common target with Makefile-mock.rpmbuilder and Makefile-legacy.rpmbuilder for
 # generating the spec file
@@ -168,10 +168,10 @@ ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
 ifeq (,$(PACKAGE_LIST))
-	@true
+	${Q}true
 else
-	@mkdir -p $(UPDATE_REPO)/rpm
-	@if [ -n "$(strip $(packages))" ]; then \
+	${Q}mkdir -p $(UPDATE_REPO)/rpm
+	${Q}if [ -n "$(strip $(packages))" ]; then \
 		cd $(ORIG_SRC) && ln -f $(packages) $(UPDATE_REPO)/rpm/; \
 	else \
 		echo "`tput bold`No packages defined by $(PACKAGE_LIST), syntax error?`tput sgr0`"; \
@@ -179,7 +179,7 @@ else
 	fi
 endif
 ifdef SNAPSHOT_FILE
-	@cd $(ORIG_SRC) && echo $(packages) > $(SNAPSHOT_FILE)
+	${Q}cd $(ORIG_SRC) && echo $(packages) > $(SNAPSHOT_FILE)
 endif
 
 update-repo-from-snapshot: packages = $(shell cat $(SNAPSHOT_FILE) 2>/dev/null)
@@ -195,7 +195,7 @@ endif
 
 sign-prep: rpmsign_client = $(if $(GNUPG),$(GNUPG),$(shell rpm --eval %{__gpg}))
 sign-prep:
-	@if [ -n "$(rpmsign_client)" ]; then \
+	${Q}if [ -n "$(rpmsign_client)" ]; then \
 		mkdir -p $(BUILDER_DIR)/keyrings/rpmdb; \
 		tmpname=$$(mktemp); \
 		$(rpmsign_client) --armor --export "$(SIGN_KEY)" > "$$tmpname"; \
@@ -207,11 +207,11 @@ sign: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC))
 sign: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 sign: sign-prep
 ifeq (,$(PACKAGE_LIST))
-	@true
+	${Q}true
 else
 # buildinfo should be the last on the list, so update-rpmbuildinfo will
 # collect hashes of already signed packages
-	@cd $(ORIG_SRC) && for pkg in $(packages); do \
+	${Q}cd $(ORIG_SRC) && for pkg in $(packages); do \
 		if [ "$${pkg##*.}" = "buildinfo" ]; then \
 			$(RPM_PLUGIN_DIR)scripts/update-rpmbuildinfo "$$pkg" | $(BUILDINFO_SIGN_CMD) > "$$pkg".tmp && \
 			mv -f "$$pkg".tmp "$$pkg"; \
@@ -227,7 +227,7 @@ check-repo:
 ifndef UPDATE_REPO
 	$(error "You need to specify destination repo in UPDATE_REPO variable")
 endif
-	@if [ -n "$(strip $(packages))" ]; then \
+	${Q}if [ -n "$(strip $(packages))" ]; then \
 		cd $(ORIG_SRC) && ls $(addprefix $(UPDATE_REPO)/rpm/, $(notdir $(packages))) >/dev/null 2>&1 || exit 1; \
 	else \
 		echo "`tput bold`No packages defined by $(PACKAGE_LIST), syntax error?`tput sgr0`"; \

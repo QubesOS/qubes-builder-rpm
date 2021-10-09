@@ -27,15 +27,15 @@ endif
 
 ### Targets required by Makefile.generic to build packages
 dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
-	@if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
+	${Q}if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
-	@sudo cp $(RPM_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
+	${Q}sudo cp $(RPM_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
 $(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(RPM_PLUGIN_DIR)/$(BUILD_PKG_LIST)
-	@echo "-> Preparing $(DIST) build environment"
-	@sudo -E $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
-	@touch $(CHROOT_DIR)/home/user/.prepared_base
+	${Q}echo "-> Preparing $(DIST) build environment"
+	${Q}sudo -E $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
+	${Q}touch $(CHROOT_DIR)/home/user/.prepared_base
 
 .PHONY: refresh-update.dnf
 refresh-update.dnf:
@@ -76,7 +76,7 @@ endif
 dist-copy-out: pkg_list_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).list
 dist-copy-out:
 	@echo "--> Done:" >&3
-	@set -e;\
+	${Q}set -e;\
 	shopt -s nullglob;\
 	mkdir -p $(ORIG_SRC)/$(OUTPUT_DIR);\
 	echo -n > $(pkg_list_path);\
