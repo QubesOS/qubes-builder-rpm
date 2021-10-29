@@ -107,10 +107,11 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
             INITIAL_PACKAGES=(--exclude=curl --exclude=libcurl "${INITIAL_PACKAGES[@]}")
         fi
 
-        if [ "${DIST_VER}" -eq 34 ]; then
+        if [ "${DIST_VER}" -ge 34 ]; then
             # For Fedora 34 we try to exclude pipewire until we switch
             # to it completely.
             INITIAL_PACKAGES=(--exclude=pipewire-* "${INITIAL_PACKAGES[@]}")
+            INITIAL_PACKAGES=(cracklib "${INITIAL_PACKAGES[@]}")
         fi
 
         mkdir -p -- "${DOWNLOADDIR}"
