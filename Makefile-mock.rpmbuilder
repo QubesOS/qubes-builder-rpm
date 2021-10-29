@@ -14,6 +14,9 @@ endif
 # Fedora /usr/bin/mock is a (consolehelper) wrapper, which among other things,
 # strips environment variables
 MOCK ?= $(firstword $(wildcard /usr/libexec/mock/mock /usr/sbin/mock))
+ifeq (,$(MOCK))
+$(error package 'mock' must be installed)
+endif
 
 YUM ?= dnf
 ifeq ($(shell rpm --eval %centos), 7)
