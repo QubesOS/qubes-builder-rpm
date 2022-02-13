@@ -48,7 +48,7 @@ endif
 dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))
 
 dist-build-dep.spec:
-	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd "$(DIST_SRC)" && sed "s/%%\([^{]\)/%%%%\1/" $(PACKAGE) > $(PACKAGE).tmp && rpmspec -P --define "_sourcedir $(DIST_SRC)" --define "debug_package %{nil}" $(RPM_QUERY_DEFINES) $(PACKAGE).tmp > $(PACKAGE).parsed' - $(RUN_AS_USER)
+	sudo $(CHROOT_ENV) chroot $(CHROOT_DIR) su -c 'cd "$(DIST_SRC)" && sed "s/\([^:]\)%%\([^{]\)/\1%%%%\2/" $(PACKAGE) > $(PACKAGE).tmp && rpmspec -P --define "_sourcedir $(DIST_SRC)" --define "debug_package %{nil}" $(RPM_QUERY_DEFINES) $(PACKAGE).tmp > $(PACKAGE).parsed' - $(RUN_AS_USER)
 	sudo $(CHROOT_ENV) $(YUM_BUILDDEP) $(YUM_OPTS) $(RPM_BUILD_EXTRA_DEFINES) -y $(CHROOT_DIR)$(DIST_SRC)/$(PACKAGE).parsed
 
 dist-build-dep.rpm:
