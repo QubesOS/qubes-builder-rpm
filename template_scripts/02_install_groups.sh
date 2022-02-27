@@ -25,6 +25,10 @@ chroot_cmd ${YUM} clean all
 installPackages
 yumUpdate
 
+if [ "$TEMPLATE_ROOT_FSTYPE" = "btrfs" ]; then
+    yumInstall btrfs-progs
+fi
+
 #### '----------------------------------------------------------------------
 info ' Cleanup'
 #### '----------------------------------------------------------------------
