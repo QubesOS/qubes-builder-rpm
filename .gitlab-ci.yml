@@ -14,7 +14,7 @@ include:
 
 default:
   tags:
-    - vm-runner
+    - vm
     - long-living-job
 
 after_script:
@@ -36,8 +36,6 @@ tests:vm-fc35:no-upstream-tarball:
   needs:
     - prep:sources
     - chroot:vm-fc35
-  tags:
-    - docker
   variables:
     DISTS_VM: fc35
     USE_QUBES_REPO_VERSION: "4.1"
@@ -51,8 +49,6 @@ tests:dom0-fc32:dom0-package:
   needs:
     - prep:sources
     - chroot:dom0-fc32
-  tags:
-    - docker
   variables:
     DIST_DOM0: fc32
     USE_QUBES_REPO_VERSION: "4.1"
@@ -66,8 +62,6 @@ tests:vm-fc35:upstream-tarball:
   needs:
     - prep:sources
     - chroot:vm-fc35
-  tags:
-    - docker
   variables:
     DISTS_VM: fc35
     USE_QUBES_REPO_VERSION: "4.1"
@@ -81,8 +75,6 @@ tests:vm-centos-stream8:upstream-tarball-no-qubes-repos:
   needs:
     - prep:sources
     - chroot:vm-centos-stream8
-  tags:
-    - docker
   variables:
     DISTS_VM: centos-stream8
     USE_DIST_BUILD_TOOL: 1
@@ -94,8 +86,6 @@ tests:dom0-fc25:src-rpm:
   needs:
     - prep:sources
     - chroot:dom0-fc25
-  tags:
-    - docker
   variables:
     DIST_DOM0: fc25
     USE_DIST_BUILD_TOOL: 1
