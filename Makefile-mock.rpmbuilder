@@ -25,6 +25,7 @@ endif
 
 MOCK_EXTRA_OPTS ?=
 MOCK_EXTRA_OPTS += --$(YUM)
+MOCK_EXTRA_OPTS += --isolation=nspawn
 
 ifneq (,$(USE_QUBES_REPO_VERSION))
 MOCK_EXTRA_OPTS += --enablerepo=qubes-current
