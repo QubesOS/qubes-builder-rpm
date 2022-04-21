@@ -91,6 +91,7 @@ tests:dom0-fc25:src-rpm:
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-dom0-updates
     BRANCH_linux_dom0_updates: "release4.0"
+  allow_failure: true
 
 checks:shellcheck:
   stage: checks
