@@ -10,7 +10,11 @@ ${SCRIPTSDIR}/../prepare-chroot-base "${INSTALLDIR}" "${DIST}"
 # rpmdb --rebuilddb doesn't work anymore. Export using rpm from outside
 # chroot and import using rpm from within chroot
 rpmdb "${RPM_OPTS[@]}" --root="${INSTALLDIR}" --exportdb > "${CACHEDIR}/rpmdb.export" || exit 1
-rm -rf "${INSTALLDIR}/var/lib/rpm"
+dbpath=$(rpm --eval '%{_dbpath}') || exit 1
+new_dbpath=$(chroot "${INSTALLDIR}" rpm --eval '%{_dbpath}') || exit 1
+rm -rf "${INSTALLDIR}${dbpath}"
+rm -rf "${INSTALLDIR}${new_dbpath}"
+chroot "${INSTALLDIR}" rpmdb --initdb || exit 1
 chroot "${INSTALLDIR}" rpmdb --importdb < "${CACHEDIR}/rpmdb.export" || exit 1
 
 # remove systemd-resolved symlink
