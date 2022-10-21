@@ -140,8 +140,8 @@ ifdef INCREMENT_DEVEL_VERSIONS
 dist-package: devel_ver_path = $(ORIG_SRC)/$(OUTPUT_DIR)/$(notdir $(PACKAGE)).devel
 dist-package: devel_ver_prev = $(shell cat $(devel_ver_path) 2>/dev/null)
 dist-package: devel_ver := $(shell expr $(devel_ver_prev) + 1)
-dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST)"
-dist-package: RPM_QUERY_DEFINES += --define "dist .$(devel_ver).$(DIST)"
+dist-package: RPM_BUILD_DEFINES += --define "dist .$(devel_ver).$(DIST_TAG)"
+dist-package: RPM_QUERY_DEFINES += --define "dist .$(devel_ver).$(DIST_TAG)"
 endif
 
 dist-package: RPM_BUILD_DEFINES += $(RPM_BUILD_EXTRA_DEFINES)
