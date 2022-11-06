@@ -1,15 +1,22 @@
 #!/bin/bash -e
 # vim: set ts=4 sw=4 sts=4 et :
 
-source "${SCRIPTSDIR}/distribution.sh"
-INSTALLDIR=${PWD}/mnt
-VERSION=${DIST/fc/}
+# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
 #### '----------------------------------------------------------------------
 info ' Trap ERR and EXIT signals and cleanup (umount)'
 #### '----------------------------------------------------------------------
-trap cleanup ERR
-trap cleanup EXIT
+trap cleanup ERR EXIT
+
+#### '----------------------------------------------------------------------
+info ' Copying 3rd party software to "tmp" directory to prepare for installation'
+#### '----------------------------------------------------------------------
+cp -a "${TEMPLATE_CONTENT_DIR}/3rd_party_software" "${INSTALL_DIR}/tmp"
+
+#### '----------------------------------------------------------------------
+info ' Installing google-chrome repos'
+#### '----------------------------------------------------------------------
 
 # Google Chrome
 # =============
@@ -26,34 +33,9 @@ trap cleanup EXIT
 # To manually verify an RPM package, you can run the command:
 # - rpm --checksig -v packagename.rpm
 #
-# RPMFusion
-# =========
-# RPM Fusion free for Fedora 20
-# - pub  4096R/AE688223 2013-01-01 RPM Fusion free repository for Fedora (20) <rpmfusion-buildsys@lists.rpmfusion.org>
-# Key fingerprint = 0017 DDFE FD13 2929 9D55  B1D3 963A 8848 AE68 8223
-#
-# RPM Fusion nonfree for Fedora 20
-# - pub  4096R/B5F29883 2013-01-01 RPM Fusion nonfree repository for Fedora (20) <rpmfusion-buildsys@lists.rpmfusion.org>
-# Key fingerprint = A84D CF58 46CB 10B6 5C47  6C35 63C0 DE8C B5F2 9883
-#
-# RPM Fusion free for Fedora 21
-# - pub  4096R/6446D859 2013-06-28 RPM Fusion free repository for Fedora (21) <rpmfusion-buildsys@lists.rpmfusion.org>
-#   Key fingerprint = E9AF 4932 31E2 DF6F FDFE  0852 3C83 7D0D 6446 D859
-#
-# RPM Fusion nonfree for Fedora 21
-# - pub  4096R/A668B376 2013-06-28 RPM Fusion nonfree repository for Fedora (21) <rpmfusion-buildsys@lists.rpmfusion.org>
-# Key fingerprint = E160 058E F06F A4C3 C15D  0F86 0174 46D1 A668 B376
 
-#### '----------------------------------------------------------------------
-info ' Copying 3rd party software to "tmp" directory to prepare for installation'
-#### '----------------------------------------------------------------------
-cp -a "${SCRIPTSDIR}/3rd_party_software" "${INSTALLDIR}/tmp"
-
-#### '----------------------------------------------------------------------
-info ' Installing google-chrome repos'
-#### '----------------------------------------------------------------------
-install -m 0644 "${SCRIPTSDIR}/3rd_party_software/google-linux_signing_key.pub" "${INSTALLDIR}/etc/pki/rpm-gpg/"
-cat << EOF > "${INSTALLDIR}/etc/yum.repos.d/google-chrome.repo"
+install -m 0644 "${TEMPLATE_CONTENT_DIR}/3rd_party_software/google-linux_signing_key.pub" "${INSTALL_DIR}/etc/pki/rpm-gpg/"
+cat << EOF > "${INSTALL_DIR}/etc/yum.repos.d/google-chrome.repo"
 [google-chrome]
 name=google-chrome - \$basearch
 baseurl=http://dl.google.com/linux/chrome/rpm/stable/\$basearch
@@ -61,7 +43,7 @@ enabled=1
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/google-linux_signing_key.pub
 EOF
-chmod 644 "${INSTALLDIR}/etc/yum.repos.d/google-chrome.repo"
+chmod 644 "${INSTALL_DIR}/etc/yum.repos.d/google-chrome.repo"
 
 #### '----------------------------------------------------------------------
 info ' Installing adobe repo'
@@ -79,55 +61,52 @@ else
     yumConfigRepository disable adobe-linux-x86_64 > /dev/null
 fi
 
-#### '----------------------------------------------------------------------
-info ' Installing rpmfusion repos'
-#### '----------------------------------------------------------------------
-if [ ${VERSION} -ge 20 ]; then
-    #### '----------------------------------------------------------------------
-    info ' Installing rpmfusion-free repos'
-    #### '----------------------------------------------------------------------
-    if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm" ]; then
-        yumInstall "/tmp/3rd_party_software/rpmfusion-free-release-${VERSION}.noarch.rpm"
 
-        # Disable rpmfusion-free repos
-        yumConfigRepository disable rpmfusion-free > /dev/null
-        yumConfigRepository disable rpmfusion-free-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-free-source > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates-source > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
-    else
-        error "rpmfusion-free-release-${VERSION}.noarch.rpm not found!"
-        exit 1
-    fi
-    #### '----------------------------------------------------------------------
-    info ' Installing rpmfusion-nonfree repos'
-    #### '----------------------------------------------------------------------
-    if [ -e "${INSTALLDIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm" ]; then
-        yumInstall "/tmp/3rd_party_software/rpmfusion-nonfree-release-${VERSION}.noarch.rpm"
+#### '----------------------------------------------------------------------
+info ' Installing rpmfusion-free repos'
+#### '----------------------------------------------------------------------
+if [ -e "${INSTALL_DIR}/tmp/3rd_party_software/rpmfusion-free-release-${DIST_VER}.noarch.rpm" ]; then
+    yumInstall "/tmp/3rd_party_software/rpmfusion-free-release-${DIST_VER}.noarch.rpm"
 
-        # Disable rpmfusion-nonfree repos
-        yumConfigRepository disable rpmfusion-nonfree > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-source > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates-source > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
-        yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
-    else
-        error "rpmfusion-nonfree-release-${VERSION}.noarch.rpm not found!"
-        exit 1
-    fi
+    # Disable rpmfusion-free repos
+    yumConfigRepository disable rpmfusion-free > /dev/null
+    yumConfigRepository disable rpmfusion-free-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-free-source > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates-source > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates-testing > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates-testing-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-free-updates-testing-source > /dev/null
+else
+    error "rpmfusion-free-release-${DIST_VER}.noarch.rpm not found!"
+    exit 1
+fi
+
+#### '----------------------------------------------------------------------
+info ' Installing rpmfusion-nonfree repos'
+#### '----------------------------------------------------------------------
+if [ -e "${INSTALL_DIR}/tmp/3rd_party_software/rpmfusion-nonfree-release-${DIST_VER}.noarch.rpm" ]; then
+    yumInstall "/tmp/3rd_party_software/rpmfusion-nonfree-release-${DIST_VER}.noarch.rpm"
+
+    # Disable rpmfusion-nonfree repos
+    yumConfigRepository disable rpmfusion-nonfree > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-source > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates-source > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates-testing > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates-testing-debuginfo > /dev/null
+    yumConfigRepository disable rpmfusion-nonfree-updates-testing-source > /dev/null
+else
+    error "rpmfusion-nonfree-release-${DIST_VER}.noarch.rpm not found!"
+    exit 1
 fi
 
 #### '----------------------------------------------------------------------
 info ' Cleanup'
 #### '----------------------------------------------------------------------
-rm -rf "${INSTALLDIR}/tmp/3rd_party_software"
+rm -rf "${INSTALL_DIR}/tmp/3rd_party_software"
 trap - ERR EXIT
 trap

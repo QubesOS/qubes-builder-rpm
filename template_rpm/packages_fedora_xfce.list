@@ -1,5 +1,8 @@
 @networkmanager-submodules
 @xfce-desktop
+@xfce-apps
+@xfce-media
+@xfce-office
 attr
 bc
 bzip2
@@ -19,6 +22,7 @@ qt5-qtstyleplugins
 qt5ct
 rsync
 sudo
+system-config-printer
 thunderbird
 tree
 unzip
@@ -32,7 +36,6 @@ zip
 --exclude=anaconda*
 --exclude=aspell-*
 --exclude=autofs
---exclude=avahi
 --exclude=catfish
 --exclude=desktop-backgrounds-basic
 --exclude=dnfdragora-updater
@@ -58,6 +61,7 @@ zip
 --exclude=nss-mdns
 --exclude=openssh-server
 --exclude=PackageKit*
+--exclude=pipewire-*
 --exclude=plymouth
 --exclude=plymouth-system-theme
 --exclude=qemu-*
@@ -68,5 +72,8 @@ zip
 --exclude=unoconv
 --exclude=vinagre
 --exclude=xfce4-sensors-plugin
+--exclude=xfce4-screensaver
 --exclude=xorg-x11-drv-nouveau
+--exclude=wireplumber
 --exclude=yum-utils
+--exclude=pipewire-pulseaudio

@@ -1,9 +1,30 @@
 #!/bin/bash -e
 # vim: set ts=4 sw=4 sts=4 et :
+#
+# The Qubes OS Project, http://www.qubes-os.org
+#
+# Copyright (C) 2015 Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
+# Copyright (C) 2020 Frédéric Pierret (fepitre) <frederic@invisiblethingslab.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-source "${SCRIPTSDIR}/distribution.sh"
+# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
-# Create system mount points
+# Prepare system mount points
 prepareChroot
 
 #### '----------------------------------------------------------------------
@@ -15,14 +36,15 @@ trap cleanup EXIT
 #### '----------------------------------------------------------------------
 info ' Distribution specific steps (install systemd, add sources, etc)'
 #### '----------------------------------------------------------------------
-buildStep "$0" "${DIST}"
+buildStep "$0" "${DIST_CODENAME}"
 
 #### '----------------------------------------------------------------------
-info " Installing extra packages in script_${DIST}/packages.list file"
+info " Installing extra packages from packages.list file"
 #### '----------------------------------------------------------------------
-export YUM0=${PWD}/pkgs-for-template
-chroot_cmd ${YUM} clean all
+chroot_cmd "${DNF}" clean all
+# shellcheck disable=SC2119
 installPackages
+# shellcheck disable=SC2119
 yumUpdate
 
 #### '----------------------------------------------------------------------

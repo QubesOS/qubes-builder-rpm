@@ -1,45 +1,44 @@
 #!/bin/bash -e
 # vim: set ts=4 sw=4 sts=4 et :
 
-source ./functions.sh >/dev/null
-source ./umount_kill.sh >/dev/null
+# shellcheck source=qubesbuilder/plugins/template/scripts/functions.sh
+source "${PLUGINS_DIR}/template/scripts/functions.sh" >/dev/null
+# shellcheck source=qubesbuilder/plugins/template/scripts/umount-kill
+source "${PLUGINS_DIR}/template/scripts/umount-kill" >/dev/null
 
-output "${bold}${under}INFO: ${SCRIPTSDIR}/distribution.sh imported by: ${0}${reset}"
+# shellcheck disable=SC2154
+info "${TEMPLATE_CONTENT_DIR}/distribution.sh imported by: ${0}"
+
+DNF_OPTS=(-y)
 
 if [ -n "${REPO_PROXY}" ]; then
-    YUM_OPTS="$YUM_OPTS --setopt=proxy=${REPO_PROXY}"
+    DNF_OPTS+=("--setopt=proxy=${REPO_PROXY}")
 fi
 
-YUM=dnf
+DNF=dnf
 
-if [ "${DIST#fc}" != "${DIST}" ]; then
-    DISTRIBUTION="fedora"
-    DIST_VER="${DIST#fc}"
+if [ -z "${DIST_NAME}" ]; then
+    error "Please provide DIST_NAME in environment."
+fi
 
+if [ -z "${DIST_VER}" ]; then
+    error "Please provide DIST_VER in environment."
+fi
+
+if [ "${DIST_NAME}" == "fedora" ]; then
     if [ -n "${FEDORA_MIRROR}" ]; then
-        YUM_OPTS="$YUM_OPTS --setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST_VER}/Everything/x86_64/os/"
-        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/Everything/x86_64/"
+        DNF_OPTS+=("--setopt=fedora.baseurl=${FEDORA_MIRROR%/}/releases/${DIST_VER}/Everything/x86_64/os/")
+        DNF_OPTS+=("--setopt=updates.baseurl=${FEDORA_MIRROR%/}/updates/${DIST_VER}/Everything/x86_64/")
     fi
-elif [ "${DIST#centos-stream}" != "${DIST}" ]; then
-    DISTRIBUTION="centos-stream"
-    DIST_VER="${DIST#centos-stream}"
-    YUM_OPTS="$YUM_OPTS --nobest"
-elif [ "${DIST#centos}" != "${DIST}" ]; then
-    DISTRIBUTION="centos"
-    DIST_VER="${DIST#centos}"
-
-    if [ "${DIST_VER}" -ge 8 ]; then
-        YUM_OPTS="$YUM_OPTS --nobest"
-    fi
-
+elif [ "${DIST_NAME}" == "centos-stream" ]; then
+    DNF_OPTS+=(--nobest)
     if [ -n "${CENTOS_MIRROR}" ]; then
-        YUM_OPTS="$YUM_OPTS --setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64"
-        YUM_OPTS="$YUM_OPTS --setopt=updates.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/updates/x86_64"
-        YUM_OPTS="$YUM_OPTS --setopt=extras.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/extras/x86_64"
+        DNF_OPTS+=("--setopt=base.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/os/x86_64")
+        DNF_OPTS+=("--setopt=updates.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/updates/x86_64")
+        DNF_OPTS+=("--setopt=extras.baseurl=${CENTOS_MIRROR%/}/${DIST_VER}/extras/x86_64")
     fi
-
     if [ -n "${EPEL_MIRROR}" ]; then
-        YUM_OPTS="$YUM_OPTS --setopt=epel.baseurl=${EPEL_MIRROR%/}/${DIST_VER}/x86_64"
+        DNF_OPTS+=("--setopt=epel.baseurl=${EPEL_MIRROR%/}/${DIST_VER}/x86_64")
     fi
 fi
 
@@ -51,7 +50,7 @@ function cleanup() {
     trap - ERR EXIT
     trap
     error "${1:-"${0}: Error.  Cleaning up and un-mounting any existing mounts"}"
-    umount_kill "${INSTALLDIR}" || true
+    umount_kill "${INSTALL_DIR}" || true
 
     exit $errval
 }
@@ -60,21 +59,32 @@ function cleanup() {
 # Create system mount points
 # ==============================================================================
 function prepareChroot() {
-    info "--> Preparing environment..."
-    mount -t proc proc "${INSTALLDIR}/proc"
+    info "Preparing environment..."
+    mount -t proc proc "${INSTALL_DIR}/proc"
 }
 
+# ==============================================================================
 # Enable / disable repository
+# ==============================================================================
 function yumConfigRepository() {
     local op=$1
     local repo=$2
 
-    if [ "$YUM" = "dnf" ]; then
-        chroot_cmd dnf config-manager --set-${op}d $repo
-    else
-        chroot_cmd yum-config-manager --${op} $repo
-    fi
+    chroot_cmd dnf config-manager --set-"${op}"d "$repo"
 }
+
+# ==============================================================================
+# Enable or Disable Copr repositories
+# ==============================================================================
+function yumCopr() {
+    mount --bind /etc/resolv.conf "${INSTALL_DIR}"/etc/resolv.conf
+    local op=$1
+    local repo=$2
+
+    chroot_cmd $DNF copr "${op}" -y "$repo"
+    umount "${INSTALL_DIR}"/etc/resolv.conf
+}
+
 
 # ==============================================================================
 # Yum install package(s)
@@ -82,35 +92,29 @@ function yumConfigRepository() {
 function yumInstall() {
     declare -a files
     files=("$@")
-    mount --bind /etc/resolv.conf "${INSTALLDIR}/etc/resolv.conf"
-    if [ "$YUM" = "dnf" ]; then
-        mkdir -p "${INSTALLDIR}/var/lib/dnf"
+    mount --bind /etc/resolv.conf "${INSTALL_DIR}/etc/resolv.conf"
+    if [ "$DNF" = "dnf" ]; then
+        mkdir -p "${INSTALL_DIR}/var/lib/dnf"
     fi
-    mkdir -p "${INSTALLDIR}/tmp/template-builder-repo"
-    mount --bind pkgs-for-template "${INSTALLDIR}/tmp/template-builder-repo"
-    if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp "${SCRIPTSDIR}"/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}/etc/yum.repos.d/"
-        chroot_cmd $YUM --downloadonly \
-            install ${YUM_OPTS} -y "${files[@]}" || exit 1
-        find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find "${INSTALLDIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
-        if [ "$DISTRIBUTION" != "centos7" ]; then
-            # set http proxy to invalid one, to prevent any connection in case of
-            # --cacheonly being buggy: better fail the build than install something
-            # else than the logged one
-            chroot_cmd $YUM install ${YUM_OPTS} -y \
-                --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
-        else
-            # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
-            chroot_cmd $YUM install ${YUM_OPTS} -y "${files[@]}" || exit 1
-        fi
-        rm -f "${INSTALLDIR}/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo"
+    mkdir -p "${INSTALL_DIR}/tmp/template-builder-repo"
+    mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}/tmp/template-builder-repo"
+    if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
+        cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}/etc/yum.repos.d/"
+        chroot_cmd $DNF --downloadonly \
+            install "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        # set http proxy to invalid one, to prevent any connection in case of
+        # --cacheonly being buggy: better fail the build than install something
+        # else than the logged one
+        chroot_cmd $DNF install "${DNF_OPTS[@]}" --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
+        rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-builder-repo-${DIST_NAME}.repo"
     else
-        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        echo "$DNF not installed in $INSTALL_DIR, exiting!"
         exit 1
     fi
-    umount "${INSTALLDIR}/etc/resolv.conf"
-    umount "${INSTALLDIR}/tmp/template-builder-repo"
+    umount "${INSTALL_DIR}/etc/resolv.conf"
+    umount "${INSTALL_DIR}/tmp/template-builder-repo"
 }
 
 # ==============================================================================
@@ -124,36 +128,29 @@ function yumGroupInstall() {
     fi
     declare -a files
     files=("$@")
-    mount --bind /etc/resolv.conf "${INSTALLDIR}/etc/resolv.conf"
-    if [ "$YUM" = "dnf" ]; then
-        mkdir -p "${INSTALLDIR}/var/lib/dnf"
+    mount --bind /etc/resolv.conf "${INSTALL_DIR}/etc/resolv.conf"
+    if [ "$DNF" = "dnf" ]; then
+        mkdir -p "${INSTALL_DIR}/var/lib/dnf"
     else
         optional=--setopt=group_package_types=mandatory,default,optional
     fi
-    mkdir -p "${INSTALLDIR}/tmp/template-builder-repo"
-    mount --bind pkgs-for-template "${INSTALLDIR}/tmp/template-builder-repo"
-    if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        chroot_cmd $YUM clean expire-cache
-        chroot_cmd $YUM --downloadonly \
-            group install $optional ${YUM_OPTS} -y "${files[@]}" || exit 1
-        find "${INSTALLDIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find "${INSTALLDIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
-        if [ "${DIST}" != "centos7" ]; then
-            # set http proxy to invalid one, to prevent any connection in case of
-            # --cacheonly being buggy: better fail the build than install something
-            # else than the logged one
-            chroot_cmd $YUM install ${YUM_OPTS} -y \
-                --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
-        else
-            # Temporarly disable previous strategy (problem with downloading cache qubes template repo)
-            chroot_cmd $YUM install ${YUM_OPTS} -y "${files[@]}" || exit 1
-        fi
+    mkdir -p "${INSTALL_DIR}/tmp/template-builder-repo"
+    mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}/tmp/template-builder-repo"
+    if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
+        chroot_cmd $DNF clean expire-cache
+        chroot_cmd $DNF --downloadonly group install $optional "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        # set http proxy to invalid one, to prevent any connection in case of
+        # --cacheonly being buggy: better fail the build than install something
+        # else than the logged one
+        chroot_cmd $DNF install "${DNF_OPTS[@]}" --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
     else
-        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        echo "$DNF not installed in $INSTALL_DIR, exiting!"
         exit 1
     fi
-    umount "${INSTALLDIR}/etc/resolv.conf"
-    umount "${INSTALLDIR}/tmp/template-builder-repo"
+    umount "${INSTALL_DIR}/etc/resolv.conf"
+    umount "${INSTALL_DIR}/tmp/template-builder-repo"
 }
 
 # ==============================================================================
@@ -162,37 +159,35 @@ function yumGroupInstall() {
 function yumUpdate() {
     declare -a files
     files=("$@")
-    mount --bind /etc/resolv.conf "${INSTALLDIR}"/etc/resolv.conf
-    if [ "$YUM" = "dnf" ]; then
-        mkdir -p "${INSTALLDIR}"/var/lib/dnf
+    mount --bind /etc/resolv.conf "${INSTALL_DIR}"/etc/resolv.conf
+    if [ "$DNF" = "dnf" ]; then
+        mkdir -p "${INSTALL_DIR}"/var/lib/dnf
     fi
-    mkdir -p "${INSTALLDIR}"/tmp/template-builder-repo
-    mount --bind pkgs-for-template "${INSTALLDIR}"/tmp/template-builder-repo
-    if [ -e "${INSTALLDIR}/usr/bin/$YUM" ]; then
-        cp "${SCRIPTSDIR}"/template-builder-repo-$DISTRIBUTION.repo "${INSTALLDIR}"/etc/yum.repos.d/
-        chroot_cmd $YUM --downloadonly \
-            update ${YUM_OPTS} -y "${files[@]}" || exit 1
-        find "${INSTALLDIR}"/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
-        find "${INSTALLDIR}"/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
+    mkdir -p "${INSTALL_DIR}"/tmp/template-builder-repo
+    mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}"/tmp/template-builder-repo
+    if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
+        cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}"/etc/yum.repos.d/
+        chroot_cmd $DNF --downloadonly update "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        find "${INSTALL_DIR}"/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}"/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
         # else than the logged one
-        chroot_cmd $YUM update ${YUM_OPTS} -y \
-            --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
-        rm -f "${INSTALLDIR}"/etc/yum.repos.d/template-builder-repo-$DISTRIBUTION.repo
+        chroot_cmd $DNF update "${DNF_OPTS[@]}" --cacheonly --setopt=proxy=http://127.0.0.1:1/ "${files[@]}" || exit 1
+        rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-builder-repo-${DIST_NAME}.repo"
     else
-        echo "$YUM not installed in $INSTALLDIR, exiting!"
+        echo "$DNF not installed in $INSTALL_DIR, exiting!"
         exit 1
     fi
-    umount "${INSTALLDIR}"/etc/resolv.conf
-    umount "${INSTALLDIR}"/tmp/template-builder-repo
+    umount "${INSTALL_DIR}"/etc/resolv.conf
+    umount "${INSTALL_DIR}"/tmp/template-builder-repo
 }
 # ==============================================================================
 # Verify RPM packages
 # ==============================================================================
 function verifyPackages() {
     for file in "$@"; do
-        result=$(rpm --root="${INSTALLDIR}" --checksig "${file}") || {
+        result=$(rpm --root="${INSTALL_DIR}" --checksig "${file}") || {
             echo "Filename: ${file} failed verification.  Exiting!"
             exit 1
         }
@@ -224,26 +219,25 @@ function installPackages() {
             packages_list="$*"
         fi
     else
-        # WIP: should be improuved for multiple patterns search
-        if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
-            getFileLocations packages_list "packages.list" "${DIST}_${TEMPLATE_FLAVOR}"
+        if [ -n "$TEMPLATE_FLAVOR" ]; then
+            getFileLocations packages_list "packages.list" "${DIST_NAME}_${DIST_VER}_${TEMPLATE_FLAVOR}"
             if [ -z "${packages_list}" ]; then
-                getFileLocations packages_list "packages.list" "${DIST//[0-9]*}_${TEMPLATE_FLAVOR}"
+                getFileLocations packages_list "packages.list" "${DIST_NAME}_${TEMPLATE_FLAVOR}"
             fi
         else
-            getFileLocations packages_list "packages.list" "${DIST}"
+            getFileLocations packages_list "packages.list" "${DIST_NAME}_${DIST_VER}"
             if [ -z "${packages_list}" ]; then
-                getFileLocations packages_list "packages.list" "${DIST//[0-9]*}"
+                getFileLocations packages_list "packages.list" "${DIST_NAME}"
             fi
         fi
         if [ -z "${packages_list}" ]; then
             error "Can not locate a package.list file!"
-            umount_all || true
+            umount_kill "${INSTALL_DIR}" || true
             exit 1
         fi
     fi
 
-    for package_list in ${packages_list[*]}; do
+    for package_list in "${packages_list[@]}"; do
         debug "Installing extra packages from: ${package_list}"
         declare -a packages
         readarray -t packages < "${package_list}"
@@ -251,16 +245,4 @@ function installPackages() {
         info "Packages: ${packages[*]}"
         yumInstall "${packages[@]}" || return $?
     done
-}
-
-# ==============================================================================
-# Enable or Disable Copr Fedora repositories
-# ==============================================================================
-function yumCopr() {
-    mount --bind /etc/resolv.conf "${INSTALLDIR}"/etc/resolv.conf
-    local op=$1
-    local repo=$2
-
-    chroot_cmd $YUM copr ${op} -y $repo
-    umount "${INSTALLDIR}"/etc/resolv.conf
 }
