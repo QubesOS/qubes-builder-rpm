@@ -47,9 +47,16 @@ class RPMTemplateBuilderPlugin(TemplateBuilderPlugin):
     def update_parameters(self, stage: str):
         super().update_parameters(stage)
         executor = self.config.get_executor_from_config(stage_name=stage)
-
+        self.files_inside_executor_with_placeholders += [
+            executor.get_plugins_dir() / "template_rpm/04_install_qubes.sh"
+        ]
         self.environment.update(
-            {"TEMPLATE_CONTENT_DIR": str(executor.get_plugins_dir() / "template_rpm")}
+            {
+                "TEMPLATE_CONTENT_DIR": str(
+                    executor.get_plugins_dir() / "template_rpm"
+                ),
+                "KEYS_DIR": str(executor.get_plugins_dir() / "source_rpm/keys"),
+            }
         )
 
     def run(

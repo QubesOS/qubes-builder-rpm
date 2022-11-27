@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 #
 # The Qubes OS Project, http://www.qubes-os.org
 #
@@ -19,6 +19,9 @@
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
 # Prepare local builder repository
 

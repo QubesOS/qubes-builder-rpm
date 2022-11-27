@@ -21,11 +21,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
+
 rm -f "${INSTALL_DIR}"/var/lib/rpm/__db.00* "${INSTALL_DIR}"/var/lib/rpm/.rpm.lock
 rm -f "${INSTALL_DIR}"/var/lib/systemd/random-seed
 rm -rf "${INSTALL_DIR}"/var/log/journal/*
 
-dnf -c "${PLUGINS_DIR}/source_rpm/dnf/template-dnf-${DIST_NAME}.conf" "${DNF_OPTS[@]}" clean packages --installroot="${INSTALL_DIR}"
+if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
+    DNF_CONF="${SCRIPTSDIR}/../template-yum-${DIST_NAME}.conf"
+else
+    DNF_CONF="${PLUGINS_DIR}/source_rpm/dnf/template-dnf-${DIST_NAME}.conf"
+fi
+
+dnf -c "${DNF_CONF}" "${DNF_OPTS[@]}" clean packages --installroot="$(readlink -f "${INSTALL_DIR}")"
 
 # Make sure that rpm database has right format (for rpm version in template, not host)
 echo "--> Rebuilding rpm database..."

@@ -1,19 +1,31 @@
 #!/bin/bash -e
 # vim: set ts=4 sw=4 sts=4 et :
 
+if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
+    TEMPLATE_SCRIPTS_DIR="$(readlink -f .)"
+    PACKAGES_DIR="${PWD}/pkgs-for-template/${DIST}"
+    # shellcheck disable=SC2034
+    KEYS_DIR="$SCRIPTSDIR/../keys"
+    # shellcheck disable=SC2153
+    INSTALL_DIR="${INSTALLDIR}"
+    # shellcheck disable=SC2034
+    DIST_CODENAME="$DIST"
+    if [ "${DIST#fc}" != "${DIST}" ]; then
+        DIST_NAME="fedora"
+        DIST_VER="${DIST#fc}"
+    elif [ "${DIST#centos-stream}" != "${DIST}" ]; then
+        DIST_NAME="centos-stream"
+        DIST_VER="${DIST#centos-stream}"
+    fi
+fi
+
 # shellcheck source=qubesbuilder/plugins/template/scripts/functions.sh
-source "${PLUGINS_DIR}/template/scripts/functions.sh" >/dev/null
+source "${TEMPLATE_SCRIPTS_DIR}/functions.sh" >/dev/null
 # shellcheck source=qubesbuilder/plugins/template/scripts/umount-kill
-source "${PLUGINS_DIR}/template/scripts/umount-kill" >/dev/null
+source "${TEMPLATE_SCRIPTS_DIR}/umount-kill" >/dev/null
 
 # shellcheck disable=SC2154
 info "${TEMPLATE_CONTENT_DIR}/distribution.sh imported by: ${0}"
-
-DNF_OPTS=(-y)
-
-if [ -n "${REPO_PROXY}" ]; then
-    DNF_OPTS+=("--setopt=proxy=${REPO_PROXY}")
-fi
 
 DNF=dnf
 
@@ -24,6 +36,13 @@ fi
 if [ -z "${DIST_VER}" ]; then
     error "Please provide DIST_VER in environment."
 fi
+
+DNF_OPTS=(-y --releasever "${DIST_VER}")
+
+if [ -n "${REPO_PROXY}" ]; then
+    DNF_OPTS+=("--setopt=proxy=${REPO_PROXY}")
+fi
+
 
 if [ "${DIST_NAME}" == "fedora" ]; then
     if [ -n "${FEDORA_MIRROR}" ]; then

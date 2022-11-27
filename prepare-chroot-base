@@ -78,33 +78,19 @@ if ! [ -f "${INSTALLDIR}/tmp/.prepared_base" ]; then
     echo "-> Retrieving core RPM packages..."
 
     if [ "${DISTRIBUTION}" = "fedora" ]; then
-        INITIAL_PACKAGES=(filesystem setup fedora-release dnf dnf-plugins-core)
-        if [ "${DIST_VER}" -ge 25 ]; then
-            # avoid pulling in glibc-all-langpacks to save space
-            INITIAL_PACKAGES+=(glibc-langpack-en)
-        fi
-        if [ "${DIST_VER}" -eq 25 ]; then
-            # libcrypt conflicts with libcrypt-nss and yumdownloader is stupid
-            # enough to try them both
-            INITIAL_PACKAGES=(--exclude=libcrypt "${INITIAL_PACKAGES[@]}")
-        fi
+        INITIAL_PACKAGES=(filesystem setup fedora-release dnf dnf-plugins-core cracklib)
+        # avoid pulling in glibc-all-langpacks to save space
+        INITIAL_PACKAGES+=(glibc-langpack-en)
 
-        if [ "${DIST_VER}" -ge 26 ]; then
-            # coreutils conflicts with coreutils-single
-            INITIAL_PACKAGES=(--exclude=coreutils-single "${INITIAL_PACKAGES[@]}")
-        fi
+        # coreutils conflicts with coreutils-single
+        INITIAL_PACKAGES+=(--exclude=coreutils-single)
 
-        if [ "${DIST_VER}" -ge 27 ]; then
-            # curl-minimal conflicts with curl, same for libcurl
-            INITIAL_PACKAGES=(--exclude=curl --exclude=libcurl "${INITIAL_PACKAGES[@]}")
-        fi
+        # curl-minimal conflicts with curl, same for libcurl
+        INITIAL_PACKAGES+=(--exclude=curl --exclude=libcurl)
 
-        if [ "${DIST_VER}" -ge 34 ]; then
-            # For Fedora 34 we try to exclude pipewire until we switch
-            # to it completely.
-            INITIAL_PACKAGES=(--exclude=pipewire-* "${INITIAL_PACKAGES[@]}")
-            INITIAL_PACKAGES=(cracklib "${INITIAL_PACKAGES[@]}")
-        fi
+        # For Fedora 34+ we try to exclude pipewire until we switch
+        # to it completely.
+        INITIAL_PACKAGES+=(--exclude=pipewire-*)
 
         mkdir -p -- "${DOWNLOADDIR}"
         yumconf=$(mktemp)
