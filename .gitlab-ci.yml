@@ -30,14 +30,14 @@ prep:sources:
     COMPONENTS: "linux-template-builder core-vchan-xen linux-utils linux-scrypt app-linux-split-gpg linux-dom0-updates"
     BRANCH_linux_dom0_updates: "release4.0"
 
-tests:vm-fc35:no-upstream-tarball:
+tests:vm-fc37:no-upstream-tarball:
   extends: .components_build
   stage: tests
   needs:
     - prep:sources
-    - chroot:vm-fc35
+    - chroot:vm-fc37
   variables:
-    DISTS_VM: fc35
+    DISTS_VM: fc37
     USE_QUBES_REPO_VERSION: "4.1"
     USE_QUBES_REPO_TESTING: "1"
     USE_DIST_BUILD_TOOL: 1
@@ -56,14 +56,14 @@ tests:dom0-fc32:dom0-package:
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-utils
 
-tests:vm-fc35:upstream-tarball:
+tests:vm-fc37:upstream-tarball:
   extends: .components_build
   stage: tests
   needs:
     - prep:sources
-    - chroot:vm-fc35
+    - chroot:vm-fc37
   variables:
-    DISTS_VM: fc35
+    DISTS_VM: fc37
     USE_QUBES_REPO_VERSION: "4.1"
     USE_QUBES_REPO_TESTING: "1"
     USE_DIST_BUILD_TOOL: 1
