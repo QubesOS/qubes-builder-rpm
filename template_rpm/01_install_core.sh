@@ -20,9 +20,9 @@
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# SPDX-License-Identifier: GPL-3.0-or-late
+# SPDX-License-Identifier: GPL-2.0-or-later
 
-# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+# shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
 export DNF_OPTS

@@ -21,7 +21,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-# shellcheck source=qubesbuilder/plugins/template_rpm/distribution.sh
+# shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
 # Prepare system mount points
