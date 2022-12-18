@@ -24,7 +24,8 @@
 # shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
-rm -f "${INSTALL_DIR}"/var/lib/rpm/__db.00* "${INSTALL_DIR}"/var/lib/rpm/.rpm.lock
+dbpath=$(chroot "${INSTALL_DIR}" rpm --eval '%{_dbpath}') || exit 1
+rm -f "${INSTALL_DIR}${dbpath}"/__db.00* "${INSTALL_DIR}${dbpath}"/.rpm.lock
 rm -f "${INSTALL_DIR}"/var/lib/systemd/random-seed
 rm -rf "${INSTALL_DIR}"/var/log/journal/*
 
