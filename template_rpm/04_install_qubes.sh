@@ -119,11 +119,7 @@ if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; th
     done
     chroot_cmd grub2-install --target=i386-pc "$dev" || RETCODE=1
     chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || RETCODE=1
-    if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
-        fuser -kMm "${INSTALL_DIR}"
-    else
-        fuser -kMm @BUILDER_DIR@/mnt
-    fi
+    fuser -kMm "${INSTALL_DIR}"
     chroot_cmd umount /sys /dev
 fi
 
