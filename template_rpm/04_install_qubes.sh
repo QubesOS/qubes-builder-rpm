@@ -28,6 +28,7 @@ prepareChroot
 
 if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
     REPO_FILE="${SCRIPTSDIR}/../repos/qubes-repo-vm-${DIST_NAME}.repo"
+    export YUM0=$PWD/pkgs-for-template
 else
     REPO_FILE="${PLUGINS_DIR}/source_rpm/repos/qubes-repo-vm-${DIST_NAME}.repo"
 fi
