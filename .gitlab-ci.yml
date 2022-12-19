@@ -23,7 +23,7 @@ after_script:
 variables:
   COMPONENTS: linux-template-builder
   USE_DIST_BUILD_TOOL: 0
-  
+
 prep:sources:
   extends: .components_prepare
   variables:
@@ -79,19 +79,6 @@ tests:vm-centos-stream8:upstream-tarball-no-qubes-repos:
     DISTS_VM: centos-stream8
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: app-linux-split-gpg
-
-tests:dom0-fc25:src-rpm:
-  extends: .components_build
-  stage: tests
-  needs:
-    - prep:sources
-    - chroot:dom0-fc25
-  variables:
-    DIST_DOM0: fc25
-    USE_DIST_BUILD_TOOL: 1
-    COMPONENTS: linux-dom0-updates
-    BRANCH_linux_dom0_updates: "release4.0"
-  allow_failure: true
 
 checks:shellcheck:
   stage: checks
