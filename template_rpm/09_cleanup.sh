@@ -49,4 +49,9 @@ fi
 
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
 
+if [[ "$DIST_NAME" = 'fedora' ]] && [[ "$DIST_VER" -ge 37 ]] &&
+    rpm --root "$INSTALL_DIR" -qv qubes-core-agent-selinux; then
+    echo 'selinux=1' > /template.conf
+fi
+
 exit 0
