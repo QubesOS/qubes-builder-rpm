@@ -1,6 +1,7 @@
 xterm
 tar
 haveged
+selinux-policy-targeted
 sudo
 --exclude=kdegames
 --exclude=firstboot

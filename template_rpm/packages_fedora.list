@@ -26,6 +26,7 @@ man-db
 man-pages
 network-manager-applet
 rsync
+selinux-policy-targeted
 sudo
 thunderbird
 tree
