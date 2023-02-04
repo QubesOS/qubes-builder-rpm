@@ -35,7 +35,9 @@ else
     DNF_CONF="${PLUGINS_DIR}/source_rpm/dnf/template-dnf-${DIST_NAME}.conf"
 fi
 
-dnf -c "${DNF_CONF}" "${DNF_OPTS[@]}" clean packages --installroot="$(readlink -f "${INSTALL_DIR}")"
+set -e
+rootdir=$(readlink -f "${INSTALL_DIR}")
+dnf -c "${DNF_CONF}" "${DNF_OPTS[@]}" clean packages "--installroot=$rootdir"
 
 # Make sure that rpm database has right format (for rpm version in template, not host)
 echo "--> Rebuilding rpm database..."
