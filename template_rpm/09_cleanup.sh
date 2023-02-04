@@ -52,8 +52,17 @@ fi
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
 
 if [[ "$DIST_NAME" = 'fedora' ]] && [[ "$DIST_VER" -ge 37 ]] &&
-    rpm --root "$INSTALL_DIR" -qv qubes-core-agent-selinux; then
-    echo 'selinux=1' > /template.conf
+    chroot -- "$INSTALL_DIR" rpm -qv qubes-core-agent-selinux; then
+    sed -i -- 's/^SELINUX=\(disabled\|enforcing\)/SELINUX=permissive/' "$INSTALL_DIR/etc/selinux/config"
+    unshare --mount -- chroot -- "$INSTALL_DIR" /bin/sh -euc 'mount --bind -- / "$2"
+        umask 0755
+        mkdir -p -m 0700 -- /dev /var /run
+        mkdir -p -m 1777 -- /tmp /var/tmp /dev/shm
+        find /tmp /var/tmp /run /dev/shm -mindepth 1 -delete
+        : > /.qubes-relabeled
+        rm -f /.autorelabel
+        setfiles -r "$2" -- "/etc/selinux/$1/contexts/files/file_contexts" "$2"' sh targeted /mnt
+    echo 'selinux=1' > ./template.conf
 fi
 
 exit 0
