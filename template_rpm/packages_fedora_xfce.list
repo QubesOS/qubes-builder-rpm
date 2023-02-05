@@ -21,7 +21,6 @@ man-pages
 qt5-qtstyleplugins
 qt5ct
 rsync
-selinux-policy-targeted
 sudo
 system-config-printer
 thunderbird
