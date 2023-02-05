@@ -51,8 +51,7 @@ fi
 
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
 
-if [[ "$DIST_NAME" = 'fedora' ]] && [[ "$DIST_VER" -ge 37 ]] &&
-    chroot -- "$INSTALL_DIR" rpm -qv qubes-core-agent-selinux; then
+if containsFlavor selinux; then
     sed -i -- 's/^SELINUX=\(disabled\|enforcing\)/SELINUX=permissive/' "$INSTALL_DIR/etc/selinux/config"
     unshare --mount -- chroot -- "$INSTALL_DIR" /bin/sh -euc 'mount --bind -- / "$2"
         umask 0755
