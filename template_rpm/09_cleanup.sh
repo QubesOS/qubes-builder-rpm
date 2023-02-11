@@ -52,7 +52,7 @@ fi
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
 
 if containsFlavor selinux; then
-    sed -i -- 's/^SELINUX=\(disabled\|enforcing\)/SELINUX=permissive/' "$INSTALL_DIR/etc/selinux/config"
+    sed -i -- 's/^SELINUX=\(disabled\|permissive\)/SELINUX=enforcing/' "$INSTALL_DIR/etc/selinux/config"
     unshare --mount -- chroot -- "$INSTALL_DIR" /bin/sh -euc 'mount --bind -- / "$2"
         umask 0755
         mkdir -p -m 0700 -- /dev /var /run
