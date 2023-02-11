@@ -61,7 +61,7 @@ if containsFlavor selinux; then
         : > /.qubes-relabeled
         rm -f /.autorelabel
         setfiles -r "$2" -- "/etc/selinux/$1/contexts/files/file_contexts" "$2"' sh targeted /mnt
-    echo 'selinux=1' > ./template.conf
+    echo 'selinux=1' > "$TEMPLATE_CONF"
 fi
 
 exit 0
