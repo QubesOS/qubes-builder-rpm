@@ -45,20 +45,13 @@ gpgkey=file:///etc/pki/rpm-gpg/google-linux_signing_key.pub
 EOF
 chmod 644 "${INSTALL_DIR}/etc/yum.repos.d/google-chrome.repo"
 
-#### '----------------------------------------------------------------------
-info ' Installing adobe repo'
-#### '----------------------------------------------------------------------
-yumInstall /tmp/3rd_party_software/adobe-release-x86_64.noarch.rpm
-
 if [ "$TEMPLATE_FLAVOR" == "fullyloaded" ]; then
     #### '------------------------------------------------------------------
     info ' Installing 3rd party software'
     #### '------------------------------------------------------------------
     yumInstall google-chrome-stable
-    yumInstall flash-plugin
 else
     yumConfigRepository disable google-chrome > /dev/null
-    yumConfigRepository disable adobe-linux-x86_64 > /dev/null
 fi
 
 

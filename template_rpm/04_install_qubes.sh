@@ -124,6 +124,9 @@ if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; th
     sleep 3
     chroot_cmd umount /sys /dev
 fi
+if containsFlavor selinux; then
+    yumInstall selinux-policy-targeted || RETCODE=1
+fi
 
 # Distribution specific steps
 buildStep "${0}" "${DIST_CODENAME}"

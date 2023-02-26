@@ -35,7 +35,9 @@ else
     DNF_CONF="${PLUGINS_DIR}/source_rpm/dnf/template-dnf-${DIST_NAME}.conf"
 fi
 
-dnf -c "${DNF_CONF}" "${DNF_OPTS[@]}" clean packages --installroot="$(readlink -f "${INSTALL_DIR}")"
+set -e
+rootdir=$(readlink -f "${INSTALL_DIR}")
+dnf -c "${DNF_CONF}" "${DNF_OPTS[@]}" clean packages "--installroot=$rootdir"
 
 # Make sure that rpm database has right format (for rpm version in template, not host)
 echo "--> Rebuilding rpm database..."
@@ -48,5 +50,18 @@ if [ -x "${INSTALL_DIR}"/usr/bin/dnf ]; then
 fi
 
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
+
+if containsFlavor selinux; then
+    sed -i -- 's/^SELINUX=\(disabled\|permissive\)/SELINUX=enforcing/' "$INSTALL_DIR/etc/selinux/config"
+    unshare --mount -- chroot -- "$INSTALL_DIR" /bin/sh -euc 'mount --bind -- / "$2"
+        umask 0755
+        mkdir -p -m 0700 -- /dev /var /run
+        mkdir -p -m 1777 -- /tmp /var/tmp /dev/shm
+        find /tmp /var/tmp /run /dev/shm -mindepth 1 -delete
+        : > /.qubes-relabeled
+        rm -f /.autorelabel
+        setfiles -r "$2" -- "/etc/selinux/$1/contexts/files/file_contexts" "$2"' sh targeted /mnt
+    echo 'selinux=1' > "$TEMPLATE_CONF"
+fi
 
 exit 0
