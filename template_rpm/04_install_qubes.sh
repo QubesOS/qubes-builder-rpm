@@ -85,6 +85,10 @@ if [ "${DIST_NAME}" == "fedora" ]; then
     fi
 fi
 
+# update after adding qubes repos, in case a new version/fork of a package is
+# there
+yumUpdate
+
 if ! grep -q LANG= "${INSTALL_DIR}/etc/locale.conf" 2>/dev/null; then
     if [ "${DIST_NAME}" == "fedora" ]; then
         echo "LANG=C.UTF-8" >> "${INSTALL_DIR}/etc/locale.conf"
