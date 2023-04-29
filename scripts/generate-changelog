@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # Based on PLD Linux:
 # https://git.pld-linux.org/?p=packages/rpm-build-tools.git;a=blob;f=builder.sh;h=3c9a33648d2cb1b1410939c16637c7d9cac3b09d;hb=HEAD#l468
