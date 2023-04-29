@@ -4,7 +4,7 @@ RPM_QUERY_FORMAT = "$(OUTPUT_DIR)/%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\\n"
 RPM_SRC_QUERY_FORMAT = "$(OUTPUT_DIR)/%{SOURCERPM}\n"
 RPM_SOURCE_DIR ?= $(DIST_SRC)
 
-ifneq (,$(wildcard $(RPM_PLUGIN_DIR)/mock-$(DISTRIBUTION)-$(DIST_VER).cfg))
+ifneq (,$(wildcard $(RPM_PLUGIN_DIR)/mock/mock-$(DISTRIBUTION)-$(DIST_VER).cfg))
 MOCK_CFG = mock-$(DISTRIBUTION)-$(DIST_VER).cfg
 else
 MOCK_CFG = mock-$(DISTRIBUTION).cfg
@@ -56,7 +56,7 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_mock
 $(CHROOT_DIR)/home/user/.prepared_mock:
 	mkdir -p $(CHROOT_DIR)/home/user/qubes-src
 	sudo $(MOCK_ENV) $(MOCK) \
-		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		-v -r $(RPM_PLUGIN_DIR)/mock/$(MOCK_CFG) \
 		$(RPM_BUILD_DEFINES) \
 		$(MOCK_EXTRA_OPTS) \
 		--disablerepo=builder-local \
@@ -64,13 +64,13 @@ $(CHROOT_DIR)/home/user/.prepared_mock:
 	touch $(CHROOT_DIR)/home/user/.prepared_mock
 
 dist-build-dep:
-	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	$(RPM_PLUGIN_DIR)/scripts/update-local-repo.sh $(BUILDER_REPO_DIR)
 	rm -rf $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)/*
 	mkdir -p $(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR)
 
 dist-src-package-build:
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
-		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		-v -r $(RPM_PLUGIN_DIR)/mock/$(MOCK_CFG) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
 		$(RPM_BUILD_DEFINES) \
 		$(MOCK_EXTRA_OPTS) \
@@ -93,12 +93,12 @@ ifdef INCREMENT_DEVEL_VERSIONS
 endif
 	cd $(CHROOT_DIR)$(DIST_SRC); sudo $(MOCK_ENV) $(MOCK) \
 		--resultdir=$(CHROOT_DIR)/$(DIST_SRC)/$(OUTPUT_DIR) \
-		-v -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		-v -r $(RPM_PLUGIN_DIR)/mock/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) --no-cleanup-after \
 		$(RPM_BUILD_DEFINES) --rebuild $(srcrpm)
 	sudo $(MOCK_ENV) $(MOCK) \
 		'--plugin-option=bind_mount:dirs=[("$(RPM_PLUGIN_DIR)", "/builder-rpm")]' \
-		-q -r $(RPM_PLUGIN_DIR)/$(MOCK_CFG) \
+		-q -r $(RPM_PLUGIN_DIR)/mock/$(MOCK_CFG) \
 		$(MOCK_EXTRA_OPTS) \
 		$(RPM_BUILD_DEFINES) --chroot \
 		'/builder-rpm/scripts/rpmbuildinfo /builddir/build/SRPMS/*.src.rpm' \

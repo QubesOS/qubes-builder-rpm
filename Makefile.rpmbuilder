@@ -21,7 +21,7 @@ ifneq (1,$(NO_ARCHIVE))
 GIT_TARBALL_NAME ?= $(notdir \
 		$(shell [ -r "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))".in ] && \
 			ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
-			"$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" \
+			"$(ORIG_SRC)" "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" "$(DIST)"\
 			| cut -d ' ' -f 2))
 endif
 
@@ -127,7 +127,7 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	fi)
 
 %.spec: %.spec.in $(wildcard $(DIST_SRC)/version) $(wildcard $(DIST_SRC)/rel)
-	$(RPM_PLUGIN_DIR)scripts/generate-spec $< $@
+	$(RPM_PLUGIN_DIR)scripts/generate-spec $(ORIG_SRC) $< $@
 
 dist-prep:
 	${Q}true

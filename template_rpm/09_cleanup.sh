@@ -29,11 +29,7 @@ rm -f "${INSTALL_DIR}${dbpath}"/__db.00* "${INSTALL_DIR}${dbpath}"/.rpm.lock
 rm -f "${INSTALL_DIR}"/var/lib/systemd/random-seed
 rm -rf "${INSTALL_DIR}"/var/log/journal/*
 
-if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
-    DNF_CONF="${SCRIPTSDIR}/../template-yum-${DIST_NAME}.conf"
-else
-    DNF_CONF="${PLUGINS_DIR}/source_rpm/dnf/template-dnf-${DIST_NAME}.conf"
-fi
+DNF_CONF="${TEMPLATE_CONTENT_DIR}/../dnf/template-dnf-${DIST_NAME}.conf"
 
 set -e
 rootdir=$(readlink -f "${INSTALL_DIR}")

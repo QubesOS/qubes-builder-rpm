@@ -1,61 +1,88 @@
 #!/bin/sh
+#
+# The Qubes OS Project, http://www.qubes-os.org
+#
+# Copyright (C) 2017 Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
+# Copyright (C) 2018 Frédéric Pierret (fepitre) <frederic@invisiblethingslab.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 set -e
 if [ "${VERBOSE:-0}" -ge 2 ] || [ "${DEBUG:-0}" -eq 1 ]; then
     set -x
 fi
 
-if [ $# -lt 2 ]; then
-    echo "Usage: $0 input output" >&2
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 source_dir input output" >&2
     exit 1
 fi
 
-if [ -z "${ORIG_SRC}" ]; then
-    ORIG_SRC="."
+source_dir="$1"
+input="$2"
+output="$3"
+
+# Handle the case where .spec.in (input) does not exist
+# and .spec does (output).
+if [ ! -e "${input}" ] && [ -e "${output}" ]; then
+    echo "Spec file '${output}' already exists. Skipping."
+    exit
 fi
 
-cp "$1" "$1.tmp"
+cp "$input" "$input.tmp"
 
 # Handle sources with multiples package/version/release:
 # 'version' must contains list of version number corresponding to @VERSION@ @VERSION1@ ...
 # 'rel', must contains list of release number corresponding to @REL@ @REL1@ ...
 while read -r ver
 do
-    if [ "x$vnum" = "x" ]; then
-        sed -i "s|@VERSION@|$ver|g" "$1.tmp"
+    if [ -z "$vnum" ]; then
+        sed -i "s|@VERSION@|$ver|g" "$input.tmp"
     else
-        sed -i "s|@VERSION$vnum@|$ver|g" "$1.tmp"
+        sed -i "s|@VERSION$vnum@|$ver|g" "$input.tmp"
     fi
     vnum=$(( vnum + 1 ))
-done < "${ORIG_SRC}/version"
+done < "${source_dir}/version"
 
-if [ -e "${ORIG_SRC}/rel" ]; then
+if [ -e "${source_dir}/rel" ]; then
     while read -r rel
     do
-        if [ "x$rnum" = "x" ]; then
-            sed -i "s|@REL@|$rel|g" "$1.tmp"
+        if [ -z "$rnum" ]; then
+            sed -i "s|@REL@|$rel|g" "$input.tmp"
         else
-            sed -i "s|@REL$rnum@|$rel|g" "$1.tmp"
+            sed -i "s|@REL$rnum@|$rel|g" "$input.tmp"
         fi
         rnum=$(( rnum + 1 ))
-    done < "${ORIG_SRC}/rel"
+    done < "${source_dir}/rel"
 else
-    if grep -q "@REL@" "$1.tmp"; then
-        echo "@REL@ found in spec, but no $ORIG_SRC/rel file" >&2
+    if grep -q "@REL@" "$input.tmp"; then
+        echo "@REL@ found in spec, but no $source_dir/rel file" >&2
         exit 1
     fi
 fi
 
 # Handle default rel and backend_vmm
 sed -i \
-    -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$1.tmp"
+    -e "s:@BACKEND_VMM@:${BACKEND_VMM}:g" "$input.tmp"
 
 # Handle changelog
-if grep -q "@CHANGELOG@" "$1.tmp"; then
-    "$(dirname "$0")"/generate-changelog "${ORIG_SRC}" "$1.tmp"
+if grep -q "@CHANGELOG@" "$input.tmp"; then
+    "$(dirname "$0")"/generate-changelog "${source_dir}" "$input.tmp"
 fi
 
-cat "$1.tmp" > "$2"
-rm -rf "$1.tmp"
+cat "$input.tmp" > "$output"
+rm -rf "$input.tmp"
 
 # TODO: improve handlers

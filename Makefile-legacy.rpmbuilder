@@ -30,11 +30,11 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	${Q}if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
-	${Q}sudo cp $(RPM_PLUGIN_DIR)yum.conf $(CHROOT_DIR)/etc/yum.conf
 
-$(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(RPM_PLUGIN_DIR)/$(BUILD_PKG_LIST)
+$(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/scripts/prepare-chroot-builder $(RPM_PLUGIN_DIR)/dnf/$(BUILD_PKG_LIST)
 	${Q}echo "-> Preparing $(DIST) build environment"
-	${Q}sudo -E $(RPM_PLUGIN_DIR)/prepare-chroot-builder $(CHROOT_DIR) $(DIST) || exit 1
+	${Q}$(RPM_PLUGIN_DIR)/scripts/update-local-repo.sh $(BUILDER_REPO_DIR)
+	${Q}sudo -E $(RPM_PLUGIN_DIR)/scripts/prepare-chroot-builder $(CHROOT_DIR) $(DISTRIBUTION) $(DIST_VER) $(CACHEDIR) $(BUILDER_REPO_DIR) $(RPM_PLUGIN_DIR)/dnf/$(BUILD_PKG_LIST) || exit 1
 	${Q}touch $(CHROOT_DIR)/home/user/.prepared_base
 
 .PHONY: refresh-update.dnf
@@ -42,7 +42,7 @@ refresh-update.dnf:
 ifndef PACKAGE
 	$(error "PACKAGE need to be set!")
 endif
-	$(RPM_PLUGIN_DIR)/update-local-repo.sh $(DIST)
+	$(RPM_PLUGIN_DIR)/scripts/update-local-repo.sh $(BUILDER_REPO_DIR)
 	sudo $(CHROOT_ENV) $(YUM) $(YUM_OPTS) --refresh -y update
 
 dist-build-dep: refresh-update.$(YUM) dist-build-dep$(suffix $(PACKAGE))

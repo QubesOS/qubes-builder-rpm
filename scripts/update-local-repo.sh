@@ -1,11 +1,10 @@
 #!/bin/sh
 
-set -e
+set -ex
 
-[ -z "$1" ] && { echo "Usage: $0 <dist>"; exit 1; }
+[ -z "$1" ] && { echo "Usage: $0 <repo_dir>"; exit 1; }
 
-REPO_DIR=$BUILDER_REPO_DIR
-# DIST=$1
+REPO_DIR="$1"
 
 # shellcheck disable=SC2230
 createrepo="$(which createrepo_c createrepo | head -n 1)"

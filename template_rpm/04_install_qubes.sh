@@ -27,11 +27,9 @@ source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 prepareChroot
 
 if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
-    REPO_FILE="${SCRIPTSDIR}/../repos/qubes-repo-vm-${DIST_NAME}.repo"
     export YUM0=$PWD/pkgs-for-template
-else
-    REPO_FILE="${PLUGINS_DIR}/source_rpm/repos/qubes-repo-vm-${DIST_NAME}.repo"
 fi
+REPO_FILE="${TEMPLATE_CONTENT_DIR}/../repos/qubes-repo-vm-${DIST_NAME}.repo"
 
 cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}/etc/yum.repos.d/"
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then

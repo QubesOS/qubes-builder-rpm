@@ -28,12 +28,7 @@ source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 export DNF_OPTS
 
 # bootstrap chroot
-
-if [ "0${IS_LEGACY_BUILDER}" -eq 1 ]; then
-    "${SCRIPTSDIR}"/../prepare-chroot-base "${INSTALL_DIR}" "${DIST}"
-else
-    "${PLUGINS_DIR}"/source_rpm/scripts/prepare-chroot-base "${INSTALL_DIR}" "${DIST_NAME}" "${DIST_VER}" "${CACHE_DIR}"
-fi
+"${TEMPLATE_CONTENT_DIR}"/../scripts/prepare-chroot-base "${INSTALL_DIR}" "${DIST_NAME}" "${DIST_VER}" "${CACHE_DIR}"
 
 # Build the rpmdb again, in case of huge rpm version difference that makes
 # rpmdb --rebuilddb doesn't work anymore. Export using rpm from outside
