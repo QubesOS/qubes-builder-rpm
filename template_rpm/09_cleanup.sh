@@ -29,7 +29,7 @@ rm -f "${INSTALL_DIR}${dbpath}"/__db.00* "${INSTALL_DIR}${dbpath}"/.rpm.lock
 rm -f "${INSTALL_DIR}"/var/lib/systemd/random-seed
 rm -rf "${INSTALL_DIR}"/var/log/journal/*
 
-DNF_CONF="${TEMPLATE_CONTENT_DIR}/../dnf/template-dnf-${DIST_NAME}.conf"
+DNF_CONF="${TEMPLATE_CONTENT_DIR}/../dnf/dnf.conf"
 
 set -e
 rootdir=$(readlink -f "${INSTALL_DIR}")
