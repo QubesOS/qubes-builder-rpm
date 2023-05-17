@@ -20,7 +20,7 @@ ifneq (1,$(NO_ARCHIVE))
 # allow Makefile.builder in component to override this value
 GIT_TARBALL_NAME ?= $(notdir \
 		$(shell [ -r "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))".in ] && \
-			ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
+			$(RPM_PLUGIN_DIR)scripts/query-spec \
 			"$(ORIG_SRC)" "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" "$(DIST)"\
 			| cut -d ' ' -f 2))
 endif
