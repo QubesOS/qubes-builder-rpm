@@ -20,7 +20,7 @@ ifneq (1,$(NO_ARCHIVE))
 # allow Makefile.builder in component to override this value
 GIT_TARBALL_NAME ?= $(notdir \
 		$(shell [ -r "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))".in ] && \
-			ORIG_SRC=$(ORIG_SRC) $(RPM_PLUGIN_DIR)scripts/query-spec \
+			$(RPM_PLUGIN_DIR)scripts/query-spec \
 			"$(ORIG_SRC)" "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" "$(DIST)"\
 			| cut -d ' ' -f 2))
 endif
@@ -113,8 +113,7 @@ spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 			0`git log -1 --pretty=format:%ct` ]; then \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
-		DIST=$(DIST) \
-		$(RPM_PLUGIN_DIR)scripts/query-spec "$(ORIG_SRC)" "$(1)" "$(RPM_QUERY_FORMAT)" "$(DIST)" 2>/dev/null; \
+		$(RPM_PLUGIN_DIR)scripts/query-spec . "$(1)" "$(RPM_QUERY_FORMAT)" "$(DIST)" 2>/dev/null; \
 	fi)
 srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
@@ -122,8 +121,7 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 		cat $(OUTPUT_DIR)/$(notdir $(1)).list; \
 	else \
 		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
-		DIST=$(DIST) \
-		$(RPM_PLUGIN_DIR)scripts/query-spec "$(ORIG_SRC)" /dev/stdin "$(RPM_QUERY_FORMAT)" "$(DIST)" 2>/dev/null; \
+		$(RPM_PLUGIN_DIR)scripts/query-spec . /dev/stdin "$(RPM_QUERY_FORMAT)" "$(DIST)" 1>&2; \
 	fi)
 
 %.spec: %.spec.in $(wildcard $(DIST_SRC)/version) $(wildcard $(DIST_SRC)/rel)
