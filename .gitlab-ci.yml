@@ -11,6 +11,12 @@ include:
     file: '/r4.1/gitlab-vm-centos-chroot.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.1/gitlab-vm-centos-build-template.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.2/gitlab-base.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.2/gitlab-vm-fedora-build-template.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/r4.2/gitlab-vm-centos-build-template.yml'
 
 default:
   tags:
@@ -29,6 +35,9 @@ prep:sources:
   variables:
     COMPONENTS: "linux-template-builder core-vchan-xen linux-utils linux-scrypt app-linux-split-gpg linux-dom0-updates"
     BRANCH_linux_dom0_updates: "release4.0"
+
+r4.2:prep:sources:
+  extends: .r4.2_components_prepare
 
 tests:vm-fc37:no-upstream-tarball:
   extends: .components_build
