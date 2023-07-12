@@ -89,9 +89,11 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         # curl-minimal conflicts with curl, same for libcurl
         INITIAL_PACKAGES+=(--exclude=curl --exclude=libcurl)
 
-        # For Fedora 34+ we try to exclude pipewire until we switch
-        # to it completely.
-        INITIAL_PACKAGES+=(--exclude=pipewire-*)
+        if [ "$RELEASE" == 4.1 ]; then
+            # For Fedora 34+ we try to exclude pipewire until we switch
+            # to it completely.
+            INITIAL_PACKAGES+=(--exclude=pipewire-*)
+        fi
 
         mkdir -p -- "${DOWNLOAD_DIR}"
         yumconf=$(mktemp)

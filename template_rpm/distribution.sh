@@ -261,6 +261,14 @@ function installPackages() {
         declare -a packages
         readarray -t packages < "${package_list}"
 
+        # Exclude pipewire only on Qubes 4.1, this used to be part of packages_list files
+        if [ "$RELEASE" == "4.1" ]; then
+            packages+=( "--exclude=pipewire"
+                        "--exclude=pipewire-utils"
+                        "--exclude=pipewire-pulseaudio"
+                        "--exclude=wireplumber" )
+        fi
+
         info "Packages: ${packages[*]}"
         yumInstall "${packages[@]}" || return $?
     done

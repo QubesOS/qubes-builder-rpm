@@ -61,7 +61,6 @@ zip
 --exclude=nss-mdns
 --exclude=openssh-server
 --exclude=PackageKit*
---exclude=pipewire-*
 --exclude=plymouth
 --exclude=plymouth-system-theme
 --exclude=qemu-*
@@ -74,6 +73,4 @@ zip
 --exclude=xfce4-sensors-plugin
 --exclude=xfce4-screensaver
 --exclude=xorg-x11-drv-nouveau
---exclude=wireplumber
 --exclude=yum-utils
---exclude=pipewire-pulseaudio
