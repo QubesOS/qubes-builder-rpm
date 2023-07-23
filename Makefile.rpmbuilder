@@ -23,6 +23,7 @@ GIT_TARBALL_NAME ?= $(notdir \
 			$(RPM_PLUGIN_DIR)scripts/query-spec \
 			"$(ORIG_SRC)" "$(ORIG_SRC)/$(firstword $(RPM_SPEC_FILES))" "%{SOURCE0}" "$(DIST)"\
 			| cut -d ' ' -f 2))
+unexport GIT_TARBALL_NAME
 endif
 
 ### Local variables
@@ -92,6 +93,7 @@ RPM_QUERY_DEFINES += --define "dist .$(DIST_TAG)"
 
 BUILDINFO_SIGN_CMD ?= $(shell rpm --eval %{__gpg})
 BUILDINFO_SIGN_CMD += --clearsign
+unexport BUILDINFO_SIGN_CMD
 RPMSIGN_OPTS ?=
 RPMSIGN_OPTS += --digest-algo=sha256
 ifneq (,$(SIGN_KEY))
@@ -115,6 +117,7 @@ spec_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	else \
 		$(RPM_PLUGIN_DIR)scripts/query-spec . "$(1)" "$(RPM_QUERY_FORMAT)" "$(DIST)" 2>/dev/null; \
 	fi)
+unexport spec_packages
 srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 	if [ 0`stat -c %Y $(OUTPUT_DIR)/$(notdir $(1)).list 2>/dev/null` -ge \
 			0`git log -1 --pretty=format:%ct` ]; then \
@@ -123,6 +126,7 @@ srpm_packages = $(shell cd $(ORIG_SRC) && [ -n "$(1)" ] && \
 		rpm2cpio $(1) |cpio -i --to-stdout '*.spec' 2>/dev/null | \
 		$(RPM_PLUGIN_DIR)scripts/query-spec . /dev/stdin "$(RPM_QUERY_FORMAT)" "$(DIST)" 1>&2; \
 	fi)
+unexport srpm_packages
 
 %.spec: %.spec.in $(wildcard $(DIST_SRC)/version) $(wildcard $(DIST_SRC)/rel)
 	$(RPM_PLUGIN_DIR)scripts/generate-spec $(ORIG_SRC) $< $@
@@ -160,6 +164,7 @@ endif
 # Copies requested packages (based on PACKAGE_SET, COMPONENT, DIST) to
 # requested repository (UPDATE_REPO)
 # Optionally saves list of copied packages in $(SNAPSHOT_FILE)
+unexport packages
 update-repo: packages  = $(foreach SPEC,$(RPM_SPEC_FILES),$(call spec_packages,$(SPEC)))
 update-repo: packages += $(foreach SPEC,$(RPM_SRC_PACKAGES),$(call srpm_packages,$(SPEC)))
 update-repo: update-repo-do
@@ -194,7 +199,7 @@ endif
 		ln -f $(subst /$(TARGET_REPO)/,/$(SNAPSHOT_REPO)/,$(UPDATE_REPO)/)rpm/`basename $$f` $(UPDATE_REPO)/rpm/ || exit 1; \
 	done
 
-sign-prep: rpmsign_client = $(if $(GNUPG),$(GNUPG),$(shell rpm --eval %{__gpg}))
+sign-prep: rpmsign_client := $(if $(GNUPG),$(GNUPG),$(shell rpm --eval %{__gpg}))
 sign-prep:
 	${Q}if [ -n "$(rpmsign_client)" ]; then \
 		mkdir -p $(BUILDER_DIR)/keyrings/rpmdb; \
