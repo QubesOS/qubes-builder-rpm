@@ -20,6 +20,8 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+RETCODE=0
+
 # shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
@@ -136,4 +138,4 @@ buildStep "${0}" "${DIST_CODENAME}"
 rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-builder-repo-${DIST_NAME}.repo"
 rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-qubes-vm.repo"
 
-exit $RETCODE
+exit "$RETCODE"
