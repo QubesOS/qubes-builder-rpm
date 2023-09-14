@@ -136,4 +136,4 @@ buildStep "${0}" "${DIST_CODENAME}"
 rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-builder-repo-${DIST_NAME}.repo"
 rm -f "${INSTALL_DIR}/etc/yum.repos.d/template-qubes-vm.repo"
 
-exit $RETCODE
+exit "$RETCODE"
