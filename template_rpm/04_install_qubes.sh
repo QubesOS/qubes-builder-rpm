@@ -23,6 +23,8 @@
 # shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
+RETCODE=0
+
 # Prepare system mount points
 prepareChroot
 
