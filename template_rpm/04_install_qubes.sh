@@ -20,6 +20,8 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+RETCODE=0
+
 # shellcheck source=template_rpm/distribution.sh
 source "${TEMPLATE_CONTENT_DIR}/distribution.sh"
 
