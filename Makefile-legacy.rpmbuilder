@@ -30,6 +30,10 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	${Q}if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
+	${Q}if ! mountpoint -q $(CHROOT_DIR)/dev/shm ]; then\
+		sudo mkdir -p $(CHROOT_DIR)/dev/shm;\
+		sudo mount -t tmpfs tmpfs $(CHROOT_DIR)/dev/shm;\
+	fi
 
 $(CHROOT_DIR)/home/user/.prepared_base: $(RPM_PLUGIN_DIR)/scripts/prepare-chroot-builder $(RPM_PLUGIN_DIR)/dnf/$(BUILD_PKG_LIST)
 	${Q}echo "-> Preparing $(DIST) build environment"
