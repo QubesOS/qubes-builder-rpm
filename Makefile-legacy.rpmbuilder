@@ -30,7 +30,7 @@ dist-prepare-chroot: $(CHROOT_DIR)/home/user/.prepared_base
 	${Q}if [ ! -r $(CHROOT_DIR)/proc/cpuinfo ]; then\
 		sudo mount -t proc proc $(CHROOT_DIR)/proc;\
 	fi
-	${Q}if ! mountpoint -q $(CHROOT_DIR)/dev/shm ]; then\
+	${Q}if ! mountpoint -q $(CHROOT_DIR)/dev/shm; then\
 		sudo mkdir -p $(CHROOT_DIR)/dev/shm;\
 		sudo mount -t tmpfs tmpfs $(CHROOT_DIR)/dev/shm;\
 	fi
