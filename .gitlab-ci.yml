@@ -37,14 +37,14 @@ prep:sources:
 r4.2:prep:sources:
   extends: .r4.2_components_prepare
 
-tests:vm-fc37:no-upstream-tarball:
+tests:vm-fc38:no-upstream-tarball:
   extends: .components_build
   stage: tests
   needs:
     - prep:sources
-    - chroot:vm-fc37
+    - chroot:vm-fc38
   variables:
-    DISTS_VM: fc37
+    DISTS_VM: fc38
     USE_QUBES_REPO_VERSION: "4.1"
     USE_QUBES_REPO_TESTING: "1"
     USE_DIST_BUILD_TOOL: 1
@@ -63,14 +63,14 @@ tests:dom0-fc32:dom0-package:
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-utils
 
-tests:vm-fc37:upstream-tarball:
+tests:vm-fc38:upstream-tarball:
   extends: .components_build
   stage: tests
   needs:
     - prep:sources
-    - chroot:vm-fc37
+    - chroot:vm-fc38
   variables:
-    DISTS_VM: fc37
+    DISTS_VM: fc38
     USE_QUBES_REPO_VERSION: "4.1"
     USE_QUBES_REPO_TESTING: "1"
     USE_DIST_BUILD_TOOL: 1
