@@ -8,6 +8,7 @@ attr
 bc
 bzip2
 cryptsetup
+default-fonts
 dos2unix
 firefox
 git
