@@ -47,6 +47,7 @@ zip
 --exclude=gimp-help
 --exclude=gnome-boxes
 --exclude=gnome-classic-session
+--exclude=gnome-classic-session-xsession
 --exclude=gnome-documents
 --exclude=gnome-initial-setup
 --exclude=gnome-shell*

@@ -54,6 +54,7 @@ zip
 --exclude=gnome-boxes
 --exclude=gnome-browser-connector
 --exclude=gnome-classic-session
+--exclude=gnome-classic-session-xsession
 --exclude=gnome-getting-started-docs
 --exclude=gnome-initial-setup
 --exclude=gnome-remote-desktop
