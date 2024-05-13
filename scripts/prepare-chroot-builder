@@ -65,8 +65,9 @@ prepare_chroot_proc () {
 }
 
 if ! [ -d "$INSTALL_DIR/home/user" ] && [ -r "$CHROOT_CACHE_FILE" ]; then
-    mkdir -p "$INSTALL_DIR"
-    tar xf "$CHROOT_CACHE_FILE" "$INSTALL_DIR"
+    mkdir -p -- "$INSTALL_DIR"
+    tar -xf "$CHROOT_CACHE_FILE" -- "$INSTALL_DIR"
+    setfiles -r "$INSTALL_DIR" -- '/etc/selinux/targeted/contexts/files/file_contexts' "$INSTALL_DIR"
 fi
 
 # Bootstrap chroot
