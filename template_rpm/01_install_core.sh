@@ -38,6 +38,12 @@ dbpath=$(rpm --eval '%{_dbpath}') || exit 1
 new_dbpath=$(chroot "${INSTALL_DIR}" rpm --eval '%{_dbpath}') || exit 1
 rm -rf "${INSTALL_DIR}${dbpath}"
 rm -rf "${INSTALL_DIR}${new_dbpath}"
+if [ "$(getenforce || :)" = Enforcing ]; then
+    mkdir -p "${INSTALL_DIR}${new_dbpath}"
+    setfiles -r "${INSTALL_DIR}" \
+        /etc/selinux/targeted/contexts/files/file_contexts \
+        "${INSTALL_DIR}"
+fi
 chroot "${INSTALL_DIR}" rpmdb --initdb || exit 1
 chroot "${INSTALL_DIR}" rpmdb --importdb < "${CACHE_DIR}/rpmdb.export" || exit 1
 
