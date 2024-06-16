@@ -37,7 +37,11 @@ if [ -z "${DIST_VER}" ]; then
     error "Please provide DIST_VER in environment."
 fi
 
-DNF_OPTS=(-y --releasever "${DIST_VER}")
+DNF_OPTS=(-y
+          "--releasever=${DIST_VER}"
+          --setopt=deltarpm=False
+          --setopt=zchunk=False
+          --setopt=gpgcheck=1)
 
 if [ -n "${REPO_PROXY}" ]; then
     DNF_OPTS+=("--setopt=proxy=${REPO_PROXY}")
