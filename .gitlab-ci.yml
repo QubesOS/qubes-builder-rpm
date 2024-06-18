@@ -8,8 +8,6 @@ include:
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.1/gitlab-vm-fedora-build-template.yml'
   - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-vm-centos-chroot.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.2/gitlab-base.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.2/gitlab-vm-fedora-build-template.yml'
@@ -76,17 +74,6 @@ tests:vm-fc39:upstream-tarball:
     USE_QUBES_REPO_TESTING: "1"
     USE_DIST_BUILD_TOOL: 1
     COMPONENTS: linux-scrypt
-
-tests:vm-centos-stream8:upstream-tarball-no-qubes-repos:
-  extends: .components_build
-  stage: tests
-  needs:
-    - prep:sources
-    - chroot:vm-centos-stream8
-  variables:
-    DISTS_VM: centos-stream8
-    USE_DIST_BUILD_TOOL: 1
-    COMPONENTS: app-linux-split-gpg
 
 checks:shellcheck:
   stage: checks
