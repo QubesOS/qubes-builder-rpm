@@ -3,13 +3,11 @@
 @hardware-support
 @multimedia
 @printing
+@fonts
 attr
 bc
 bzip2
 cryptsetup
-dejavu-sans-fonts
-dejavu-sans-mono-fonts
-dejavu-serif-fonts
 dnf
 dnf-utils
 dos2unix
