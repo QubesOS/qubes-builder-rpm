@@ -37,7 +37,11 @@ if [ -z "${DIST_VER}" ]; then
     error "Please provide DIST_VER in environment."
 fi
 
-DNF_OPTS=(-y --releasever "${DIST_VER}")
+DNF_OPTS=(-y
+          "--releasever=${DIST_VER}"
+          --setopt=deltarpm=False
+          --setopt=zchunk=False
+          --setopt=gpgcheck=1)
 
 if [ -n "${REPO_PROXY}" ]; then
     DNF_OPTS+=("--setopt=proxy=${REPO_PROXY}")
@@ -119,6 +123,7 @@ function yumInstall() {
     mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}/tmp/template-builder-repo"
     if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
         cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}/etc/yum.repos.d/"
+        chroot_cmd $DNF config-manager --setopt=deltarpm=False --setopt=zchunk=False --setopt=gpgcheck=1 --save
         chroot_cmd $DNF --downloadonly \
             install "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
