@@ -117,6 +117,8 @@ fi
 cp "${PLUGIN_DIR}/repos/builder-local.repo" "$INSTALL_DIR/etc/yum.repos.d/"
 sed -i -e "s#ROOT#$PWD#" "$INSTALL_DIR"/etc/yum.repos.d/*-local.repo
 
+chroot "$INSTALL_DIR" dnf config-manager --setopt=deltarpm=False --setopt=zchunk=False --setopt=deltarpm_percentage=0 --save
+
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     cp "${PLUGIN_DIR}/repos/qubes-repo-${PACKAGE_SET}-${DIST_NAME}.repo" "$INSTALL_DIR/etc/yum.repos.d/"
 
