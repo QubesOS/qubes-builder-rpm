@@ -134,6 +134,7 @@ function yumInstall() {
         chroot_cmd $DNF \
             install --downloadonly "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}/var/cache/libdnf5" -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
@@ -171,6 +172,7 @@ function yumGroupInstall() {
         chroot_cmd $DNF clean expire-cache
         chroot_cmd $DNF group install --downloadonly $optional "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}/var/cache/libdnf5" -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
@@ -200,6 +202,7 @@ function yumUpdate() {
         cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}"/etc/yum.repos.d/
         chroot_cmd $DNF update --downloadonly "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}"/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
+        find "${INSTALL_DIR}"/var/cache/libdnf5 -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}"/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
         # --cacheonly being buggy: better fail the build than install something
