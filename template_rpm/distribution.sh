@@ -89,7 +89,19 @@ function yumConfigRepository() {
     local op=$1
     local repo=$2
 
-    chroot_cmd dnf config-manager --set-"${op}"d "$repo"
+    if [ "$(readlink "$INSTALL_DIR/usr/bin/dnf")" = "dnf5" ]; then
+        if [ "$op" = enable ]; then
+            value=1
+        elif [ "$op" = disable ]; then
+            value=0
+        else
+            echo "Invalid operation for yumConfigRepository: $op" >&2
+            exit 1
+        fi
+        chroot_cmd dnf config-manager setopt "$repo".enabled=$value
+    else
+        chroot_cmd dnf config-manager --set-"${op}"d "$repo"
+    fi
 }
 
 # ==============================================================================
