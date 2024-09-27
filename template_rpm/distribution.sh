@@ -119,8 +119,8 @@ function yumInstall() {
     mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}/tmp/template-builder-repo"
     if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
         cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}/etc/yum.repos.d/"
-        chroot_cmd $DNF --downloadonly \
-            install "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        chroot_cmd $DNF \
+            install --downloadonly "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
@@ -157,7 +157,7 @@ function yumGroupInstall() {
     mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}/tmp/template-builder-repo"
     if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
         chroot_cmd $DNF clean expire-cache
-        chroot_cmd $DNF --downloadonly group install $optional "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        chroot_cmd $DNF group install --downloadonly $optional "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}/var/cache/dnf" -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}/var/cache/yum" -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of
@@ -186,7 +186,7 @@ function yumUpdate() {
     mount --bind "${PACKAGES_DIR}" "${INSTALL_DIR}"/tmp/template-builder-repo
     if [ -e "${INSTALL_DIR}/usr/bin/$DNF" ]; then
         cp "${TEMPLATE_CONTENT_DIR}/template-builder-repo-${DIST_NAME}.repo" "${INSTALL_DIR}"/etc/yum.repos.d/
-        chroot_cmd $DNF --downloadonly update "${DNF_OPTS[@]}" "${files[@]}" || exit 1
+        chroot_cmd $DNF update --downloadonly "${DNF_OPTS[@]}" "${files[@]}" || exit 1
         find "${INSTALL_DIR}"/var/cache/dnf -name '*.rpm' -print0 | xargs -r0 sha256sum
         find "${INSTALL_DIR}"/var/cache/yum -name '*.rpm' -print0 | xargs -r0 sha256sum
         # set http proxy to invalid one, to prevent any connection in case of

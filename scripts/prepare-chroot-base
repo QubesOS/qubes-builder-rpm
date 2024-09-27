@@ -178,7 +178,7 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
-    "$DNF" "${DNF_OPTS[@]}" -c "$yumconf" -y install "${INITIAL_PACKAGES[@]}"
+    "$DNF" install -y "${DNF_OPTS[@]}" -c "$yumconf" "${INITIAL_PACKAGES[@]}"
     rm -f "$yumconf"
 
     echo "INFO: Verifying signatures..."
