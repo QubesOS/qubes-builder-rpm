@@ -72,9 +72,9 @@ fi
 
 echo "--> Installing RPMs..."
 if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
-    installPackages "packages_qubes_${TEMPLATE_FLAVOR}.list" || RETCODE=1
+    installPackages "packages_qubes_${TEMPLATE_FLAVOR}.list" || exit 1
 else
-    installPackages packages_qubes.list || RETCODE=1
+    installPackages packages_qubes.list || exit 1
 fi
 
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
@@ -83,7 +83,7 @@ chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 if [ "${DIST_NAME}" == "fedora" ]; then
     if [ "$TEMPLATE_FLAVOR" != "minimal" ] && ! elementIn 'no-third-party' "${TEMPLATE_OPTIONS[@]}"; then
         echo "--> Installing 3rd party apps"
-        "${TEMPLATE_CONTENT_DIR}/add_3rd_party_software.sh" || RETCODE=1
+        "${TEMPLATE_CONTENT_DIR}/add_3rd_party_software.sh" || exit 1
     fi
 fi
 
@@ -107,31 +107,31 @@ if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; th
     dev=$(df --output=source "${INSTALL_DIR}" | tail -n 1)
     dev=${dev%p?}
     # if root.img have partitions, install kernel and grub there
-    yumInstall kernel || RETCODE=1
-    yumInstall grub2 qubes-kernel-vm-support || RETCODE=1
+    yumInstall kernel || exit 1
+    yumInstall grub2 qubes-kernel-vm-support || exit 1
     if [ -x "${INSTALL_DIR}/usr/sbin/dkms" ]; then
-        yumInstall make || RETCODE=1
+        yumInstall make || exit 1
         for kver in "${INSTALL_DIR}"/lib/modules/*
         do
             kver="$(basename "$kver")"
-            yumInstall "kernel-devel-${kver}" || RETCODE=1
-            chroot_cmd dkms autoinstall -k "$kver" || RETCODE=1
+            yumInstall "kernel-devel-${kver}" || exit 1
+            chroot_cmd dkms autoinstall -k "$kver" || exit 1
         done
     fi
     for kver in "${INSTALL_DIR}"/lib/modules/*
     do
         kver="$(basename "$kver")"
         chroot_cmd dracut -f -a "qubes-vm" \
-            "/boot/initramfs-${kver}.img" "${kver}" || RETCODE=1
+            "/boot/initramfs-${kver}.img" "${kver}" || exit 1
     done
-    chroot_cmd grub2-install --target=i386-pc "$dev" || RETCODE=1
-    chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || RETCODE=1
+    chroot_cmd grub2-install --target=i386-pc "$dev" || exit 1
+    chroot_cmd grub2-mkconfig -o /boot/grub2/grub.cfg || exit 1
     fuser -kMm "${INSTALL_DIR}" || :
     sleep 3
     chroot_cmd umount /sys /dev
 fi
 if containsFlavor selinux; then
-    yumInstall selinux-policy-targeted || RETCODE=1
+    yumInstall selinux-policy-targeted || exit 1
 fi
 
 # Distribution specific steps
