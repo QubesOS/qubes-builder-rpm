@@ -61,6 +61,10 @@ elif [ "${DIST_NAME}" == "centos-stream" ]; then
     fi
 fi
 
+# if updates-testing repo is enabled, make it deterministic which one will get
+# used in case package is in both "updates" and "updates-testing"
+DNF_OPTS+=(--setopt=updates-testing.priority=80)
+
 # ==============================================================================
 # Cleanup function
 # ==============================================================================
