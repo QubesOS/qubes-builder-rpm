@@ -100,7 +100,7 @@ if ! grep -q LANG= "${INSTALL_DIR}/etc/locale.conf" 2>/dev/null; then
     fi
 fi
 
-if ! containsFlavor "minimal" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
+if ! containsFlavor "minimal" || containsFlavor "install-kernel" && [ "0$TEMPLATE_ROOT_WITH_PARTITIONS" -eq 1 ]; then
     chroot_cmd mount -t sysfs sys /sys
     chroot_cmd mount -t devtmpfs none /dev
     # find the right loop device, _not_ its partition
