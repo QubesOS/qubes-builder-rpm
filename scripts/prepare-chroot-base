@@ -52,7 +52,7 @@ else
 fi
 
 DNF=dnf
-DNF_OPTS+=(--releasever "$DIST_VER" --installroot="${INSTALL_DIR}" "--downloaddir=$DOWNLOAD_DIR" --downloadonly)
+DNF_OPTS+=(--releasever "$DIST_VER" --installroot="${INSTALL_DIR}" --resolve "--destdir=$DOWNLOAD_DIR")
 
 # Ensure INSTALL_DIR exists
 mkdir -p "$INSTALL_DIR"
@@ -86,7 +86,12 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
     echo "INFO: Retrieving core RPM packages..."
 
     if [ "${DIST_NAME}" = "fedora" ]; then
-        INITIAL_PACKAGES=(filesystem setup fedora-release dnf dnf-plugins-core)
+        INITIAL_PACKAGES=(filesystem setup fedora-release)
+        if [ "${DIST_VER}" -ge 41 ]; then
+            INITIAL_PACKAGES+=(dnf5 dnf5-plugins)
+        else
+            INITIAL_PACKAGES+=(dnf dnf-plugins-core)
+        fi
         # avoid pulling in glibc-all-langpacks to save space
         INITIAL_PACKAGES+=(glibc-langpack-en)
 
@@ -178,7 +183,7 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         fi
     fi
 
-    "$DNF" install -y "${DNF_OPTS[@]}" -c "$yumconf" "${INITIAL_PACKAGES[@]}"
+    "$DNF" download -y "${DNF_OPTS[@]}" -c "$yumconf" "${INITIAL_PACKAGES[@]}"
     rm -f "$yumconf"
 
     echo "INFO: Verifying signatures..."
