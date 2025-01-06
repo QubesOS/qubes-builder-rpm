@@ -218,6 +218,9 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         mknod -m 0666 "$INSTALL_DIR/dev/loop$i" b 7 "$i"
     done
 
+    mkdir -p "${INSTALL_DIR}/proc"
+    mount -t proc proc "${INSTALL_DIR}/proc"
+
     echo "INFO: Installing core RPM packages..."
     rpm "${RPM_OPTS[@]}" -U --replacepkgs --root="${INSTALL_DIR}" -- "${DOWNLOAD_DIR}/"*.rpm || exit 1
 fi
