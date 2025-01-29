@@ -45,6 +45,13 @@ if [ -x "${INSTALL_DIR}"/usr/bin/dnf ]; then
     rm -rf "${INSTALL_DIR}"/var/cache/yum/* || :
 fi
 
+# if history.sqlite exists but isn't initialized (no tables), remove it so dnf
+# will create proper one on first start
+if [ -e "${INSTALL_DIR}/var/lib/dnf/history.sqlite" ] && \
+       [ "$(stat -c %s "${INSTALL_DIR}/var/lib/dnf/history.sqlite")" -lt 8192 ]; then
+    rm -f "${INSTALL_DIR}/var/lib/dnf/history.sqlite"*
+fi
+
 truncate --no-create --size=0 "${INSTALL_DIR}"/var/log/dnf.*
 
 if containsFlavor selinux; then
