@@ -95,6 +95,10 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         # avoid pulling in glibc-all-langpacks to save space
         INITIAL_PACKAGES+=(glibc-langpack-en)
 
+        # this is only for non-systemd systems, but for some reason gets pulled
+        # in (and conflicts with systemd)
+        INITIAL_PACKAGES+=(--exclude=systemd-standalone-sysusers)
+
         # coreutils conflicts with coreutils-single
         INITIAL_PACKAGES+=(--exclude=coreutils-single)
 
