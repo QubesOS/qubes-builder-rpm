@@ -1,13 +1,5 @@
 include:
   - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-base.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-dom0-chroot.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-vm-fedora-chroot.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.1/gitlab-vm-fedora-build-template.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.2/gitlab-base.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.2/gitlab-vm-fedora-build-template.yml'
@@ -20,60 +12,8 @@ default:
   tags:
     - vm
 
-after_script:
-  - ls -l ~/qubes-builder/qubes-src/linux-template-builder/rpm/noarch
-
-variables:
-  COMPONENTS: linux-template-builder
-  USE_DIST_BUILD_TOOL: 0
-
-prep:sources:
-  extends: .components_prepare
-  variables:
-    COMPONENTS: "linux-template-builder core-vchan-xen linux-utils linux-scrypt app-linux-split-gpg linux-dom0-updates"
-    BRANCH_linux_dom0_updates: "release4.0"
-
 r4.2:prep:sources:
   extends: .r4.2_components_prepare
-
-tests:vm-fc39:no-upstream-tarball:
-  extends: .components_build
-  stage: tests
-  needs:
-    - prep:sources
-    - chroot:vm-fc39
-  variables:
-    DISTS_VM: fc39
-    USE_QUBES_REPO_VERSION: "4.1"
-    USE_QUBES_REPO_TESTING: "1"
-    USE_DIST_BUILD_TOOL: 1
-    COMPONENTS: core-vchan-xen
-
-tests:dom0-fc32:dom0-package:
-  extends: .components_build
-  stage: tests
-  needs:
-    - prep:sources
-    - chroot:dom0-fc32
-  variables:
-    DIST_DOM0: fc32
-    USE_QUBES_REPO_VERSION: "4.1"
-    USE_QUBES_REPO_TESTING: "1"
-    USE_DIST_BUILD_TOOL: 1
-    COMPONENTS: linux-utils
-
-tests:vm-fc39:upstream-tarball:
-  extends: .components_build
-  stage: tests
-  needs:
-    - prep:sources
-    - chroot:vm-fc39
-  variables:
-    DISTS_VM: fc39
-    USE_QUBES_REPO_VERSION: "4.1"
-    USE_QUBES_REPO_TESTING: "1"
-    USE_DIST_BUILD_TOOL: 1
-    COMPONENTS: linux-scrypt
 
 checks:shellcheck:
   stage: checks
