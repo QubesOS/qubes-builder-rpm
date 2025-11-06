@@ -67,8 +67,6 @@ zip
 --exclude=plymouth-system-theme
 --exclude=qemu-*
 --exclude=rng-tools
---exclude=spice-glib
---exclude=spice-gtk3
 --exclude=sssd
 --exclude=unoconv
 --exclude=vinagre
