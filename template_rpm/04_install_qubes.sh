@@ -107,8 +107,8 @@ if ! containsFlavor "minimal" || containsFlavor "install-kernel" && [ "0$TEMPLAT
     dev=$(df --output=source "${INSTALL_DIR}" | tail -n 1)
     dev=${dev%p?}
     # if root.img have partitions, install kernel and grub there
-    yumInstall kernel || exit 1
-    yumInstall grub2 qubes-kernel-vm-support || exit 1
+    yumInstall grub2 kernel || exit 1
+    yumInstall qubes-kernel-vm-support || exit 1
     if [ -x "${INSTALL_DIR}/usr/sbin/dkms" ]; then
         yumInstall make || exit 1
         for kver in "${INSTALL_DIR}"/lib/modules/*
