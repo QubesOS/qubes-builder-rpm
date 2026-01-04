@@ -116,7 +116,7 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
         mkdir -p -- "${DOWNLOAD_DIR}"
         yumconf=$(mktemp)
 
-        if [ "x${FEDORA_MIRROR}" != "x" ]; then
+        if [ "${FEDORA_MIRROR}" != "" ]; then
             awk '
             BEGIN {
                 mirror=ARGV[1];     delete ARGV[1];
@@ -156,7 +156,7 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
             <"${DNF_BOOTSTRAP_CONF}" \
             >"$yumconf"
 
-        if [ "x${CENTOS_MIRROR}" != "x" ]; then
+        if [ "${CENTOS_MIRROR}" != "" ]; then
             awk '
             BEGIN {
                 mirror=ARGV[1];     delete ARGV[1];
@@ -171,7 +171,7 @@ if ! [ -f "${INSTALL_DIR}/tmp/.prepared_base" ]; then
             mv "$yumconftmp" "$yumconf"
         fi
 
-        if [ "x${EPEL_MIRROR}" != "x" ]; then
+        if [ "${EPEL_MIRROR}" != "" ]; then
             awk '
             BEGIN {
                 mirror=ARGV[1];     delete ARGV[1];

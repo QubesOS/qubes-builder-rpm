@@ -31,7 +31,7 @@ exit_get_sources() {
     exit "${exit_code}"
 }
 
-if [ "x$releasever" != "x" ]; then
+if [ "$releasever" != "" ]; then
     if [[ ! "$releasever" =~ ^[1-9][0-9]$ ]] && [ "$releasever" != "rawhide" ]; then
         errecho "Invalid release format"
         exit 1
@@ -43,7 +43,7 @@ fi
 
 trap 'exit_get_sources' 0 1 2 3 6 15
 
-if [ "x$src_file" != "x" ] && [ "x$releasever" != "x" ]; then
+if [ "$src_file" != "" ] && [ "$releasever" != "" ]; then
     # download rpm
     tmpdir="$(mktemp -d -p "$localdir")"
     # shellcheck disable=SC2086

@@ -71,7 +71,7 @@ if [ -n "$USE_QUBES_REPO_VERSION" ]; then
 fi
 
 echo "--> Installing RPMs..."
-if [ "x$TEMPLATE_FLAVOR" != "x" ]; then
+if [ "$TEMPLATE_FLAVOR" != "" ]; then
     installPackages "packages_qubes_${TEMPLATE_FLAVOR}.list" || exit 1
 else
     installPackages packages_qubes.list || exit 1

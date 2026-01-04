@@ -120,7 +120,7 @@ sed -i -e "s#ROOT#$PWD#" "$INSTALL_DIR"/etc/yum.repos.d/*-local.repo
 if [ -n "$USE_QUBES_REPO_VERSION" ]; then
     cp "${PLUGIN_DIR}/repos/qubes-repo-${PACKAGE_SET}-${DIST_NAME}.repo" "$INSTALL_DIR/etc/yum.repos.d/"
 
-    if [ "x$QUBES_MIRROR" != "x" ]; then
+    if [ "$QUBES_MIRROR" != "" ]; then
         sed -i "s#baseurl.*yum.qubes-os.org#baseurl = $QUBES_MIRROR#" \
             "$INSTALL_DIR"/etc/yum.repos.d/qubes-repo-*.repo
     fi
