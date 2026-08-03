@@ -9,6 +9,7 @@
 @fonts
 keepassxc
 xterm
+gnome-software
 --exclude=acpid
 --exclude=anaconda*
 --exclude=aspell-*
@@ -31,7 +32,6 @@ xterm
 --exclude=mlocate
 --exclude=nss-mdns
 --exclude=openssh-server
---exclude=PackageKit*
 --exclude=plymouth
 --exclude=plymouth-system-theme
 --exclude=qemu-*
