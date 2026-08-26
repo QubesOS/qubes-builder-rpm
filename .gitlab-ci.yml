@@ -1,9 +1,5 @@
 include:
   - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.2/gitlab-base.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
-    file: '/r4.2/gitlab-vm-fedora-build-template.yml'
-  - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.3/gitlab-base.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.3/gitlab-vm-fedora-build-template.yml'
@@ -11,9 +7,6 @@ include:
 default:
   tags:
     - vm
-
-r4.2:prep:sources:
-  extends: .r4.2_components_prepare
 
 checks:shellcheck:
   stage: checks
