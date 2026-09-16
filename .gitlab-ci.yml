@@ -3,6 +3,10 @@ include:
     file: '/r4.3/gitlab-base.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.3/gitlab-vm-fedora-build-template.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/devel/gitlab-base.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/devel/gitlab-vm-fedora-build-template.yml'
 
 default:
   tags:
