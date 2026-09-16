@@ -56,6 +56,5 @@ xterm
 --exclude=unoconv
 --exclude=vinagre
 --exclude=webkit2gtk3-plugin-process-gtk2
---exclude=xdg-desktop-portal*
 --exclude=xorg-x11-drv-nouveau
 --exclude=yum-utils
