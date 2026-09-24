@@ -77,6 +77,10 @@ else
     installPackages packages_qubes.list || exit 1
 fi
 
+if [ "$USE_QUBES_REPO_VERSION" = "devel" ]; then
+    yumInstall qubes-repo-devel
+fi
+
 chroot_cmd sh -c 'rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-*'
 
 # WIP: currently limit to Fedora the add_3rd_party_software.sh
