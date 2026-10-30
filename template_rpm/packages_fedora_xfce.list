@@ -1,4 +1,5 @@
 @core
+@standard
 @networkmanager-submodules
 @hardware-support
 @xfce-desktop
@@ -21,13 +22,13 @@ xterm
 --exclude=firstboot
 --exclude=gdm
 --exclude=gimp-help
---exclude=gssproxy
 --exclude=initial-setup*
 --exclude=kdegames
 --exclude=libreoffice*
 --exclude=libvirt*
 --exclude=microcode_ctl
 --exclude=mlocate
+--exclude=nfs-utils
 --exclude=nss-mdns
 --exclude=openssh-server
 --exclude=PackageKit*

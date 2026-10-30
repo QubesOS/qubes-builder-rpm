@@ -1,4 +1,5 @@
 @core
+@standard
 @networkmanager-submodules
 @gnome-desktop
 @hardware-support
@@ -39,13 +40,13 @@ xterm
 --exclude=gnome-shell-extension-common
 --exclude=gnome-user-docs
 --exclude=grubby
---exclude=gssproxy
 --exclude=initial-setup*
 --exclude=kdegames
 --exclude=libreoffice*
 --exclude=libvirt*
 --exclude=microcode_ctl
 --exclude=mlocate
+--exclude=nfs-utils
 --exclude=nss-mdns
 --exclude=openssh-server
 --exclude=plymouth
